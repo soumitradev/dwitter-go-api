@@ -25,6 +25,23 @@ var queryHandler = graphql.NewObject(
 					return nil, nil
 				},
 			},
+			"user": &graphql.Field{
+				Type:        userSchema,
+				Description: "Get user by mention",
+				Args: graphql.FieldConfigArgument{
+					"mention": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					mention, success := params.Args["mention"].(string)
+					if success {
+						post, err := APIGetUser(mention, -1, -1)
+						return post, err
+					}
+					return nil, nil
+				},
+			},
 		},
 	},
 )

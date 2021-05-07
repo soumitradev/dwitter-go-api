@@ -5,3 +5,9 @@ func APIGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 	npost := FormatAsDweetType(post)
 	return npost, err
 }
+
+func APIGetUser(userID string, dweets_to_fetch int, liked_dweets_to_fetch int) (UserType, error) {
+	user, err := GetFullUser(userID, dweets_to_fetch, liked_dweets_to_fetch)
+	nuser := FormatAsUserType(user)
+	return nuser, err
+}
