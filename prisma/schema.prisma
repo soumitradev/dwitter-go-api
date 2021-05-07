@@ -9,56 +9,56 @@ generator db {
 }
 
 model User {
-    db_id         String   @default(uuid()) @id
+    db_id           String   @default(uuid()) @id
 
-    mention String @unique @db.VarChar(20)
+    mention         String   @unique @db.VarChar(20)
 
-    first_name String  @db.VarChar(40)
-    last_name String  @db.VarChar(40)
+    first_name      String   @db.VarChar(40)
+    last_name       String   @db.VarChar(40)
 
-    email String  @db.VarChar(100) @unique
+    email           String   @db.VarChar(100) @unique
 
-    bio String @db.VarChar(160)
+    bio             String   @db.VarChar(160)
 
-    dweets Dweet[] @relation("Dweets")
+    dweets          Dweet[]  @relation("Dweets")
 
-    liked_dweets Dweet[] @relation("Likes")
+    liked_dweets    Dweet[]  @relation("Likes")
     
-    follower_count Int @default(0)
-    followers User[] @relation("Follow")
+    follower_count  Int      @default(0)
+    followers       User[]   @relation("Follow")
 
-    following_count Int @default(0)
-    following User[] @relation("Follow")
+    following_count Int      @default(0)
+    following       User[]   @relation("Follow")
 
-    created_at DateTime @default(now())
+    created_at      DateTime @default(now())
 }
 
 model Dweet {
-    db_id         String   @default(uuid()) @id
-    dweet_body String @db.VarChar(240)
+    db_id               String   @default(uuid()) @id
+    dweet_body          String   @db.VarChar(240)
 
-    id String @unique @db.Char(8)
+    id                  String   @unique @db.Char(8)
 
-    author User  @relation("Dweets", fields: [author_id], references: [db_id])
-    author_id String
+    author              User     @relation("Dweets", fields: [author_id], references: [db_id])
+    author_id           String
 
-    posted_at  DateTime @default(now())
-    last_updated_at  DateTime @default(now())
+    posted_at           DateTime @default(now())
+    last_updated_at     DateTime @default(now())
 
-    like_count      Int @default(0)
-    like_users User[] @relation("Likes")
+    like_count          Int      @default(0)
+    like_users          User[]   @relation("Likes")
 
-    is_reply Boolean @default(false)
-    original_reply_id String?
-    reply_to Dweet?  @relation("Replies", fields: [original_reply_id], references: [db_id])
-    reply_count      Int  @default(0)
-    reply_dweets Dweet[]   @relation("Replies")
+    is_reply            Boolean  @default(false)
+    original_reply_id   String?
+    reply_to            Dweet?   @relation("Replies", fields: [original_reply_id], references: [db_id])
+    reply_count         Int      @default(0)
+    reply_dweets        Dweet[]  @relation("Replies")
     
-    is_redweet Boolean @default(false)
+    is_redweet          Boolean  @default(false)
     original_redweet_id String?
-    redweet_of Dweet?  @relation("Redweets", fields: [original_redweet_id], references: [db_id])
-    redweet_count      Int @default(0)
-    redweet_dweets Dweet[]  @relation("Redweets")
+    redweet_of          Dweet?   @relation("Redweets", fields: [original_redweet_id], references: [db_id])
+    redweet_count       Int      @default(0)
+    redweet_dweets      Dweet[]  @relation("Redweets")
 
-    media String[]
+    media               String[]
 }
