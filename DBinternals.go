@@ -32,7 +32,7 @@ func DisconnectDB() {
 func GetUser(userID string) (*db.UserModel, error) {
 	// Get basic User data
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).Exec(ctx)
 	return user, err
 }
@@ -43,7 +43,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 	var err error
 	if dweets_to_fetch < 0 {
 		user, err = client.User.FindUnique(
-			db.User.DbID.Equals(userID),
+			db.User.Mention.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch(),
 		).Exec(ctx)
@@ -52,7 +52,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 		}
 	} else {
 		user, err = client.User.FindUnique(
-			db.User.DbID.Equals(userID),
+			db.User.Mention.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch(),
 		).Exec(ctx)
@@ -66,7 +66,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 func GetUserLikes(userID string) (*db.UserModel, error) {
 	// Get User data with dweets that user liked
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).With(
 		db.User.LikedDweets.Fetch(),
 	).Exec(ctx)
@@ -76,7 +76,7 @@ func GetUserLikes(userID string) (*db.UserModel, error) {
 func GetFollowers(userID string) (*db.UserModel, error) {
 	// Get User data with followers of user
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).With(
 		db.User.Followers.Fetch(),
 	).Exec(ctx)
@@ -86,7 +86,7 @@ func GetFollowers(userID string) (*db.UserModel, error) {
 func GetFollowing(userID string) (*db.UserModel, error) {
 	// Get User data with users that user follows
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
@@ -99,7 +99,7 @@ func GetPostReplies(postID string, replies_to_fetch int) (*db.DweetModel, error)
 	var err error
 	if replies_to_fetch < 0 {
 		post, err = client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(postID),
+			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch(),
@@ -108,7 +108,7 @@ func GetPostReplies(postID string, replies_to_fetch int) (*db.DweetModel, error)
 		).Exec(ctx)
 	} else {
 		post, err = client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(postID),
+			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch),
@@ -125,13 +125,13 @@ func GetPostRedweets(postID string, redweets_to_fetch int) (*db.DweetModel, erro
 	var err error
 	if redweets_to_fetch < 0 {
 		post, err = client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(postID),
+			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.RedweetDweets.Fetch(),
 		).Exec(ctx)
 	} else {
 		post, err = client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(postID),
+			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.RedweetDweets.Fetch().Take(redweets_to_fetch),
 		).Exec(ctx)
@@ -158,7 +158,7 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 	createdPost, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.DbID.Equals(authorID)),
+		db.Dweet.Author.Link(db.User.Mention.Equals(authorID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -177,12 +177,12 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 
 	// Create a Like on the post
 	like, err := client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(likedPostID),
+		db.Dweet.ID.Equals(likedPostID),
 	).Update(
 		db.Dweet.LikeCount.Increment(1),
 		db.Dweet.LastUpdatedAt.Set(post.PostedAt),
 		db.Dweet.LikeUsers.Link(
-			db.User.DbID.Equals(userID),
+			db.User.Mention.Equals(userID),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -191,10 +191,10 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 
 	// Add post to user's liked dweets
 	_, err = client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).Update(
 		db.User.LikedDweets.Link(
-			db.Dweet.DbID.Equals(like.DbID),
+			db.Dweet.ID.Equals(like.ID),
 		),
 	).Exec(ctx)
 
@@ -220,11 +220,11 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 	createdReply, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.DbID.Equals(user.DbID)),
+		db.Dweet.Author.Link(db.User.Mention.Equals(user.Mention)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
 		db.Dweet.ReplyTo.Link(
-			db.Dweet.DbID.Equals(post.DbID),
+			db.Dweet.ID.Equals(post.ID),
 		),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -235,10 +235,10 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 
 	// Update original Dweet to show reply
 	_, err = client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(post.DbID),
+		db.Dweet.ID.Equals(post.ID),
 	).Update(
 		db.Dweet.ReplyDweets.Link(
-			db.Dweet.DbID.Equals(createdReply.DbID),
+			db.Dweet.ID.Equals(createdReply.ID),
 		),
 		db.Dweet.ReplyCount.Increment(1),
 	).Exec(ctx)
@@ -265,11 +265,11 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 	createdRedweet, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(post.DweetBody),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.DbID.Equals(user.DbID)),
+		db.Dweet.Author.Link(db.User.Mention.Equals(user.Mention)),
 		db.Dweet.Media.Set(post.Media),
 		db.Dweet.IsRedweet.Set(true),
 		db.Dweet.RedweetOf.Link(
-			db.Dweet.DbID.Equals(post.DbID),
+			db.Dweet.ID.Equals(post.ID),
 		),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -280,10 +280,10 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 
 	// Update original Dweet to show redweet
 	_, err = client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(post.DbID),
+		db.Dweet.ID.Equals(post.ID),
 	).Update(
 		db.Dweet.RedweetDweets.Link(
-			db.Dweet.DbID.Equals(createdRedweet.DbID),
+			db.Dweet.ID.Equals(createdRedweet.ID),
 		),
 		db.Dweet.RedweetCount.Increment(1),
 	).Exec(ctx)
@@ -296,11 +296,11 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 
 	// Add follower to followed's follower list
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(followedID),
+		db.User.Mention.Equals(followedID),
 	).Update(
 		db.User.FollowerCount.Increment(1),
 		db.User.Followers.Link(
-			db.User.DbID.Equals(followerID),
+			db.User.Mention.Equals(followerID),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -309,11 +309,11 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 
 	// Add followed to follower's following list
 	_, err = client.User.FindUnique(
-		db.User.DbID.Equals(followerID),
+		db.User.Mention.Equals(followerID),
 	).Update(
 		db.User.FollowingCount.Increment(1),
 		db.User.Following.Link(
-			db.User.DbID.Equals(followedID),
+			db.User.Mention.Equals(followedID),
 		),
 	).Exec(ctx)
 
@@ -323,7 +323,7 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 func UpdateUser(userID, mention, firstName, lastName, email, bio string) (*db.UserModel, error) {
 	// Update a user
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).Update(
 		db.User.Mention.Set(mention),
 		db.User.FirstName.Set(firstName),
@@ -338,7 +338,7 @@ func UpdateUser(userID, mention, firstName, lastName, email, bio string) (*db.Us
 func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, error) {
 	// Update a dweet
 	_, err := client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(postID),
+		db.Dweet.ID.Equals(postID),
 	).Update(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.Media.Set(mediaLinks),
@@ -357,7 +357,7 @@ func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, erro
 	redweets := post.RedweetDweets()
 	for i := 0; i < len(redweets); i++ {
 		_, err := client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(redweets[i].DbID),
+			db.Dweet.ID.Equals(redweets[i].ID),
 		).Update(
 			db.Dweet.DweetBody.Set(body),
 		).Exec(ctx)
@@ -380,7 +380,7 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 
 	// Decrement the follower and following counts
 	user, err := client.User.FindUnique(
-		db.User.DbID.Equals(followedID),
+		db.User.Mention.Equals(followedID),
 	).Update(
 		db.User.FollowerCount.Decrement(1),
 	).Exec(ctx)
@@ -388,8 +388,10 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 		return user, err
 	}
 
-	_, err = client.User.FindUnique(
-		db.User.DbID.Equals(followerID),
+	userDBID1 := user.DbID
+
+	other_user, err := client.User.FindUnique(
+		db.User.Mention.Equals(followerID),
 	).Update(
 		db.User.FollowingCount.Decrement(1),
 	).Exec(ctx)
@@ -397,9 +399,11 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 		return user, err
 	}
 
+	userDBID2 := other_user.DbID
+
 	// Delete the follower-following relation using RAW SQL (prisma-client-go has almost no documentation on unlinking relations)
 	delFollowerQuery := `DELETE FROM public."_Follow" WHERE "A"= $1 AND "B"= $2;`
-	_, err = client.Prisma.ExecuteRaw(delFollowerQuery, followedID, followerID).Exec(ctx)
+	_, err = client.Prisma.ExecuteRaw(delFollowerQuery, userDBID1, userDBID2).Exec(ctx)
 
 	return user, err
 }
@@ -409,17 +413,26 @@ func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
 
 	// Find the post and decrease its likes by 1
 	post, err := client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(postID),
+		db.Dweet.ID.Equals(postID),
 	).Update(
 		db.Dweet.LikeCount.Decrement(1),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
+	postDBID := post.DbID
+
+	user, err := client.User.FindUnique(
+		db.User.Mention.Equals(userID),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userDBID := user.DbID
 
 	// Delete the like relation using RAW SQL (prisma-client-go has almost no documentation on unlinking relations)
 	delLikeQuery := `DELETE FROM public."_Likes" WHERE "A"= $1 AND "B"= $2;`
-	_, err = client.Prisma.ExecuteRaw(delLikeQuery, postID, userID).Exec(ctx)
+	_, err = client.Prisma.ExecuteRaw(delLikeQuery, postDBID, userDBID).Exec(ctx)
 
 	return post, err
 }
@@ -443,21 +456,21 @@ func DeleteUser(userID string) (*db.UserModel, error) {
 	dweets := user.Dweets()
 	for i := 0; i < len(dweets); i++ {
 		if dweets[i].IsRedweet {
-			DeleteRedweet(dweets[i].DbID)
+			DeleteRedweet(dweets[i].ID)
 		} else {
-			DeleteDweet(dweets[i].DbID)
+			DeleteDweet(dweets[i].ID)
 		}
 	}
 
 	// Remove all likes of the User
 	likes := userLikes.LikedDweets()
 	for i := 0; i < len(likes); i++ {
-		DeleteLike(likes[i].DbID, userID)
+		DeleteLike(likes[i].ID, userID)
 	}
 
 	// Delete the user
 	user, err = client.User.FindUnique(
-		db.User.DbID.Equals(userID),
+		db.User.Mention.Equals(userID),
 	).Delete().Exec(ctx)
 
 	return user, err
@@ -481,7 +494,7 @@ func DeleteDweet(postID string) (*db.DweetModel, error) {
 		}
 		// Remove the Reply from the post
 		_, err := client.Dweet.FindUnique(
-			db.Dweet.DbID.Equals(id),
+			db.Dweet.ID.Equals(id),
 		).Update(
 			db.Dweet.ReplyCount.Decrement(1),
 		).Exec(ctx)
@@ -496,7 +509,7 @@ func DeleteDweet(postID string) (*db.DweetModel, error) {
 
 	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
 	delQuery := `with recursive all_posts (id, parentid1, parentid2, root_id) as (select t1.db_id, t1.original_reply_id as parentid1, t1.original_redweet_id as parentid2, t1.db_id as root_id from public."Dweet" t1 union all select c1.db_id, c1.original_reply_id as parentid1, c1.original_redweet_id as parentid2, p.root_id from public."Dweet" c1 join all_posts p on ((p.id = c1.original_reply_id) OR (p.id = c1.original_redweet_id)) ) DELETE FROM public."Dweet"  WHERE db_id IN (SELECT id FROM all_posts WHERE root_id = $1);`
-	_, err = client.Prisma.ExecuteRaw(delQuery, postID).Exec(ctx)
+	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
 
 	return post, err
 }
@@ -518,7 +531,7 @@ func DeleteRedweet(postID string) (*db.DweetModel, error) {
 
 	// Remove the Redweet from the post
 	_, err = client.Dweet.FindUnique(
-		db.Dweet.DbID.Equals(id),
+		db.Dweet.ID.Equals(id),
 	).Update(
 		db.Dweet.RedweetCount.Decrement(1),
 	).Exec(ctx)
@@ -533,7 +546,7 @@ func DeleteRedweet(postID string) (*db.DweetModel, error) {
 
 	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
 	delQuery := `with recursive all_posts (id, parentid1, parentid2, root_id) as (select t1.db_id, t1.original_reply_id as parentid1, t1.original_redweet_id as parentid2, t1.db_id as root_id from public."Dweet" t1 union all select c1.db_id, c1.original_reply_id as parentid1, c1.original_redweet_id as parentid2, p.root_id from public."Dweet" c1 join all_posts p on ((p.id = c1.original_reply_id) OR (p.id = c1.original_redweet_id)) ) DELETE FROM public."Dweet"  WHERE db_id IN (SELECT id FROM all_posts WHERE root_id = $1);`
-	_, err = client.Prisma.ExecuteRaw(delQuery, postID).Exec(ctx)
+	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
 
 	return post, err
 }

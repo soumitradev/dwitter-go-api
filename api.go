@@ -19,7 +19,7 @@ var queryHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					id, success := params.Args["id"].(string)
 					if success {
-						post, err := APIGetPost(id, -1)
+						post, err := NoAuthGetPost(id, 10)
 						return post, err
 					}
 					return nil, nil
@@ -36,7 +36,7 @@ var queryHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					mention, success := params.Args["mention"].(string)
 					if success {
-						post, err := APIGetUser(mention, -1, -1)
+						post, err := NoAuthGetUser(mention, -1, -1)
 						return post, err
 					}
 					return nil, nil
