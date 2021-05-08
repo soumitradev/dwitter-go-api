@@ -2,8 +2,73 @@ package main
 
 import "dwitter_go_graphql/prisma/db"
 
-func GetFullPost(postID string, replies_to_fetch int) (*db.DweetModel, error) {
-	// Get full post info
+/*
+
+This code is getting a bit messy, and I think I know how to solve it.
+
+Use cases.
+
+So far, I have been looking at whatever I'm doing as an API. I was looking at it from a wrong perspective.
+
+This is an app. This is Dwitter. I don't care which data someone wants in what format.
+
+They can do that using multiple queries, and GraphQL handles a lot of it for them.
+
+My job here is to build Dwitter.
+
+I need to look at it like an app.
+
+When I'm looking at a User's profile, does it matter what posts they've liked?
+
+I'll have to start building my API based on how it'll be used, not on some weird hypothetical 3rd party.
+
+What do I need?
+
+When on the homepage (when logged in), I need:
+- A list of latest dweets from the people you follow
+- A create dweet button
+
+When viewing a User (when not logged in):
+- I need their basic info: Bio, Name, Mention
+- Followers and Following counts
+- Some of their Dweets (more can be loaded later on scrolling)
+
+When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
+Also, a button to follow/unfollow them.
+
+When viewing a Dweet (when not logged in):
+- I need the basic dweet info: Body, Author
+- Likes, Redweets and reply counts
+- Some replies (more can be loaded on scrolling)
+
+When viewing a Dweet when logged in, I need the same info except I also need the users that liked the Dweet
+(so I can show which people that the User follows liked the dweet)
+Also, a button to like/unlike it.
+Also, a button to redweet/unredweet it.
+Also, a button to create a reply to it
+
+If the dweet is your own, a button to edit it.
+
+
+When viewing your own profile when logged in:
+- I need their basic info: Bio, Name, Mention
+- Followers and Following counts
+- Some of their Dweets (more can be loaded later on scrolling)
+
+Here, we have 4 buttons:
+- Liked Dweets (to view dweets you liked)
+- Followers (to view people that follow you)
+- Following (to view people that you follow)
+- Edit Profile button to update the user
+
+*/
+
+func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
+	// When viewing a Dweet (when not logged in):
+	// - I need the basic dweet info: Body, Author
+	// - Likes, Redweets and reply counts
+	// - Some replies (more can be loaded on scrolling)
+
 	var post *db.DweetModel
 	var err error
 	if replies_to_fetch < 0 {
@@ -11,7 +76,6 @@ func GetFullPost(postID string, replies_to_fetch int) (*db.DweetModel, error) {
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
-			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.ReplyDweets.Fetch(),
 			db.Dweet.ReplyTo.Fetch(),
 			db.Dweet.RedweetOf.Fetch(),
@@ -21,64 +85,37 @@ func GetFullPost(postID string, replies_to_fetch int) (*db.DweetModel, error) {
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
-			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch),
 			db.Dweet.ReplyTo.Fetch(),
 			db.Dweet.RedweetOf.Fetch(),
 		).Exec(ctx)
 	}
-	return post, err
+	npost := FormatAsDweetType(post)
+	return npost, err
 }
 
-func GetFullUser(userID string, dweets_to_fetch int, liked_dweets_to_fetch int) (*db.UserModel, error) {
-	// Get full user info
+func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
+	// When viewing a User (when not logged in):
+	// - I need their basic info: Bio, Name, Mention
+	// - Followers and Following counts
+	// - Some of their Dweets (more can be loaded later on scrolling)
+
 	var user *db.UserModel
 	var err error
 
-	if (dweets_to_fetch < 0) && (liked_dweets_to_fetch < 0) {
+	if dweets_to_fetch < 0 {
 		user, err = client.User.FindUnique(
 			db.User.Mention.Equals(userID),
 		).With(
-			db.User.Dweets.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			),
-			db.User.LikedDweets.Fetch(),
-			db.User.Followers.Fetch(),
-			db.User.Following.Fetch(),
-		).Exec(ctx)
-	} else if (dweets_to_fetch < 0) && (liked_dweets_to_fetch > 0) {
-		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
-		).With(
-			db.User.Dweets.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			),
-			db.User.LikedDweets.Fetch().Take(liked_dweets_to_fetch),
-			db.User.Followers.Fetch(),
-			db.User.Following.Fetch(),
-		).Exec(ctx)
-	} else if (dweets_to_fetch > 0) && (liked_dweets_to_fetch < 0) {
-		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
-		).With(
-			db.User.Dweets.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			).Take(dweets_to_fetch),
-			db.User.LikedDweets.Fetch(),
-			db.User.Followers.Fetch(),
-			db.User.Following.Fetch(),
+			db.User.Dweets.Fetch(),
 		).Exec(ctx)
 	} else {
 		user, err = client.User.FindUnique(
 			db.User.Mention.Equals(userID),
 		).With(
-			db.User.Dweets.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			).Take(dweets_to_fetch),
-			db.User.LikedDweets.Fetch().Take(liked_dweets_to_fetch),
-			db.User.Followers.Fetch(),
-			db.User.Following.Fetch(),
+			db.User.Dweets.Fetch().Take(dweets_to_fetch),
 		).Exec(ctx)
 	}
-	return user, err
+	nuser := FormatAsUserType(user)
+	return nuser, err
 }
