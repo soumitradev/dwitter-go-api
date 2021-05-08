@@ -93,6 +93,14 @@ func GetFollowing(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
+func GetPostBasic(postID string) (*db.DweetModel, error) {
+	// Get Replies to post
+	post, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).Exec(ctx)
+	return post, err
+}
+
 func GetPostReplies(postID string, replies_to_fetch int) (*db.DweetModel, error) {
 	// Get Replies to post
 	var post *db.DweetModel
@@ -167,20 +175,12 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 }
 
 func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
-	// Add a like to a post
-
-	// Get post and user
-	post, err := GetPostReplies(likedPostID, 0)
-	if err != nil {
-		return nil, err
-	}
 
 	// Create a Like on the post
 	like, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(likedPostID),
 	).Update(
 		db.Dweet.LikeCount.Increment(1),
-		db.Dweet.LastUpdatedAt.Set(post.PostedAt),
 		db.Dweet.LikeUsers.Link(
 			db.User.Mention.Equals(userID),
 		),
@@ -206,7 +206,7 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 
 	now := time.Now()
 	// Get post and user
-	post, err := GetPostReplies(originalPostID, 0)
+	post, err := GetPostBasic(originalPostID)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 
 	now := time.Now()
 	// Get post and user
-	post, err := GetPostReplies(originalPostID, 0)
+	post, err := GetPostBasic(originalPostID)
 	if err != nil {
 		return nil, err
 	}
@@ -285,6 +285,7 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 		db.Dweet.RedweetDweets.Link(
 			db.Dweet.ID.Equals(createdRedweet.ID),
 		),
+		db.Dweet.LastUpdatedAt.Set(now),
 		db.Dweet.RedweetCount.Increment(1),
 	).Exec(ctx)
 
@@ -337,19 +338,15 @@ func UpdateUser(userID, mention, firstName, lastName, email, bio string) (*db.Us
 
 func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, error) {
 	// Update a dweet
-	_, err := client.Dweet.FindUnique(
+	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.RedweetDweets.Fetch(),
 	).Update(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.LastUpdatedAt.Set(time.Now()),
 	).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get all redweets and update them too
-	post, err := GetPostRedweets(postID, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +364,7 @@ func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, erro
 	}
 
 	// Return updated post
-	post, err = GetPostReplies(postID, 0)
+	post, err = GetPostBasic(postID)
 	if err != nil {
 		return nil, err
 	}
@@ -480,7 +477,7 @@ func DeleteDweet(postID string) (*db.DweetModel, error) {
 	// Delete a Dweet
 
 	// Get all the replies to the post (these need to be deleted first since they depend on the root Dweet)
-	post, err := GetPostReplies(postID, 0)
+	post, err := GetPostBasic(postID)
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +515,7 @@ func DeleteRedweet(postID string) (*db.DweetModel, error) {
 	// Remove a Redweet
 
 	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
-	post, err := GetPostReplies(postID, 0)
+	post, err := GetPostBasic(postID)
 	if err != nil {
 		return nil, err
 	}
