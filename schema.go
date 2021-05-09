@@ -73,7 +73,7 @@ type DweetType struct {
 
 var basicUserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User",
+		Name: "BasicUser",
 		Fields: graphql.Fields{
 			"username": &graphql.Field{
 				Type: graphql.String,
@@ -149,7 +149,7 @@ var userSchema = graphql.NewObject(
 
 var basicDweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "Dweet",
+		Name: "BasicDweet",
 		Fields: graphql.Fields{
 			"dweet_body": &graphql.Field{
 				Type: graphql.String,

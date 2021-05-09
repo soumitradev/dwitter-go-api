@@ -46,16 +46,16 @@ var queryHandler = graphql.NewObject(
 	},
 )
 
-var mutationHandler = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name:   "Mutation",
-		Fields: graphql.Field{},
-	},
-)
+// var mutationHandler = graphql.NewObject(
+// 	graphql.ObjectConfig{
+// 		Name:   "Mutation",
+// 		Fields: graphql.Field{},
+// 	},
+// )
 
-var schema, _ = graphql.NewSchema(
+var schema, SchemaError = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query:    queryHandler,
-		Mutation: mutationHandler,
+		Query: queryHandler,
+		// Mutation: mutationHandler,
 	},
 )

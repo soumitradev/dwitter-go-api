@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -11,8 +10,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
 
 func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
@@ -30,6 +29,11 @@ func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
 }
 
 func main() {
+	if SchemaError != nil {
+		// Check for an error in schema at runtime
+		panic(SchemaError)
+	}
+
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
@@ -40,15 +44,21 @@ func main() {
 	runDBTests()
 
 	defer DisconnectDB()
-	router := mux.NewRouter()
 
-	router.HandleFunc("/api", func(w http.ResponseWriter, req *http.Request) {
-		result := ExecuteReq(req.URL.Query().Get("query"), schema)
-		json.NewEncoder(w).Encode(result)
+	// router := mux.NewRouter()
+
+	h := handler.New(&handler.Config{
+		Schema:   &schema,
+		Pretty:   true,
+		GraphiQL: true,
 	})
 
+	http.Handle("/graphql", h)
+
+	// router.Handle("/graphql", h)
+
 	srv := &http.Server{
-		Handler: router,
+		Handler: h,
 		Addr:    "127.0.0.1:5000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
@@ -56,7 +66,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	fmt.Println("Server now running on port 5000, access /api")
+	fmt.Println("Server now running on port 5000, access /graphql")
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
@@ -76,9 +86,11 @@ func main() {
 	// Create a deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
+
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
 	srv.Shutdown(ctx)
+
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
