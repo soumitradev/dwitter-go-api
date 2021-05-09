@@ -79,7 +79,7 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		reply_dweets = append(reply_dweets, FormatAsBasicDweetType(&redweet_dweets_db_schema[i]))
 	}
 
-	ok := DweetType{
+	return DweetType{
 		DweetBody:         dweet.DweetBody,
 		ID:                dweet.ID,
 		Author:            author,
@@ -100,8 +100,6 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		RedweetDweets:     redweet_dweets,
 		Media:             dweet.Media,
 	}
-
-	return ok
 }
 
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
@@ -157,5 +155,83 @@ func FormatAsUserType(user *db.UserModel) UserType {
 		FollowingCount: user.FollowingCount,
 		Following:      following,
 		CreatedAt:      user.CreatedAt,
+	}
+}
+
+func NoAuthFormatAsUserType(user *db.UserModel) UserType {
+	// Nil values like relations, and non-present values like DB_ID are causing issues.
+	var dweets []BasicDweetType
+	dweets_db_schema := user.Dweets()
+	for i := 0; i < len(dweets_db_schema); i++ {
+		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
+	}
+
+	return UserType{
+		Username:       user.Username,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Email:          user.Email,
+		Bio:            user.Bio,
+		Dweets:         dweets,
+		FollowerCount:  user.FollowerCount,
+		FollowingCount: user.FollowingCount,
+		CreatedAt:      user.CreatedAt,
+	}
+}
+
+func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
+	// Nil values like relations, and non-present values like DB_ID are causing issues.
+	author := FormatAsBasicUserType(dweet.Author())
+
+	reply_id, present := dweet.OriginalReplyID()
+	if !present {
+		reply_id = ""
+	}
+	original_reply_dweet, present := dweet.ReplyTo()
+	var reply_to BasicDweetType
+	if present {
+		reply_to = FormatAsBasicDweetType(original_reply_dweet)
+	} else {
+		reply_to = BasicDweetType{}
+	}
+
+	redweet_id, present := dweet.OriginalRedweetID()
+	if !present {
+		redweet_id = ""
+	}
+	original_redweet_dweet, present := dweet.RedweetOf()
+	var redweet_of BasicDweetType
+	if present {
+		redweet_of = FormatAsBasicDweetType(original_redweet_dweet)
+	} else {
+		redweet_of = BasicDweetType{}
+	}
+
+	var reply_dweets []BasicDweetType
+	reply_dweets_db_schema := dweet.ReplyDweets()
+	for i := 0; i < len(reply_dweets_db_schema); i++ {
+		reply_dweets = append(reply_dweets, FormatAsBasicDweetType(&reply_dweets_db_schema[i]))
+	}
+
+	return DweetType{
+		DweetBody:         dweet.DweetBody,
+		ID:                dweet.ID,
+		Author:            author,
+		AuthorID:          dweet.AuthorID,
+		PostedAt:          dweet.PostedAt,
+		LastUpdatedAt:     dweet.LastUpdatedAt,
+		LikeCount:         dweet.LikeCount,
+		LikeUsers:         []BasicUserType{},
+		IsReply:           dweet.IsReply,
+		OriginalReplyID:   reply_id,
+		ReplyTo:           reply_to,
+		ReplyCount:        dweet.ReplyCount,
+		ReplyDweets:       reply_dweets,
+		IsRedweet:         dweet.IsRedweet,
+		OriginalRedweetID: redweet_id,
+		RedweetOf:         redweet_of,
+		RedweetCount:      dweet.RedweetCount,
+		RedweetDweets:     []BasicDweetType{},
+		Media:             dweet.Media,
 	}
 }

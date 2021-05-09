@@ -1,6 +1,8 @@
 package main
 
-import "dwitter_go_graphql/prisma/db"
+import (
+	"dwitter_go_graphql/prisma/db"
+)
 
 /*
 
@@ -90,7 +92,8 @@ func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 			db.Dweet.RedweetOf.Fetch(),
 		).Exec(ctx)
 	}
-	npost := FormatAsDweetType(post)
+
+	npost := NoAuthFormatAsDweetType(post)
 	return npost, err
 }
 
@@ -107,15 +110,20 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 		user, err = client.User.FindUnique(
 			db.User.Username.Equals(userID),
 		).With(
-			db.User.Dweets.Fetch(),
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
 		).Exec(ctx)
 	} else {
 		user, err = client.User.FindUnique(
 			db.User.Username.Equals(userID),
 		).With(
-			db.User.Dweets.Fetch().Take(dweets_to_fetch),
+			db.User.Dweets.Fetch().Take(dweets_to_fetch).With(
+				db.Dweet.Author.Fetch(),
+			),
 		).Exec(ctx)
 	}
-	nuser := FormatAsUserType(user)
+
+	nuser := NoAuthFormatAsUserType(user)
 	return nuser, err
 }

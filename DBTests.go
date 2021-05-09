@@ -17,17 +17,17 @@ func test() error {
 		panic(err)
 	}
 
-	createdPost, err := NewDweet("just setting up my dwttr", createdUser.DbID, []string{})
+	createdPost, err := NewDweet("just setting up my dwttr", createdUser.Username, []string{})
 	if err != nil {
 		panic(err)
 	}
 
-	// createdLike, err := NewLike(createdPost.DbID, createdUser.DbID)
+	// createdLike, err := NewLike(createdPost.ID, createdUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// reply, err := NewReply(createdPost.DbID, createdUser.DbID, "nice dweet", []string{})
+	// reply, err := NewReply(createdPost.ID, createdUser.Username, "nice dweet", []string{})
 	// if err != nil {
 	// 	panic(err)
 	// }
@@ -37,62 +37,62 @@ func test() error {
 	// 	panic(err)
 	// }
 
-	// redweet, err := NewRedweet(createdPost.DbID, createdUser.DbID)
+	// redweet, err := NewRedweet(createdPost.ID, createdUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// updated_post, err := UpdateDweet(createdPost.DbID, "mmmm froge", []string{})
+	// updated_post, err := UpdateDweet(createdPost.ID, "mmmm froge", []string{})
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// updated_user, err := UpdateUser(createdUser.DbID, createdUser.Username, createdUser.FirstName, createdUser.LastName, createdUser.Email, "papa peli more liek daddy peli 🥺")
+	// updated_user, err := UpdateUser(createdUser.Username, createdUser.Username, createdUser.FirstName, createdUser.LastName, createdUser.Email, "papa peli more liek daddy peli 🥺")
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// lepost, err := GetPostReplies(createdPost.DbID, 1)
+	// lepost, err := GetPostReplies(createdPost.ID, 1)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = NewDweet("getting deleted soon ;)", newUser.DbID, []string{})
+	// _, err = NewDweet("getting deleted soon ;)", newUser.Username, []string{})
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = NewLike(createdPost.DbID, newUser.DbID)
+	// _, err = NewLike(createdPost.ID, newUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = NewReply(createdPost.DbID, newUser.DbID, "this reply finna die toooo", []string{})
+	// _, err = NewReply(createdPost.ID, newUser.Username, "this reply finna die toooo", []string{})
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = NewRedweet(createdPost.DbID, newUser.DbID)
+	// _, err = NewRedweet(createdPost.ID, newUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = NewFollower(createdUser.DbID, newUser.DbID)
+	// _, err = NewFollower(createdUser.Username, newUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// _, err = DeleteFollower(createdUser.DbID, newUser.DbID)
+	// _, err = DeleteFollower(createdUser.Username, newUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// deletedUser, err := DeleteUser(newUser.DbID)
+	// deletedUser, err := DeleteUser(newUser.Username)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// deletedPost, err := DeleteDweet(createdPost.DbID)
+	// deletedPost, err := DeleteDweet(createdPost.ID)
 	// if err != nil {
 	// 	panic(err)
 	// }

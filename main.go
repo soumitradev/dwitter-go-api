@@ -42,7 +42,7 @@ func main() {
 	defer DisconnectDB()
 	router := mux.NewRouter()
 
-	router.HandleFunc("/graphql", func(w http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/api", func(w http.ResponseWriter, req *http.Request) {
 		result := ExecuteReq(req.URL.Query().Get("query"), schema)
 		json.NewEncoder(w).Encode(result)
 	})
@@ -56,7 +56,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	fmt.Println("Server now running on port 5000, access /graphql")
+	fmt.Println("Server now running on port 5000, access /api")
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
