@@ -29,7 +29,7 @@ When on the homepage (when logged in), I need:
 - A create dweet button
 
 When viewing a User (when not logged in):
-- I need their basic info: Bio, Name, Mention
+- I need their basic info: Bio, Name, username
 - Followers and Following counts
 - Some of their Dweets (more can be loaded later on scrolling)
 
@@ -51,7 +51,7 @@ If the dweet is your own, a button to edit it.
 
 
 When viewing your own profile when logged in:
-- I need their basic info: Bio, Name, Mention
+- I need their basic info: Bio, Name, username
 - Followers and Following counts
 - Some of their Dweets (more can be loaded later on scrolling)
 
@@ -96,7 +96,7 @@ func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 
 func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	// When viewing a User (when not logged in):
-	// - I need their basic info: Bio, Name, Mention
+	// - I need their basic info: Bio, Name, username
 	// - Followers and Following counts
 	// - Some of their Dweets (more can be loaded later on scrolling)
 
@@ -105,13 +105,13 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 
 	if dweets_to_fetch < 0 {
 		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
+			db.User.Username.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch(),
 		).Exec(ctx)
 	} else {
 		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
+			db.User.Username.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch().Take(dweets_to_fetch),
 		).Exec(ctx)

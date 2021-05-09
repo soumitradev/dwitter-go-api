@@ -11,7 +11,7 @@ generator db {
 model User {
     db_id           String   @default(uuid()) @id
 
-    mention         String   @unique @db.VarChar(20)
+    username        String   @unique @db.VarChar(20)
 
     first_name      String   @db.VarChar(40)
     last_name       String   @db.VarChar(40)

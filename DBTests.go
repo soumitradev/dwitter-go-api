@@ -47,7 +47,7 @@ func test() error {
 	// 	panic(err)
 	// }
 
-	// updated_user, err := UpdateUser(createdUser.DbID, createdUser.Mention, createdUser.FirstName, createdUser.LastName, createdUser.Email, "papa peli more liek daddy peli 🥺")
+	// updated_user, err := UpdateUser(createdUser.DbID, createdUser.Username, createdUser.FirstName, createdUser.LastName, createdUser.Email, "papa peli more liek daddy peli 🥺")
 	// if err != nil {
 	// 	panic(err)
 	// }

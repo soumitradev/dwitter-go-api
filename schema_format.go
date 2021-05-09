@@ -107,7 +107,7 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	return BasicUserType{
-		Mention:        user.Mention,
+		Username:       user.Username,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
 		Email:          user.Email,
@@ -145,7 +145,7 @@ func FormatAsUserType(user *db.UserModel) UserType {
 	}
 
 	return UserType{
-		Mention:        user.Mention,
+		Username:       user.Username,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
 		Email:          user.Email,

@@ -32,7 +32,7 @@ func DisconnectDB() {
 func GetUser(userID string) (*db.UserModel, error) {
 	// Get basic User data
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).Exec(ctx)
 	return user, err
 }
@@ -43,7 +43,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 	var err error
 	if dweets_to_fetch < 0 {
 		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
+			db.User.Username.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch(),
 		).Exec(ctx)
@@ -52,7 +52,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 		}
 	} else {
 		user, err = client.User.FindUnique(
-			db.User.Mention.Equals(userID),
+			db.User.Username.Equals(userID),
 		).With(
 			db.User.Dweets.Fetch(),
 		).Exec(ctx)
@@ -66,7 +66,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 func GetUserLikes(userID string) (*db.UserModel, error) {
 	// Get User data with dweets that user liked
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).With(
 		db.User.LikedDweets.Fetch(),
 	).Exec(ctx)
@@ -76,7 +76,7 @@ func GetUserLikes(userID string) (*db.UserModel, error) {
 func GetFollowers(userID string) (*db.UserModel, error) {
 	// Get User data with followers of user
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).With(
 		db.User.Followers.Fetch(),
 	).Exec(ctx)
@@ -86,7 +86,7 @@ func GetFollowers(userID string) (*db.UserModel, error) {
 func GetFollowing(userID string) (*db.UserModel, error) {
 	// Get User data with users that user follows
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
@@ -147,10 +147,10 @@ func GetPostRedweets(postID string, redweets_to_fetch int) (*db.DweetModel, erro
 	return post, err
 }
 
-func NewUser(mention, firstName, lastName, email, bio string) (*db.UserModel, error) {
+func NewUser(username, firstName, lastName, email, bio string) (*db.UserModel, error) {
 	// Create a User
 	createdUser, err := client.User.CreateOne(
-		db.User.Mention.Set(mention),
+		db.User.Username.Set(username),
 		db.User.FirstName.Set(firstName),
 		db.User.LastName.Set(lastName),
 		db.User.Email.Set(email),
@@ -166,7 +166,7 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 	createdPost, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.Mention.Equals(authorID)),
+		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -182,7 +182,7 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 	).Update(
 		db.Dweet.LikeCount.Increment(1),
 		db.Dweet.LikeUsers.Link(
-			db.User.Mention.Equals(userID),
+			db.User.Username.Equals(userID),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -191,7 +191,7 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 
 	// Add post to user's liked dweets
 	_, err = client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).Update(
 		db.User.LikedDweets.Link(
 			db.Dweet.ID.Equals(like.ID),
@@ -220,7 +220,7 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 	createdReply, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.Mention.Equals(user.Mention)),
+		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
 		db.Dweet.ReplyTo.Link(
@@ -265,7 +265,7 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 	createdRedweet, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(post.DweetBody),
 		db.Dweet.ID.Set(genID(8)),
-		db.Dweet.Author.Link(db.User.Mention.Equals(user.Mention)),
+		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
 		db.Dweet.Media.Set(post.Media),
 		db.Dweet.IsRedweet.Set(true),
 		db.Dweet.RedweetOf.Link(
@@ -297,11 +297,11 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 
 	// Add follower to followed's follower list
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(followedID),
+		db.User.Username.Equals(followedID),
 	).Update(
 		db.User.FollowerCount.Increment(1),
 		db.User.Followers.Link(
-			db.User.Mention.Equals(followerID),
+			db.User.Username.Equals(followerID),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -310,23 +310,23 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 
 	// Add followed to follower's following list
 	_, err = client.User.FindUnique(
-		db.User.Mention.Equals(followerID),
+		db.User.Username.Equals(followerID),
 	).Update(
 		db.User.FollowingCount.Increment(1),
 		db.User.Following.Link(
-			db.User.Mention.Equals(followedID),
+			db.User.Username.Equals(followedID),
 		),
 	).Exec(ctx)
 
 	return user, err
 }
 
-func UpdateUser(userID, mention, firstName, lastName, email, bio string) (*db.UserModel, error) {
+func UpdateUser(userID, username, firstName, lastName, email, bio string) (*db.UserModel, error) {
 	// Update a user
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).Update(
-		db.User.Mention.Set(mention),
+		db.User.Username.Set(username),
 		db.User.FirstName.Set(firstName),
 		db.User.LastName.Set(lastName),
 		db.User.Email.Set(email),
@@ -377,7 +377,7 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 
 	// Decrement the follower and following counts
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(followedID),
+		db.User.Username.Equals(followedID),
 	).Update(
 		db.User.FollowerCount.Decrement(1),
 	).Exec(ctx)
@@ -388,7 +388,7 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 	userDBID1 := user.DbID
 
 	other_user, err := client.User.FindUnique(
-		db.User.Mention.Equals(followerID),
+		db.User.Username.Equals(followerID),
 	).Update(
 		db.User.FollowingCount.Decrement(1),
 	).Exec(ctx)
@@ -420,7 +420,7 @@ func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
 	postDBID := post.DbID
 
 	user, err := client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -467,7 +467,7 @@ func DeleteUser(userID string) (*db.UserModel, error) {
 
 	// Delete the user
 	user, err = client.User.FindUnique(
-		db.User.Mention.Equals(userID),
+		db.User.Username.Equals(userID),
 	).Delete().Exec(ctx)
 
 	return user, err

@@ -7,7 +7,7 @@ import (
 )
 
 type BasicUserType struct {
-	Mention        string    `json:"mention"`
+	Username       string    `json:"username"`
 	FirstName      string    `json:"first_name"`
 	LastName       string    `json:"last_name"`
 	Email          string    `json:"email"`
@@ -18,7 +18,7 @@ type BasicUserType struct {
 }
 
 type UserType struct {
-	Mention        string           `json:"mention"`
+	Username       string           `json:"username"`
 	FirstName      string           `json:"first_name"`
 	LastName       string           `json:"last_name"`
 	Email          string           `json:"email"`
@@ -75,7 +75,7 @@ var basicUserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
-			"mention": &graphql.Field{
+			"username": &graphql.Field{
 				Type: graphql.String,
 			},
 			"first_name": &graphql.Field{
@@ -107,7 +107,7 @@ var userSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
-			"mention": &graphql.Field{
+			"username": &graphql.Field{
 				Type: graphql.String,
 			},
 			"first_name": &graphql.Field{

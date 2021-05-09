@@ -27,16 +27,16 @@ var queryHandler = graphql.NewObject(
 			},
 			"user": &graphql.Field{
 				Type:        userSchema,
-				Description: "Get user by mention",
+				Description: "Get user by username",
 				Args: graphql.FieldConfigArgument{
-					"mention": &graphql.ArgumentConfig{
+					"username": &graphql.ArgumentConfig{
 						Type: graphql.String,
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					mention, success := params.Args["mention"].(string)
+					username, success := params.Args["username"].(string)
 					if success {
-						post, err := NoAuthGetUser(mention, 10)
+						post, err := NoAuthGetUser(username, 10)
 						return post, err
 					}
 					return nil, nil
