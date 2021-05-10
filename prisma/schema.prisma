@@ -38,7 +38,7 @@ model Dweet {
     dbID              String   @default(uuid()) @id
     dweetBody         String   @db.VarChar(240)
 
-    ID                String   @unique @db.Char(8)
+    ID                String   @unique @db.Char(10)
 
     author            User     @relation("Dweets", fields: [authorID], references: [dbID])
     authorID          String

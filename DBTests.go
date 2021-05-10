@@ -28,10 +28,15 @@ func test() error {
 		panic(err)
 	}
 
-	// createdLike, err := NewLike(createdPost.ID, createdUser.Username)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	createdLike, err := NewLike(createdPost.ID, createdUser.Username)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = NewLike(createdPost.ID, createdUser.Username)
+	if err != nil {
+		panic(err)
+	}
 
 	// reply, err := NewReply(createdPost.ID, createdUser.Username, "nice dweet", []string{})
 	// if err != nil {
@@ -109,8 +114,8 @@ func test() error {
 	result1, _ := json.MarshalIndent(createdPost, "", "  ")
 	fmt.Printf("Created Post: %s\n", result1)
 
-	// result2, _ := json.MarshalIndent(createdLike, "", "  ")
-	// fmt.Printf("Created Like: %s\n", result2)
+	result2, _ := json.MarshalIndent(createdLike, "", "  ")
+	fmt.Printf("Created Like: %s\n", result2)
 
 	// result5, _ := json.MarshalIndent(reply, "", "  ")
 	// fmt.Printf("Reply Dweet: %s\n", result5)

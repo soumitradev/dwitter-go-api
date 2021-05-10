@@ -166,7 +166,7 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 	// Create a Post
 	createdPost, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
-		db.Dweet.ID.Set(genID(8)),
+		db.Dweet.ID.Set(genID(10)),
 		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
@@ -176,17 +176,42 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 }
 
 func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
+	// Check if user already liked this dweet
+	myUser, err := client.User.FindUnique(
+		db.User.Username.Equals(userID),
+	).With(
+		db.User.LikedDweets.Fetch(
+			db.Dweet.ID.Equals(likedPostID),
+		).With(
+			db.Dweet.Author.Fetch(),
+		),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	// Create a Like on the post
+	increment := 1
+
+	// If yes, then skip liking the dweet
+	if len(myUser.LikedDweets()) > 0 {
+		increment = 0
+	}
+
+	// Create a Like on the post if not created already
 	like, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(likedPostID),
 	).Update(
-		db.Dweet.LikeCount.Increment(1),
+		db.Dweet.LikeCount.Increment(increment),
 		db.Dweet.LikeUsers.Link(
 			db.User.Username.Equals(userID),
 		),
 	).Exec(ctx)
 	if err != nil {
+		return like, err
+	}
+
+	// Return dweet
+	if len(myUser.LikedDweets()) > 0 {
 		return like, err
 	}
 
@@ -220,7 +245,7 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 	// Create a Reply
 	createdReply, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
-		db.Dweet.ID.Set(genID(8)),
+		db.Dweet.ID.Set(genID(10)),
 		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
@@ -265,7 +290,7 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 	// Create a Redweet
 	createdRedweet, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(post.DweetBody),
-		db.Dweet.ID.Set(genID(8)),
+		db.Dweet.ID.Set(genID(10)),
 		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
 		db.Dweet.Media.Set(post.Media),
 		db.Dweet.IsRedweet.Set(true),

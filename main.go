@@ -1,20 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
 )
 
 // func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
-// 	ctx := context.WithValue(context.Background(), "token", request.URL.Query().Get("token"))
+// 	// ctx := context.WithValue(context.Background(), "token", request.URL.Query().Get("token"))
 // 	res := graphql.Do(graphql.Params{
 // 		Schema:        schema,
 // 		RequestString: query,
@@ -27,7 +32,22 @@ import (
 // 	return res
 // }
 
+type ContextKey string
+
+type MyResponseWriter struct {
+	http.ResponseWriter
+	buf *bytes.Buffer
+}
+
 func main() {
+
+	// re, err := regexp.Compile(`\{"q`)
+	re, err := regexp.Compile(`(mutation\{login\(username:"|",password:"|"\)\{AccessToken\}\})`)
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+
 	if SchemaError != nil {
 		// Check for an error in schema at runtime
 		panic(SchemaError)
@@ -44,21 +64,70 @@ func main() {
 
 	defer DisconnectDB()
 
-	// router := mux.NewRouter()
+	router := mux.NewRouter()
 
 	h := handler.New(&handler.Config{
 		Schema:     &schema,
 		Pretty:     true,
 		GraphiQL:   false,
 		Playground: true,
+		RootObjectFn: func(myCtx context.Context, r *http.Request) map[string]interface{} {
+			myCtx = context.WithValue(myCtx, ContextKey("token"), r.URL.Query().Get("token"))
+			return map[string]interface{}{
+				"context": myCtx,
+			}
+		},
 	})
 
-	http.Handle("/graphql", httpHeaderMiddleware(h))
+	// router.Handle("/graphql", httpHeaderMiddleware(h))
 
-	// router.Handle("/graphql", h)
+	router.HandleFunc("/graphql", func(w http.ResponseWriter, req *http.Request) {
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			log.Printf("Error reading body: %v", err)
+			http.Error(w, "can't read body", http.StatusBadRequest)
+			return
+		}
+
+		strBody := string(body)
+
+		var result map[string]string
+		json.Unmarshal([]byte(strBody), &result)
+
+		queryText := result["query"]
+
+		regexRes := re.Split(queryText, -1)
+
+		user := regexRes[1]
+		pass := regexRes[2]
+
+		auth, _ := CheckCreds(user, pass)
+		if auth {
+			refTok, _ := RefreshToken(user)
+			c := http.Cookie{
+				Name:     "jid",
+				Value:    refTok,
+				HttpOnly: true,
+				Secure:   true,
+			}
+			http.SetCookie(w, &c)
+		}
+
+		// And now set a new body, which will simulate the same data we read:
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		// Create a response wrapper:
+		mrw := &MyResponseWriter{
+			ResponseWriter: w,
+			buf:            &bytes.Buffer{},
+		}
+
+		h.ContextHandler(req.Context(), mrw, req)
+		// req.Context()
+	})
 
 	srv := &http.Server{
-		Handler: h,
+		Handler: router,
 		Addr:    "127.0.0.1:5000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
@@ -71,6 +140,7 @@ func main() {
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
+			log.Println()
 			log.Println(err)
 		}
 	}()
@@ -94,6 +164,6 @@ func main() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	log.Println("\nShutting down")
+	log.Println("Shutting down")
 	os.Exit(0)
 }

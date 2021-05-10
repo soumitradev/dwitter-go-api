@@ -97,11 +97,9 @@ var mutationHandler = graphql.NewObject(
 						params.Args["username"].(string),
 						params.Args["password"].(string),
 					)
-
 					if err != nil {
 						return nil, err
 					}
-
 					return user, nil
 				},
 			},

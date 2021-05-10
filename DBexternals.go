@@ -146,25 +146,33 @@ func SignUpUser(username string, password string, firstName string, email string
 	return nuser, err
 }
 
-func LoginUser(username string, password string) (LoginResponse, error) {
+func CheckCreds(username string, password string) (bool, error) {
+
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).Exec(ctx)
 	if err != nil {
-		return LoginResponse{}, errors.New("user not found")
+		return false, errors.New("user not found")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return LoginResponse{}, errors.New("invalid password")
+		return false, errors.New("invalid password")
 	}
+	return true, nil
+}
 
-	JWT, err := CreateToken(username)
-	if err != nil {
-		return LoginResponse{}, errors.New("internal server error while authenticating")
+func LoginUser(username string, password string) (LoginResponse, error) {
+	authenticated, authErr := CheckCreds(username, password)
+	if authenticated {
+		JWT, err := CreateToken(username)
+		if err != nil {
+			return LoginResponse{}, errors.New("internal server error while authenticating")
+		}
+
+		return LoginResponse{
+			AccessToken: JWT,
+		}, err
 	}
-
-	return LoginResponse{
-		AccessToken: JWT,
-	}, err
+	return LoginResponse{}, authErr
 }
