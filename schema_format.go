@@ -104,15 +104,19 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 	// Nil values like relations, and non-present values like DB_ID are causing issues.
+	lastName, exists := user.LastName()
+	if !exists {
+		lastName = ""
+	}
 	return BasicUserType{
 		Username:       user.Username,
 		FirstName:      user.FirstName,
-		LastName:       user.LastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		CreatedAt:      user.CreatedAt,
+		LastName:       lastName,
 	}
 }
 
@@ -141,11 +145,15 @@ func FormatAsUserType(user *db.UserModel) UserType {
 	for i := 0; i < len(following_db_schema); i++ {
 		following = append(following, FormatAsBasicUserType(&following_db_schema[i]))
 	}
+	lastName, exists := user.LastName()
+	if !exists {
+		lastName = ""
+	}
 
 	return UserType{
 		Username:       user.Username,
 		FirstName:      user.FirstName,
-		LastName:       user.LastName,
+		LastName:       lastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		Dweets:         dweets,
@@ -166,10 +174,15 @@ func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
 	}
 
+	lastName, exists := user.LastName()
+	if !exists {
+		lastName = ""
+	}
+
 	return UserType{
 		Username:       user.Username,
 		FirstName:      user.FirstName,
-		LastName:       user.LastName,
+		LastName:       lastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		Dweets:         dweets,

@@ -13,7 +13,7 @@ var queryHandler = graphql.NewObject(
 				Description: "Get dweet by id",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
+						Type: graphql.NewNonNull(graphql.String),
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -30,12 +30,12 @@ var queryHandler = graphql.NewObject(
 				Description: "Get user by username",
 				Args: graphql.FieldConfigArgument{
 					"username": &graphql.ArgumentConfig{
-						Type: graphql.String,
+						Type: graphql.NewNonNull(graphql.String),
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					username, success := params.Args["username"].(string)
-					if success {
+					username, present := params.Args["username"].(string)
+					if present {
 						post, err := NoAuthGetUser(username, 10)
 						return post, err
 					}
@@ -46,16 +46,48 @@ var queryHandler = graphql.NewObject(
 	},
 )
 
-// var mutationHandler = graphql.NewObject(
-// 	graphql.ObjectConfig{
-// 		Name:   "Mutation",
-// 		Fields: graphql.Field{},
-// 	},
-// )
+var mutationHandler = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"createUser": &graphql.Field{
+				Type:        userSchema,
+				Description: "Create a user",
+				Args: graphql.FieldConfigArgument{
+					"username": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"password": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"firstName": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"email": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					user, err := SignUpUser(
+						params.Args["username"].(string),
+						params.Args["password"].(string),
+						params.Args["firstName"].(string),
+						params.Args["email"].(string),
+					)
+					if err != nil {
+						return nil, err
+					}
+
+					return user, nil
+				},
+			},
+		},
+	},
+)
 
 var schema, SchemaError = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query: queryHandler,
-		// Mutation: mutationHandler,
+		Query:    queryHandler,
+		Mutation: mutationHandler,
 	},
 )

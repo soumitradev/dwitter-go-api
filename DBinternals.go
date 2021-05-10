@@ -147,15 +147,16 @@ func GetPostRedweets(postID string, redweets_to_fetch int) (*db.DweetModel, erro
 	return post, err
 }
 
-func NewUser(username, firstName, lastName, email, bio string) (*db.UserModel, error) {
+func NewUser(username, passwordHash, firstName, lastName, email, bio string) (*db.UserModel, error) {
 	// Create a User
 	createdUser, err := client.User.CreateOne(
 		db.User.Username.Set(username),
+		db.User.PasswordHash.Set(passwordHash),
 		db.User.FirstName.Set(firstName),
-		db.User.LastName.Set(lastName),
 		db.User.Email.Set(email),
 		db.User.Bio.Set(bio),
 		db.User.CreatedAt.Set(time.Now()),
+		db.User.LastName.Set(lastName),
 	).Exec(ctx)
 	return createdUser, err
 }

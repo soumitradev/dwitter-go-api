@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func runDBTests() {
@@ -12,7 +14,11 @@ func runDBTests() {
 func test() error {
 	// Bunch of Testing BS, Comment and uncomment based on what you want to test
 
-	createdUser, err := NewUser("PyRet", "Py", "Ret", "pyret@gmail.com", "le bio")
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte("pisscock"), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	createdUser, err := NewUser("PyRet", string(passwordHash), "Py", "Ret", "pyret@gmail.com", "le bio")
 	if err != nil {
 		panic(err)
 	}

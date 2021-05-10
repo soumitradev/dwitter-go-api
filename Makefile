@@ -2,7 +2,7 @@ run: migrate
 	go run .
 
 migrate: clean
-	go run github.com/prisma/prisma-client-go db push --preview-feature
+	go run github.com/prisma/prisma-client-go db push
 	go run github.com/prisma/prisma-client-go generate
 
 clean:
