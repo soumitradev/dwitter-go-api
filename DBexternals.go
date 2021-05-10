@@ -2,6 +2,7 @@ package main
 
 import (
 	"dwitter_go_graphql/prisma/db"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -131,11 +132,6 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 }
 
 func SignUpUser(username string, password string, firstName string, email string) (BasicUserType, error) {
-	// When viewing a User (when not logged in):
-	// - I need their basic info: Bio, Name, username
-	// - Followers and Following counts
-	// - Some of their Dweets (more can be loaded later on scrolling)
-
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		panic(err)
@@ -148,4 +144,27 @@ func SignUpUser(username string, password string, firstName string, email string
 
 	nuser := FormatAsBasicUserType(user)
 	return nuser, err
+}
+
+func LoginUser(username string, password string) (LoginResponse, error) {
+	user, err := client.User.FindUnique(
+		db.User.Username.Equals(username),
+	).Exec(ctx)
+	if err != nil {
+		return LoginResponse{}, errors.New("user not found")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return LoginResponse{}, errors.New("invalid password")
+	}
+
+	JWT, err := CreateToken(username)
+	if err != nil {
+		return LoginResponse{}, errors.New("internal server error while authenticating")
+	}
+
+	return LoginResponse{
+		AccessToken: JWT,
+	}, err
 }

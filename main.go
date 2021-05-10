@@ -10,23 +10,22 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
 
-func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
-	// fmt.Printf("Query: %v\n", query)
-	// fmt.Printf("Schema: %v\n", schema)
-	res := graphql.Do(graphql.Params{
-		Schema:        schema,
-		RequestString: query,
-	})
-	// fmt.Printf("Result: %v\n", res)
-	if len(res.Errors) > 0 {
-		fmt.Printf("Errors: %v\n", res.Errors)
-	}
-	return res
-}
+// func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
+// 	ctx := context.WithValue(context.Background(), "token", request.URL.Query().Get("token"))
+// 	res := graphql.Do(graphql.Params{
+// 		Schema:        schema,
+// 		RequestString: query,
+// 		Context:       ctx,
+// 	})
+
+// 	if len(res.Errors) > 0 {
+// 		fmt.Printf("Errors: %v\n", res.Errors)
+// 	}
+// 	return res
+// }
 
 func main() {
 	if SchemaError != nil {
@@ -48,12 +47,13 @@ func main() {
 	// router := mux.NewRouter()
 
 	h := handler.New(&handler.Config{
-		Schema:   &schema,
-		Pretty:   true,
-		GraphiQL: true,
+		Schema:     &schema,
+		Pretty:     true,
+		GraphiQL:   false,
+		Playground: true,
 	})
 
-	http.Handle("/graphql", h)
+	http.Handle("/graphql", httpHeaderMiddleware(h))
 
 	// router.Handle("/graphql", h)
 

@@ -81,6 +81,30 @@ var mutationHandler = graphql.NewObject(
 					return user, nil
 				},
 			},
+			"login": &graphql.Field{
+				Type:        loginResponseSchema,
+				Description: "Log into Dwitter",
+				Args: graphql.FieldConfigArgument{
+					"username": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"password": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					user, err := LoginUser(
+						params.Args["username"].(string),
+						params.Args["password"].(string),
+					)
+
+					if err != nil {
+						return nil, err
+					}
+
+					return user, nil
+				},
+			},
 		},
 	},
 )
