@@ -101,6 +101,74 @@ func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 	return npost, err
 }
 
+// Get dweet when authenticated
+func AuthGetPost(postID string, replies_to_fetch int, viewUserID string) (DweetType, error) {
+	// When viewing a Dweet (when not logged in):
+	// - I need the basic dweet info: Body, Author
+	// - Likes, Redweets and reply counts
+	// - Some replies (more can be loaded on scrolling)
+
+	// Get your own following-list
+	viewUser, err := client.User.FindUnique(
+		db.User.Username.Equals(viewUserID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	following := viewUser.Following()
+
+	var post *db.DweetModel
+
+	// Fetch the user requested with like_users so we see who liked the dweet
+	if replies_to_fetch < 0 {
+		post, err = client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(postID),
+		).With(
+			db.Dweet.Author.Fetch(),
+			db.Dweet.ReplyDweets.Fetch(),
+			db.Dweet.ReplyTo.Fetch(),
+			db.Dweet.RedweetOf.Fetch(),
+			db.Dweet.LikeUsers.Fetch(),
+		).Exec(ctx)
+	} else {
+		post, err = client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(postID),
+		).With(
+			db.Dweet.Author.Fetch(),
+			db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch),
+			db.Dweet.ReplyTo.Fetch(),
+			db.Dweet.RedweetOf.Fetch(),
+			db.Dweet.LikeUsers.Fetch(),
+		).Exec(ctx)
+	}
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	// If the dweet is liked by requesting user, include the requesting user in the like_users list
+	likes := post.LikeUsers()
+	selfLike := false
+	for _, user := range likes {
+		if user.Username == viewUserID {
+			selfLike = true
+		}
+	}
+	// Find known people that liked thw dweet
+	mutuals := HashIntersectUsers(likes, following)
+
+	// Add requesting user to like_users list
+	if selfLike {
+		mutuals = append(mutuals, *viewUser)
+	}
+
+	// Send back the dweet requested, along with like_users
+	npost := AuthFormatAsDweetType(post, mutuals)
+	return npost, err
+}
+
 // Get user when not authenticated
 func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	// When viewing a User (when not logged in):
@@ -128,8 +196,63 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 			),
 		).Exec(ctx)
 	}
+	if err != nil {
+		return UserType{}, err
+	}
 
 	nuser := NoAuthFormatAsUserType(user)
+	return nuser, err
+}
+
+// Get user when authenticated
+func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserType, error) {
+	// When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
+
+	// Get your own following-list
+	viewUser, err := client.User.FindUnique(
+		db.User.Username.Equals(viewUserID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return UserType{}, err
+	}
+
+	following := viewUser.Following()
+
+	var user *db.UserModel
+
+	// Fetch the user requested with followers so we get the mutuals
+	if dweets_to_fetch < 0 {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.User.Followers.Fetch(),
+		).Exec(ctx)
+	} else {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Dweets.Fetch().Take(dweets_to_fetch).With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.User.Followers.Fetch(),
+		).Exec(ctx)
+	}
+
+	if err != nil {
+		return UserType{}, err
+	}
+
+	// Get mutuals
+	followers := user.Followers()
+	mutuals := HashIntersectUsers(followers, following)
+
+	// Send back the user requested, along with mutuals in the followers field
+	nuser := AuthFormatAsUserType(user, mutuals)
 	return nuser, err
 }
 

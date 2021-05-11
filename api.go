@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/graphql-go/graphql"
 )
@@ -20,12 +20,28 @@ var queryHandler = graphql.NewObject(
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					id, success := params.Args["id"].(string)
-					if success {
-						post, err := NoAuthGetPost(id, 10)
-						return post, err
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, isAuth, err := VerifyToken(tokenString)
+					if err != nil {
+						return nil, err
 					}
-					return nil, nil
+
+					if isAuth {
+						id, present := params.Args["id"].(string)
+						if present {
+							post, err := AuthGetPost(id, 10, data["username"].(string))
+							return post, err
+						}
+					} else {
+
+						id, present := params.Args["id"].(string)
+						if present {
+							post, err := NoAuthGetPost(id, 10)
+							return post, err
+						}
+					}
+
+					return nil, errors.New("param \"username\" missing")
 				},
 			},
 			"user": &graphql.Field{
@@ -37,12 +53,28 @@ var queryHandler = graphql.NewObject(
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					username, present := params.Args["username"].(string)
-					if present {
-						post, err := NoAuthGetUser(username, 10)
-						return post, err
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, isAuth, err := VerifyToken(tokenString)
+					if err != nil {
+						return nil, err
 					}
-					return nil, nil
+
+					if isAuth {
+						username, present := params.Args["username"].(string)
+						if present {
+							user, err := AuthGetUser(username, 10, data["username"].(string))
+							return user, err
+						}
+					} else {
+
+						username, present := params.Args["username"].(string)
+						if present {
+							user, err := NoAuthGetUser(username, 10)
+							return user, err
+						}
+					}
+
+					return nil, errors.New("param \"username\" missing")
 				},
 			},
 		},
@@ -85,18 +117,19 @@ var mutationHandler = graphql.NewObject(
 					return user, nil
 				},
 			},
-			"authTest": &graphql.Field{
-				Type:        graphql.String,
-				Description: "Log into Dwitter",
-				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, err := VerifyToken(tokenString)
-					if err != nil {
-						return nil, err
-					}
-					return fmt.Sprintf("Username: %v", data["username"]), err
-				},
-			},
+			// "authTest": &graphql.Field{
+			// 	Type:        graphql.String,
+			// 	Description: "Log into Dwitter",
+			// 	Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			// 		// tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+			// 		// data, _, err := VerifyToken(tokenString)
+			// 		// if err != nil {
+			// 		// 	return nil, err
+			// 		// }
+			// 		// return fmt.Sprintf("Username: %v", data["username"]), err
+			// 		return nil, nil
+			// 	},
+			// },
 		},
 	},
 )

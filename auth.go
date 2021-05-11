@@ -100,7 +100,7 @@ func GenerateTokens(username string, password string) (TokenType, error) {
 }
 
 // Verify an Access Token
-func VerifyToken(tokenString string) (jwt.MapClaims, error) {
+func VerifyToken(tokenString string) (jwt.MapClaims, bool, error) {
 	// Validate token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
@@ -111,7 +111,7 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	})
 
 	if err != nil {
-		return jwt.MapClaims{}, fmt.Errorf("authentication error: %v", err)
+		return jwt.MapClaims{}, false, fmt.Errorf("authentication error: %v", err)
 	}
 
 	// Extract metadata from token
@@ -121,11 +121,11 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 		// Check for username field
 		_, ok := claims["username"].(string)
 		if !ok {
-			return jwt.MapClaims{}, errors.New("field username not found in authorization token")
+			return jwt.MapClaims{}, false, errors.New("field username not found in authorization token")
 		}
-		return claims, nil
+		return claims, true, nil
 	} else {
-		return jwt.MapClaims{}, errors.New("unauthorized")
+		return jwt.MapClaims{}, false, errors.New("unauthorized")
 	}
 }
 

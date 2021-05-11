@@ -23,6 +23,16 @@ func test() error {
 		panic(err)
 	}
 
+	vaush, err := NewUser("Vowsh", string(passwordHash), "Vaush", "Vidya", "vaush@gmail.com", "politix")
+	if err != nil {
+		panic(err)
+	}
+
+	azan, err := NewUser("AZAN", string(passwordHash), "Hassoni", "Baba", "azan@gmail.com", "azan? PogO")
+	if err != nil {
+		panic(err)
+	}
+
 	createdPost, err := NewDweet("just setting up my dwttr", createdUser.Username, []string{})
 	if err != nil {
 		panic(err)
@@ -33,7 +43,22 @@ func test() error {
 		panic(err)
 	}
 
-	_, err = NewLike(createdPost.ID, createdUser.Username)
+	_, err = NewLike(createdPost.ID, azan.Username)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = NewFollower(azan.Username, vaush.Username)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = NewFollower(vaush.Username, createdUser.Username)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = NewLike(createdPost.ID, vaush.Username)
 	if err != nil {
 		panic(err)
 	}
