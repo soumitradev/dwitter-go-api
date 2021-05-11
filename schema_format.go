@@ -5,8 +5,6 @@ import (
 )
 
 func FormatAsBasicDweetType(dweet *db.DweetModel) BasicDweetType {
-
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	reply_id, present := dweet.OriginalReplyID()
 	if !present {
 		reply_id = ""
@@ -34,7 +32,6 @@ func FormatAsBasicDweetType(dweet *db.DweetModel) BasicDweetType {
 }
 
 func FormatAsDweetType(dweet *db.DweetModel) DweetType {
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	author := FormatAsBasicUserType(dweet.Author())
 
 	var like_users []BasicUserType
@@ -103,7 +100,6 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 }
 
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	lastName, exists := user.LastName()
 	if !exists {
 		lastName = ""
@@ -121,7 +117,6 @@ func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 }
 
 func FormatAsUserType(user *db.UserModel) UserType {
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	var dweets []BasicDweetType
 	dweets_db_schema := user.Dweets()
 	for i := 0; i < len(dweets_db_schema); i++ {
@@ -167,7 +162,6 @@ func FormatAsUserType(user *db.UserModel) UserType {
 }
 
 func NoAuthFormatAsUserType(user *db.UserModel) UserType {
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	var dweets []BasicDweetType
 	dweets_db_schema := user.Dweets()
 	for i := 0; i < len(dweets_db_schema); i++ {
@@ -193,7 +187,6 @@ func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 }
 
 func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
-	// Nil values like relations, and non-present values like DB_ID are causing issues.
 	author := FormatAsBasicUserType(dweet.Author())
 
 	reply_id, present := dweet.OriginalReplyID()

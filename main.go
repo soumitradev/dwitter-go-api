@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -32,100 +28,54 @@ import (
 // 	return res
 // }
 
-type ContextKey string
-
-type MyResponseWriter struct {
-	http.ResponseWriter
-	buf *bytes.Buffer
-}
-
 func main() {
-
-	// re, err := regexp.Compile(`\{"q`)
-	re, err := regexp.Compile(`(mutation\{login\(username:"|",password:"|"\)\{AccessToken\}\})`)
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-
 	if SchemaError != nil {
 		// Check for an error in schema at runtime
 		panic(SchemaError)
 	}
 
+	// Set flag for timeout to close all connections before quitting
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	// Seed the random function
 	initRandom()
-	ConnectDB()
 
+	// Connect to database, and seed the database
+	ConnectDB()
 	runDBTests()
 
+	// When returning from main(), make sure to disconnect from database
 	defer DisconnectDB()
 
+	// Create a new router
 	router := mux.NewRouter()
 
+	// Create a graphql query handler
 	h := handler.New(&handler.Config{
 		Schema:     &schema,
 		Pretty:     true,
 		GraphiQL:   false,
 		Playground: true,
+		// This is a way to pass context about the request into the resolver function of graphql
 		RootObjectFn: func(myCtx context.Context, r *http.Request) map[string]interface{} {
-			myCtx = context.WithValue(myCtx, ContextKey("token"), r.URL.Query().Get("token"))
+			// Pass down the authorization token to the graphql query
+			auth := r.Header.Get("authorization")
+			tokenString := SplitAuthToken(auth)
 			return map[string]interface{}{
-				"context": myCtx,
+				"token": tokenString,
 			}
 		},
 	})
 
-	// router.Handle("/graphql", httpHeaderMiddleware(h))
+	// Map /graphql to the graphql handler, and attach a middleware to it
+	router.Handle("/graphql", customMiddleware(h))
 
-	router.HandleFunc("/graphql", func(w http.ResponseWriter, req *http.Request) {
-		body, err := ioutil.ReadAll(req.Body)
-		if err != nil {
-			log.Printf("Error reading body: %v", err)
-			http.Error(w, "can't read body", http.StatusBadRequest)
-			return
-		}
+	// Handle login using a non-GraphQL solution
+	router.HandleFunc("/login", loginHandler).Methods("POST")
 
-		strBody := string(body)
-
-		var result map[string]string
-		json.Unmarshal([]byte(strBody), &result)
-
-		queryText := result["query"]
-
-		regexRes := re.Split(queryText, -1)
-
-		user := regexRes[1]
-		pass := regexRes[2]
-
-		auth, _ := CheckCreds(user, pass)
-		if auth {
-			refTok, _ := RefreshToken(user)
-			c := http.Cookie{
-				Name:     "jid",
-				Value:    refTok,
-				HttpOnly: true,
-				Secure:   true,
-			}
-			http.SetCookie(w, &c)
-		}
-
-		// And now set a new body, which will simulate the same data we read:
-		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-
-		// Create a response wrapper:
-		mrw := &MyResponseWriter{
-			ResponseWriter: w,
-			buf:            &bytes.Buffer{},
-		}
-
-		h.ContextHandler(req.Context(), mrw, req)
-		// req.Context()
-	})
-
+	// Create an HTTP server
 	srv := &http.Server{
 		Handler: router,
 		Addr:    "127.0.0.1:5000",
@@ -134,7 +84,6 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
-
 	fmt.Println("Server now running on port 5000, access /graphql")
 
 	// Run our server in a goroutine so that it doesn't block.

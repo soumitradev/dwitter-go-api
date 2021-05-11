@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/graphql-go/graphql"
 )
 
+// Create a handler that handles graphql queries
 var queryHandler = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
@@ -46,6 +49,7 @@ var queryHandler = graphql.NewObject(
 	},
 )
 
+// Create a handler that handles graphql mutations
 var mutationHandler = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Mutation",
@@ -81,32 +85,23 @@ var mutationHandler = graphql.NewObject(
 					return user, nil
 				},
 			},
-			"login": &graphql.Field{
-				Type:        loginResponseSchema,
+			"authTest": &graphql.Field{
+				Type:        graphql.String,
 				Description: "Log into Dwitter",
-				Args: graphql.FieldConfigArgument{
-					"username": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-					"password": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					user, err := LoginUser(
-						params.Args["username"].(string),
-						params.Args["password"].(string),
-					)
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, err := VerifyToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
-					return user, nil
+					return fmt.Sprintf("Username: %v", data["username"]), err
 				},
 			},
 		},
 	},
 )
 
+// Create schema from handlers
 var schema, SchemaError = graphql.NewSchema(
 	graphql.SchemaConfig{
 		Query:    queryHandler,

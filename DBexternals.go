@@ -68,6 +68,7 @@ Here, we have 4 buttons:
 
 */
 
+// Get dweet when not authenticated
 func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
@@ -100,6 +101,7 @@ func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 	return npost, err
 }
 
+// Get user when not authenticated
 func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	// When viewing a User (when not logged in):
 	// - I need their basic info: Bio, Name, username
@@ -131,6 +133,7 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	return nuser, err
 }
 
+// Create a User
 func SignUpUser(username string, password string, firstName string, email string) (BasicUserType, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -146,8 +149,8 @@ func SignUpUser(username string, password string, firstName string, email string
 	return nuser, err
 }
 
+// Check given credentials and return true if valid
 func CheckCreds(username string, password string) (bool, error) {
-
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).Exec(ctx)
@@ -160,19 +163,4 @@ func CheckCreds(username string, password string) (bool, error) {
 		return false, errors.New("invalid password")
 	}
 	return true, nil
-}
-
-func LoginUser(username string, password string) (LoginResponse, error) {
-	authenticated, authErr := CheckCreds(username, password)
-	if authenticated {
-		JWT, err := CreateToken(username)
-		if err != nil {
-			return LoginResponse{}, errors.New("internal server error while authenticating")
-		}
-
-		return LoginResponse{
-			AccessToken: JWT,
-		}, err
-	}
-	return LoginResponse{}, authErr
 }

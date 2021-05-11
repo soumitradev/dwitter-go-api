@@ -12,8 +12,8 @@ var client *db.PrismaClient
 
 var ctx context.Context
 
+// Connect to the database using prisma
 func ConnectDB() {
-	// Connect to the database using prisma
 	client = db.NewClient()
 	if err := client.Prisma.Connect(); err != nil {
 		panic(err)
@@ -22,23 +22,23 @@ func ConnectDB() {
 	ctx = context.Background()
 }
 
+// Disconnect from DB
 func DisconnectDB() {
-	// Disconnect from DB
 	if err := client.Prisma.Disconnect(); err != nil {
 		panic(err)
 	}
 }
 
+// Get basic User data
 func GetUser(userID string) (*db.UserModel, error) {
-	// Get basic User data
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).Exec(ctx)
 	return user, err
 }
 
+// Get User data with dweets of user
 func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
-	// Get User data with dweets of user
 	var user *db.UserModel
 	var err error
 	if dweets_to_fetch < 0 {
@@ -63,8 +63,8 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 	return user, err
 }
 
+// Get User data with dweets that user liked
 func GetUserLikes(userID string) (*db.UserModel, error) {
-	// Get User data with dweets that user liked
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).With(
@@ -73,8 +73,8 @@ func GetUserLikes(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
+// Get User data with followers of user
 func GetFollowers(userID string) (*db.UserModel, error) {
-	// Get User data with followers of user
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).With(
@@ -83,8 +83,8 @@ func GetFollowers(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
+// Get User data with users that user follows
 func GetFollowing(userID string) (*db.UserModel, error) {
-	// Get User data with users that user follows
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).With(
@@ -93,16 +93,16 @@ func GetFollowing(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
+// Get Replies to post
 func GetPostBasic(postID string) (*db.DweetModel, error) {
-	// Get Replies to post
 	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).Exec(ctx)
 	return post, err
 }
 
+// Get Replies to post
 func GetPostReplies(postID string, replies_to_fetch int) (*db.DweetModel, error) {
-	// Get Replies to post
 	var post *db.DweetModel
 	var err error
 	if replies_to_fetch < 0 {
@@ -127,8 +127,8 @@ func GetPostReplies(postID string, replies_to_fetch int) (*db.DweetModel, error)
 	return post, err
 }
 
+// Get redweets of post
 func GetPostRedweets(postID string, redweets_to_fetch int) (*db.DweetModel, error) {
-	// Get redweets of post
 	var post *db.DweetModel
 	var err error
 	if redweets_to_fetch < 0 {
@@ -147,8 +147,8 @@ func GetPostRedweets(postID string, redweets_to_fetch int) (*db.DweetModel, erro
 	return post, err
 }
 
+// Create a User
 func NewUser(username, passwordHash, firstName, lastName, email, bio string) (*db.UserModel, error) {
-	// Create a User
 	createdUser, err := client.User.CreateOne(
 		db.User.Username.Set(username),
 		db.User.PasswordHash.Set(passwordHash),
@@ -161,9 +161,9 @@ func NewUser(username, passwordHash, firstName, lastName, email, bio string) (*d
 	return createdUser, err
 }
 
+// Create a Post
 func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error) {
 	now := time.Now()
-	// Create a Post
 	createdPost, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(10)),
@@ -175,8 +175,8 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 	return createdPost, err
 }
 
+// Check if user already liked this dweet
 func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
-	// Check if user already liked this dweet
 	myUser, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).With(
@@ -227,9 +227,8 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 	return like, err
 }
 
+// Create a reply to a post
 func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.DweetModel, error) {
-	// Create a reply to a post
-
 	now := time.Now()
 	// Get post and user
 	post, err := GetPostBasic(originalPostID)
@@ -272,9 +271,8 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 	return createdReply, err
 }
 
+// Create a new Redweet of a Dweet
 func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
-	// Create a new Redweet of a Dweet
-
 	now := time.Now()
 	// Get post and user
 	post, err := GetPostBasic(originalPostID)
@@ -318,9 +316,8 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 	return createdRedweet, err
 }
 
+// Create a follower relation
 func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
-	// Create a follower relation
-
 	// Add follower to followed's follower list
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -347,8 +344,8 @@ func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
 	return user, err
 }
 
+// Update a user
 func UpdateUser(userID, username, firstName, lastName, email, bio string) (*db.UserModel, error) {
-	// Update a user
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).Update(
@@ -362,8 +359,8 @@ func UpdateUser(userID, username, firstName, lastName, email, bio string) (*db.U
 	return user, err
 }
 
+// Update a dweet
 func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, error) {
-	// Update a dweet
 	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
@@ -398,9 +395,8 @@ func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, erro
 	return post, err
 }
 
+// Delete a follower relation
 func DeleteFollower(followedID string, followerID string) (*db.UserModel, error) {
-	// Delete a follower relation
-
 	// Decrement the follower and following counts
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -431,9 +427,8 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 	return user, err
 }
 
+// Remove a like from a post
 func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
-	// Remove a like from a post
-
 	// Find the post and decrease its likes by 1
 	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
@@ -460,9 +455,8 @@ func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
 	return post, err
 }
 
+// Delete a User
 func DeleteUser(userID string) (*db.UserModel, error) {
-	// Delete a User
-
 	// Get all the user's Dweets (we must delete these first since they depend on the User, and deleting the User first will render the DB invalid)
 	user, err := GetUserDweets(userID, -1)
 	if err != nil {
@@ -499,9 +493,8 @@ func DeleteUser(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
+// Delete a Dweet
 func DeleteDweet(postID string) (*db.DweetModel, error) {
-	// Delete a Dweet
-
 	// Get all the replies to the post (these need to be deleted first since they depend on the root Dweet)
 	post, err := GetPostBasic(postID)
 	if err != nil {
@@ -537,9 +530,8 @@ func DeleteDweet(postID string) (*db.DweetModel, error) {
 	return post, err
 }
 
+// Remove a Redweet
 func DeleteRedweet(postID string) (*db.DweetModel, error) {
-	// Remove a Redweet
-
 	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
 	post, err := GetPostBasic(postID)
 	if err != nil {

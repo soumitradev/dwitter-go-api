@@ -6,6 +6,8 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+// Create Go structs and GraphQL objects for types
+
 type BasicUserType struct {
 	Username       string    `json:"username"`
 	FirstName      string    `json:"first_name"`
@@ -70,21 +72,6 @@ type DweetType struct {
 	RedweetDweets     []BasicDweetType `json:"redweet_dweets"`
 	Media             []string         `json:"media"`
 }
-
-type LoginResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
-var loginResponseSchema = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "LoginResponse",
-		Fields: graphql.Fields{
-			"AccessToken": &graphql.Field{
-				Type: graphql.String,
-			},
-		},
-	},
-)
 
 var basicUserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
