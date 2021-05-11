@@ -69,7 +69,6 @@ type DweetType struct {
 	OriginalRedweetID string           `json:"original_redweet_id"`
 	RedweetOf         BasicDweetType   `json:"redweet_of"`
 	RedweetCount      int              `json:"redweet_count"`
-	RedweetDweets     []BasicDweetType `json:"redweet_dweets"`
 	Media             []string         `json:"media"`
 }
 
@@ -253,9 +252,6 @@ var dweetSchema = graphql.NewObject(
 			},
 			"redweet_count": &graphql.Field{
 				Type: graphql.Int,
-			},
-			"redweet_dweets": &graphql.Field{
-				Type: graphql.NewList(basicDweetSchema),
 			},
 			"media": &graphql.Field{
 				Type: graphql.NewList(graphql.String),

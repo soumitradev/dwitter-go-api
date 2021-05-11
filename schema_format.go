@@ -70,12 +70,6 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		reply_dweets = append(reply_dweets, FormatAsBasicDweetType(&reply_dweets_db_schema[i]))
 	}
 
-	var redweet_dweets []BasicDweetType
-	redweet_dweets_db_schema := dweet.ReplyDweets()
-	for i := 0; i < len(redweet_dweets_db_schema); i++ {
-		reply_dweets = append(reply_dweets, FormatAsBasicDweetType(&redweet_dweets_db_schema[i]))
-	}
-
 	return DweetType{
 		DweetBody:         dweet.DweetBody,
 		ID:                dweet.ID,
@@ -94,7 +88,6 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		OriginalRedweetID: redweet_id,
 		RedweetOf:         redweet_of,
 		RedweetCount:      dweet.RedweetCount,
-		RedweetDweets:     redweet_dweets,
 		Media:             dweet.Media,
 	}
 }
@@ -268,7 +261,6 @@ func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 		OriginalRedweetID: redweet_id,
 		RedweetOf:         redweet_of,
 		RedweetCount:      dweet.RedweetCount,
-		RedweetDweets:     []BasicDweetType{},
 		Media:             dweet.Media,
 	}
 }
@@ -329,7 +321,6 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 		OriginalRedweetID: redweet_id,
 		RedweetOf:         redweet_of,
 		RedweetCount:      dweet.RedweetCount,
-		RedweetDweets:     []BasicDweetType{},
 		Media:             dweet.Media,
 	}
 }

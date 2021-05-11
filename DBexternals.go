@@ -3,6 +3,7 @@ package main
 import (
 	"dwitter_go_graphql/prisma/db"
 	"errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -66,6 +67,10 @@ Here, we have 4 buttons:
 - Following (to view people that you follow)
 - Edit Profile button to update the user
 
+Additionally, you can:
+- Delete a user
+- Delete a dweet
+
 */
 
 // Get dweet when not authenticated
@@ -128,9 +133,15 @@ func AuthGetPost(postID string, replies_to_fetch int, viewUserID string) (DweetT
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
-			db.Dweet.ReplyDweets.Fetch(),
-			db.Dweet.ReplyTo.Fetch(),
-			db.Dweet.RedweetOf.Fetch(),
+			db.Dweet.ReplyDweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.Dweet.ReplyTo.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.Dweet.RedweetOf.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
 			db.Dweet.LikeUsers.Fetch(),
 		).Exec(ctx)
 	} else {
@@ -138,9 +149,15 @@ func AuthGetPost(postID string, replies_to_fetch int, viewUserID string) (DweetT
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch(),
-			db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch),
-			db.Dweet.ReplyTo.Fetch(),
-			db.Dweet.RedweetOf.Fetch(),
+			db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch).With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.Dweet.ReplyTo.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+			db.Dweet.RedweetOf.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
 			db.Dweet.LikeUsers.Fetch(),
 		).Exec(ctx)
 	}
@@ -208,52 +225,91 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserType, error) {
 	// When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
 
-	// Get your own following-list
-	viewUser, err := client.User.FindUnique(
-		db.User.Username.Equals(viewUserID),
-	).With(
-		db.User.Following.Fetch(),
-	).Exec(ctx)
-	if err != nil {
-		return UserType{}, err
-	}
-
-	following := viewUser.Following()
-
 	var user *db.UserModel
+	var mutuals []db.UserModel
+	var err error
 
-	// Fetch the user requested with followers so we get the mutuals
-	if dweets_to_fetch < 0 {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Dweets.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			),
-			db.User.Followers.Fetch(),
-		).Exec(ctx)
+	if viewUserID == userID {
+		// Fetch the user requested
+		if dweets_to_fetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Dweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.LikedDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.Followers.Fetch(),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Dweets.Fetch().Take(dweets_to_fetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.LikedDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.Followers.Fetch(),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		}
+
+		if err != nil {
+			return UserType{}, err
+		}
+
+		nuser := FormatAsUserType(user)
+		return nuser, err
 	} else {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
+		// Get your own following-list
+		viewUser, err := client.User.FindUnique(
+			db.User.Username.Equals(viewUserID),
 		).With(
-			db.User.Dweets.Fetch().Take(dweets_to_fetch).With(
-				db.Dweet.Author.Fetch(),
-			),
-			db.User.Followers.Fetch(),
+			db.User.Following.Fetch(),
 		).Exec(ctx)
+		if err != nil {
+			return UserType{}, err
+		}
+
+		following := viewUser.Following()
+
+		// Fetch the user requested with followers so we get the mutuals
+		if dweets_to_fetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Dweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.Followers.Fetch(),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Dweets.Fetch().Take(dweets_to_fetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.User.Followers.Fetch(),
+			).Exec(ctx)
+		}
+
+		if err != nil {
+			return UserType{}, err
+		}
+
+		// Get mutuals
+		followers := user.Followers()
+		mutuals = HashIntersectUsers(followers, following)
+		// Send back the user requested, along with mutuals in the followers field
+		nuser := AuthFormatAsUserType(user, mutuals)
+		return nuser, err
 	}
-
-	if err != nil {
-		return UserType{}, err
-	}
-
-	// Get mutuals
-	followers := user.Followers()
-	mutuals := HashIntersectUsers(followers, following)
-
-	// Send back the user requested, along with mutuals in the followers field
-	nuser := AuthFormatAsUserType(user, mutuals)
-	return nuser, err
 }
 
 // Create a User
@@ -286,4 +342,257 @@ func CheckCreds(username string, password string) (bool, error) {
 		return false, errors.New("invalid password")
 	}
 	return true, nil
+}
+
+// Update a dweet
+func AuthUpdateDweet(postID, userID, body string, mediaLinks []string) (DweetType, error) {
+	post, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.Author.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	if post.Author().Username != userID {
+		return DweetType{}, errors.New("not authorized to edit dweet")
+	}
+
+	post, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.RedweetDweets.Fetch(),
+	).Update(
+		db.Dweet.DweetBody.Set(body),
+		db.Dweet.Media.Set(mediaLinks),
+		db.Dweet.LastUpdatedAt.Set(time.Now()),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	redweets := post.RedweetDweets()
+	for i := 0; i < len(redweets); i++ {
+		_, err := client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(redweets[i].ID),
+		).Update(
+			db.Dweet.DweetBody.Set(body),
+		).Exec(ctx)
+		if err != nil {
+			return DweetType{}, err
+		}
+	}
+
+	// Return updated post
+	post, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.Author.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	npost := FormatAsDweetType(post)
+	return npost, err
+}
+
+// Update a user
+func AuthUpdateUser(userID, firstName, lastName, email, bio string) (UserType, error) {
+	user, err := client.User.FindUnique(
+		db.User.Username.Equals(userID),
+	).Update(
+		db.User.FirstName.Set(firstName),
+		db.User.LastName.Set(lastName),
+		db.User.Email.Set(email),
+		db.User.Bio.Set(bio),
+	).Exec(ctx)
+
+	nuser := FormatAsUserType(user)
+	return nuser, err
+}
+
+// Get User data with dweets that user liked
+func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]DweetType, error) {
+	var user *db.UserModel
+	var err error
+	if numberToFetch < 0 {
+		if numberOfReplies < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.LikedDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+					db.Dweet.ReplyTo.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.ReplyDweets.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+				),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.LikedDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+					db.Dweet.ReplyTo.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.ReplyDweets.Fetch().Take(numberOfReplies).With(
+						db.Dweet.Author.Fetch(),
+					),
+				),
+			).Exec(ctx)
+		}
+	} else {
+		if numberOfReplies < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.LikedDweets.Fetch().Take(numberToFetch).With(
+					db.Dweet.Author.Fetch(),
+					db.Dweet.ReplyTo.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.ReplyDweets.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+				),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.LikedDweets.Fetch().Take(numberToFetch).With(
+					db.Dweet.Author.Fetch(),
+					db.Dweet.ReplyTo.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.ReplyDweets.Fetch().Take(numberOfReplies).With(
+						db.Dweet.Author.Fetch(),
+					),
+				),
+			).Exec(ctx)
+		}
+	}
+
+	var liked []DweetType
+	for _, dweet := range user.LikedDweets() {
+		liked = append(liked, FormatAsDweetType(&dweet))
+	}
+	return liked, err
+}
+
+// Get users that follow user
+func FetchFollowers(userID string, numberToFetch int) ([]UserType, error) {
+	var user *db.UserModel
+	var err error
+	if numberToFetch < 0 {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Followers.Fetch(),
+		).Exec(ctx)
+	} else {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Followers.Fetch().Take(numberToFetch),
+		).Exec(ctx)
+	}
+
+	var followers []UserType
+	for _, follower := range user.Followers() {
+		followers = append(followers, FormatAsUserType(&follower))
+	}
+	return followers, err
+}
+
+// Get users that user follows
+func FetchFollowing(userID string, numberToFetch int) ([]UserType, error) {
+	var user *db.UserModel
+	var err error
+	if numberToFetch < 0 {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Following.Fetch(),
+		).Exec(ctx)
+	} else {
+		user, err = client.User.FindUnique(
+			db.User.Username.Equals(userID),
+		).With(
+			db.User.Following.Fetch().Take(numberToFetch),
+		).Exec(ctx)
+	}
+
+	var following []UserType
+	for _, followed := range user.Following() {
+		following = append(following, FormatAsUserType(&followed))
+	}
+	return following, err
+}
+
+// Delete a dweet
+func AuthDeleteDweet(postID string, userID string) (DweetType, error) {
+	dweet, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.Author.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	if dweet.Author().Username == userID {
+		dweet, err := DeleteDweet(postID)
+		if err != nil {
+			return DweetType{}, err
+		}
+
+		formatted := FormatAsDweetType(dweet)
+		return formatted, err
+	}
+
+	return DweetType{}, errors.New("Unauthorized")
+
+}
+
+// Delete a dweet
+func AuthDeleteRedweet(postID string, userID string) (DweetType, error) {
+	dweet, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.Author.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	if dweet.Author().Username == userID {
+		dweet, err := DeleteRedweet(postID)
+		if err != nil {
+			return DweetType{}, err
+		}
+
+		formatted := FormatAsDweetType(dweet)
+		return formatted, err
+	}
+
+	return DweetType{}, errors.New("Unauthorized")
 }

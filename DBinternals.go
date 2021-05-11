@@ -54,7 +54,7 @@ func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
 		user, err = client.User.FindUnique(
 			db.User.Username.Equals(userID),
 		).With(
-			db.User.Dweets.Fetch(),
+			db.User.Dweets.Fetch().Take(dweets_to_fetch),
 		).Exec(ctx)
 		if err != nil {
 			return nil, err
@@ -171,47 +171,45 @@ func NewDweet(body, authorID string, mediaLinks []string) (*db.DweetModel, error
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
+	).With(
+		db.Dweet.Author.Fetch(),
 	).Exec(ctx)
 	return createdPost, err
 }
 
-// Check if user already liked this dweet
+// Add a like to a dweet
 func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
-	myUser, err := client.User.FindUnique(
-		db.User.Username.Equals(userID),
+	// Check if user already liked this dweet
+	likedPost, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(likedPostID),
 	).With(
-		db.User.LikedDweets.Fetch(
-			db.Dweet.ID.Equals(likedPostID),
-		).With(
-			db.Dweet.Author.Fetch(),
-		),
+		db.Dweet.Author.Fetch(),
+		db.Dweet.LikeUsers.Fetch(
+			db.User.Username.Equals(userID),
+		).With(),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	increment := 1
-
 	// If yes, then skip liking the dweet
-	if len(myUser.LikedDweets()) > 0 {
-		increment = 0
+	if len(likedPost.LikeUsers()) > 0 {
+		return likedPost, err
 	}
 
+	// Else, if not already liked,
 	// Create a Like on the post if not created already
 	like, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(likedPostID),
+	).With(
+		db.Dweet.Author.Fetch(),
 	).Update(
-		db.Dweet.LikeCount.Increment(increment),
+		db.Dweet.LikeCount.Increment(1),
 		db.Dweet.LikeUsers.Link(
 			db.User.Username.Equals(userID),
 		),
 	).Exec(ctx)
 	if err != nil {
-		return like, err
-	}
-
-	// Return dweet
-	if len(myUser.LikedDweets()) > 0 {
 		return like, err
 	}
 
@@ -230,29 +228,20 @@ func NewLike(likedPostID, userID string) (*db.DweetModel, error) {
 // Create a reply to a post
 func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.DweetModel, error) {
 	now := time.Now()
-	// Get post and user
-	post, err := GetPostBasic(originalPostID)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := GetUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
 	// Create a Reply
 	createdReply, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(genID(10)),
-		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
+		db.Dweet.Author.Link(db.User.Username.Equals(userID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
 		db.Dweet.ReplyTo.Link(
-			db.Dweet.ID.Equals(post.ID),
+			db.Dweet.ID.Equals(originalPostID),
 		),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
+	).With(
+		db.Dweet.Author.Fetch(),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -260,7 +249,7 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 
 	// Update original Dweet to show reply
 	_, err = client.Dweet.FindUnique(
-		db.Dweet.ID.Equals(post.ID),
+		db.Dweet.ID.Equals(originalPostID),
 	).Update(
 		db.Dweet.ReplyDweets.Link(
 			db.Dweet.ID.Equals(createdReply.ID),
@@ -318,6 +307,23 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 
 // Create a follower relation
 func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
+	// Check if user already followed this user
+	myUser, err := client.User.FindUnique(
+		db.User.Username.Equals(followedID),
+	).With(
+		db.User.Followers.Fetch(
+			db.User.Username.Equals(followerID),
+		),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// If yes, then skip following the user
+	if len(myUser.Followers()) > 0 {
+		return myUser, err
+	}
+
 	// Add follower to followed's follower list
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -349,7 +355,6 @@ func UpdateUser(userID, username, firstName, lastName, email, bio string) (*db.U
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).Update(
-		db.User.Username.Set(username),
 		db.User.FirstName.Set(firstName),
 		db.User.LastName.Set(lastName),
 		db.User.Email.Set(email),
@@ -402,27 +407,22 @@ func DeleteFollower(followedID string, followerID string) (*db.UserModel, error)
 		db.User.Username.Equals(followedID),
 	).Update(
 		db.User.FollowerCount.Decrement(1),
+		db.User.Followers.Unlink(
+			db.User.Username.Equals(followerID),
+		),
 	).Exec(ctx)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
 
-	userDBID1 := user.DbID
-
-	other_user, err := client.User.FindUnique(
+	_, err = client.User.FindUnique(
 		db.User.Username.Equals(followerID),
 	).Update(
 		db.User.FollowingCount.Decrement(1),
 	).Exec(ctx)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
-
-	userDBID2 := other_user.DbID
-
-	// Delete the follower-following relation using RAW SQL (prisma-client-go has almost no documentation on unlinking relations)
-	delFollowerQuery := `DELETE FROM public."_Follow" WHERE "A"= $1 AND "B"= $2;`
-	_, err = client.Prisma.ExecuteRaw(delFollowerQuery, userDBID1, userDBID2).Exec(ctx)
 
 	return user, err
 }
@@ -432,25 +432,17 @@ func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
 	// Find the post and decrease its likes by 1
 	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.Author.Fetch(),
 	).Update(
 		db.Dweet.LikeCount.Decrement(1),
+		db.Dweet.LikeUsers.Unlink(
+			db.User.Username.Equals(userID),
+		),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
-	postDBID := post.DbID
-
-	user, err := client.User.FindUnique(
-		db.User.Username.Equals(userID),
-	).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-	userDBID := user.DbID
-
-	// Delete the like relation using RAW SQL (prisma-client-go has almost no documentation on unlinking relations)
-	delLikeQuery := `DELETE FROM public."_Likes" WHERE "A"= $1 AND "B"= $2;`
-	_, err = client.Prisma.ExecuteRaw(delLikeQuery, postDBID, userDBID).Exec(ctx)
 
 	return post, err
 }
