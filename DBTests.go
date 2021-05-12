@@ -23,22 +23,17 @@ func test() error {
 		panic(err)
 	}
 
-	madhav, err := NewUser("Madhav", string(passwordHash), "papa", "peli", "peli@gmail.com", "pr0 at js")
-	if err != nil {
-		panic(err)
-	}
+	// madhav, err := NewUser("Madhav", string(passwordHash), "papa", "peli", "peli@gmail.com", "pr0 at js")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	createdPost, err := NewDweet("evening", createdUser.Username, []string{})
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = NewLike(createdPost.ID, madhav.Username)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = DeleteLike(createdPost.ID, madhav.Username)
+	_, err = NewLike(createdPost.ID, createdUser.Username)
 	if err != nil {
 		panic(err)
 	}

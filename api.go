@@ -46,7 +46,7 @@ var queryHandler = graphql.NewObject(
 						}
 					}
 
-					return nil, errors.New("param \"id\" or \"repliesToFetch\" missing")
+					return nil, errors.New("param \"id\" or missing")
 				},
 			},
 			"user": &graphql.Field{
@@ -70,7 +70,7 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						username, userPresent := params.Args["username"].(string)
-						numReplies, numPresent := params.Args["repliesToFetch"].(int)
+						numReplies, numPresent := params.Args["dweetsToFetch"].(int)
 						if userPresent && numPresent {
 							user, err := AuthGetUser(username, numReplies, data["username"].(string))
 							return user, err
@@ -78,7 +78,7 @@ var queryHandler = graphql.NewObject(
 					} else {
 
 						username, userPresent := params.Args["username"].(string)
-						numDweets, numPresent := params.Args["repliesToFetch"].(int)
+						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
 						if userPresent && numPresent {
 							user, err := NoAuthGetUser(username, numDweets)
 							return user, err
@@ -110,7 +110,7 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						numDweets, dweetPresent := params.Args["numberToFetch"].(int)
-						numReplies, repliesPresent := params.Args["numberToFetch"].(int)
+						numReplies, repliesPresent := params.Args["repliesToFetch"].(int)
 						if dweetPresent && repliesPresent {
 							post, err := FetchLikedDweets(data["username"].(string), numDweets, numReplies)
 							return post, err
@@ -120,12 +120,15 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			// TODO: FINISHED SO FAR, NEED TO FINISH MORE CHECKS FOR SUBFIELDS
 			"followers": &graphql.Field{
 				Type:        graphql.NewList(userSchema),
 				Description: "Get followers of authenticated user",
 				Args: graphql.FieldConfigArgument{
 					"numberToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: -1,
+					},
+					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
@@ -138,9 +141,10 @@ var queryHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						num, present := params.Args["numberToFetch"].(int)
-						if present {
-							post, err := FetchFollowers(data["username"].(string), num)
+						numUsers, usersPresent := params.Args["numberToFetch"].(int)
+						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
+						if usersPresent && dweetsPresent {
+							post, err := FetchFollowers(data["username"].(string), numUsers, numDweets)
 							return post, err
 						}
 					}
@@ -156,6 +160,10 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: -1,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -163,11 +171,11 @@ var queryHandler = graphql.NewObject(
 					if err != nil {
 						return nil, err
 					}
-
 					if isAuth {
-						num, present := params.Args["numberToFetch"].(int)
-						if present {
-							post, err := FetchFollowing(data["username"].(string), num)
+						numUsers, usersPresent := params.Args["numberToFetch"].(int)
+						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
+						if usersPresent && dweetsPresent {
+							post, err := FetchFollowing(data["username"].(string), numUsers, numDweets)
 							return post, err
 						}
 					}
@@ -197,6 +205,14 @@ var mutationHandler = graphql.NewObject(
 					"firstName": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					"lastName": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "",
+					},
+					"bio": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "",
+					},
 					"email": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
@@ -206,6 +222,8 @@ var mutationHandler = graphql.NewObject(
 						params.Args["username"].(string),
 						params.Args["password"].(string),
 						params.Args["firstName"].(string),
+						params.Args["lastName"].(string),
+						params.Args["bio"].(string),
 						params.Args["email"].(string),
 					)
 					if err != nil {
@@ -215,6 +233,7 @@ var mutationHandler = graphql.NewObject(
 					return user, nil
 				},
 			},
+			// TODO: Check field completeness
 			"createDweet": &graphql.Field{
 				Type:        dweetSchema,
 				Description: "Create a dweet authored by authenticated user",

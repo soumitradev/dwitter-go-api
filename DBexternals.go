@@ -313,18 +313,29 @@ func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserTyp
 }
 
 // Create a User
-func SignUpUser(username string, password string, firstName string, email string) (BasicUserType, error) {
+func SignUpUser(username string, password string, firstName string, lastName string, bio string, email string) (UserType, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		panic(err)
 	}
 
-	user, err := NewUser(username, string(passwordHash), firstName, "", email, "")
+	createdUser, err := client.User.CreateOne(
+		db.User.Username.Set(username),
+		db.User.PasswordHash.Set(string(passwordHash)),
+		db.User.FirstName.Set(firstName),
+		db.User.Email.Set(email),
+		db.User.Bio.Set(bio),
+		db.User.CreatedAt.Set(time.Now()),
+		db.User.LastName.Set(lastName),
+	).With(
+		db.User.Dweets.Fetch(),
+	).Exec(ctx)
+
 	if err != nil {
-		return BasicUserType{}, err
+		return UserType{}, err
 	}
 
-	nuser := FormatAsBasicUserType(user)
+	nuser := AuthFormatAsUserType(createdUser, []db.UserModel{})
 	return nuser, err
 }
 
@@ -434,6 +445,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 						db.Dweet.Author.Fetch(),
 					),
 				),
+				db.User.Following.Fetch(),
 			).Exec(ctx)
 		} else {
 			user, err = client.User.FindUnique(
@@ -451,6 +463,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 						db.Dweet.Author.Fetch(),
 					),
 				),
+				db.User.Following.Fetch(),
 			).Exec(ctx)
 		}
 	} else {
@@ -470,6 +483,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 						db.Dweet.Author.Fetch(),
 					),
 				),
+				db.User.Following.Fetch(),
 			).Exec(ctx)
 		} else {
 			user, err = client.User.FindUnique(
@@ -487,64 +501,151 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 						db.Dweet.Author.Fetch(),
 					),
 				),
+				db.User.Following.Fetch(),
 			).Exec(ctx)
 		}
 	}
 
 	var liked []DweetType
 	for _, dweet := range user.LikedDweets() {
-		liked = append(liked, FormatAsDweetType(&dweet))
+		likes := dweet.LikeUsers()
+
+		// Find known people that liked thw dweet
+		mutuals := HashIntersectUsers(likes, user.Following())
+
+		// Add requesting user to like_users list
+		mutuals = append(mutuals, *user)
+
+		liked = append(liked, AuthFormatAsDweetType(&dweet, mutuals))
 	}
 	return liked, err
 }
 
 // Get users that follow user
-func FetchFollowers(userID string, numberToFetch int) ([]UserType, error) {
+func FetchFollowers(userID string, numberToFetch int, dweetsToFetch int) ([]UserType, error) {
 	var user *db.UserModel
 	var err error
 	if numberToFetch < 0 {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Followers.Fetch(),
-		).Exec(ctx)
+		if dweetsToFetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Followers.Fetch().With(
+					db.User.Dweets.Fetch(),
+					db.User.Followers.Fetch(),
+				),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Followers.Fetch().With(
+					db.User.Dweets.Fetch().Take(dweetsToFetch),
+					db.User.Followers.Fetch(),
+				),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		}
 	} else {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Followers.Fetch().Take(numberToFetch),
-		).Exec(ctx)
+		if dweetsToFetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Followers.Fetch().Take(numberToFetch).With(
+					db.User.Dweets.Fetch(),
+					db.User.Followers.Fetch(),
+				),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Followers.Fetch().Take(numberToFetch).With(
+					db.User.Dweets.Fetch().Take(dweetsToFetch),
+					db.User.Followers.Fetch(),
+				),
+				db.User.Following.Fetch(),
+			).Exec(ctx)
+		}
 	}
 
 	var followers []UserType
 	for _, follower := range user.Followers() {
-		followers = append(followers, FormatAsUserType(&follower))
+		followerFollowers := follower.Followers()
+
+		mutuals := HashIntersectUsers(followerFollowers, user.Following())
+
+		mutuals = append(mutuals, *user)
+		followers = append(followers, AuthFormatAsUserType(&follower, mutuals))
 	}
 	return followers, err
 }
 
 // Get users that user follows
-func FetchFollowing(userID string, numberToFetch int) ([]UserType, error) {
+func FetchFollowing(userID string, numberToFetch int, dweetsToFetch int) ([]UserType, error) {
 	var user *db.UserModel
+	var userFullFollowing *db.UserModel
 	var err error
 	if numberToFetch < 0 {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Following.Fetch(),
-		).Exec(ctx)
+		if dweetsToFetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Following.Fetch().With(
+					db.User.Dweets.Fetch(),
+					db.User.Followers.Fetch(),
+				),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Following.Fetch().With(
+					db.User.Dweets.Fetch().Take(dweetsToFetch),
+					db.User.Followers.Fetch(),
+				),
+			).Exec(ctx)
+		}
 	} else {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Following.Fetch().Take(numberToFetch),
-		).Exec(ctx)
+		if dweetsToFetch < 0 {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Following.Fetch().Take(numberToFetch).With(
+					db.User.Dweets.Fetch(),
+					db.User.Followers.Fetch(),
+				),
+			).Exec(ctx)
+		} else {
+			user, err = client.User.FindUnique(
+				db.User.Username.Equals(userID),
+			).With(
+				db.User.Following.Fetch().Take(numberToFetch).With(
+					db.User.Dweets.Fetch().Take(dweetsToFetch),
+					db.User.Followers.Fetch(),
+				),
+			).Exec(ctx)
+		}
 	}
+
+	userFullFollowing, err = client.User.FindUnique(
+		db.User.Username.Equals(userID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
 
 	var following []UserType
 	for _, followed := range user.Following() {
-		following = append(following, FormatAsUserType(&followed))
+		followerFollowers := followed.Followers()
+
+		mutuals := HashIntersectUsers(followerFollowers, userFullFollowing.Following())
+
+		mutuals = append(mutuals, *user)
+		following = append(following, AuthFormatAsUserType(&followed, mutuals))
 	}
+
 	return following, err
 }
 
