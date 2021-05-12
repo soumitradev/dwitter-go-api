@@ -305,35 +305,36 @@ var mutationHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			"createRedweet": &graphql.Field{
-				Type:        dweetSchema,
-				Description: "Create a redweet of a dweet by authenticated user",
-				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-				},
-				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					// Check authentication
-					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
-					if err != nil {
-						return nil, err
-					}
+			// TODO: implement
+			// "createRedweet": &graphql.Field{
+			// 	Type:        dweetSchema,
+			// 	Description: "Create a redweet of a dweet by authenticated user",
+			// 	Args: graphql.FieldConfigArgument{
+			// 		"id": &graphql.ArgumentConfig{
+			// 			Type: graphql.NewNonNull(graphql.String),
+			// 		},
+			// 	},
+			// 	Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			// 		// Check authentication
+			// 		tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+			// 		data, isAuth, err := VerifyToken(tokenString)
+			// 		if err != nil {
+			// 			return nil, err
+			// 		}
 
-					if isAuth {
-						// Create a reply to a dweet, and return formatted
-						originalID, idPresent := params.Args["id"].(string)
-						if idPresent {
-							dweet, err := AuthCreateRedweet(originalID, data["username"].(string))
-							return dweet, err
-						}
-						return nil, errors.New("invalid request, \"id\" not present")
-					}
+			// 		if isAuth {
+			// 			// Create a reply to a dweet, and return formatted
+			// 			originalID, idPresent := params.Args["id"].(string)
+			// 			if idPresent {
+			// 				dweet, err := AuthCreateRedweet(originalID, data["username"].(string))
+			// 				return dweet, err
+			// 			}
+			// 			return nil, errors.New("invalid request, \"id\" not present")
+			// 		}
 
-					return nil, errors.New("Unauthorized")
-				},
-			},
+			// 		return nil, errors.New("Unauthorized")
+			// 	},
+			// },
 			"follow": &graphql.Field{
 				Type:        userSchema,
 				Description: "Make authenticated user follow another user",
@@ -562,35 +563,36 @@ var mutationHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			"unredweet": &graphql.Field{
-				Type:        userSchema,
-				Description: "Unredweet a dweet",
-				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-				},
-				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					// Check authentication
-					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
-					if err != nil {
-						return nil, err
-					}
+			// TODO: implement
+			// "unredweet": &graphql.Field{
+			// 	Type:        userSchema,
+			// 	Description: "Unredweet a dweet",
+			// 	Args: graphql.FieldConfigArgument{
+			// 		"id": &graphql.ArgumentConfig{
+			// 			Type: graphql.NewNonNull(graphql.String),
+			// 		},
+			// 	},
+			// 	Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			// 		// Check authentication
+			// 		tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+			// 		data, isAuth, err := VerifyToken(tokenString)
+			// 		if err != nil {
+			// 			return nil, err
+			// 		}
 
-					if isAuth {
-						// Make user follow the other user, and return formatted
-						id, present := params.Args["id"].(string)
-						if present {
-							dweet, err := AuthDeleteRedweet(id, data["username"].(string))
-							return dweet, err
-						}
-						return nil, errors.New("invalid request, \"id\" not present")
-					}
+			// 		if isAuth {
+			// 			// Make user follow the other user, and return formatted
+			// 			id, present := params.Args["id"].(string)
+			// 			if present {
+			// 				dweet, err := AuthDeleteRedweet(id, data["username"].(string))
+			// 				return dweet, err
+			// 			}
+			// 			return nil, errors.New("invalid request, \"id\" not present")
+			// 		}
 
-					return nil, errors.New("Unauthorized")
-				},
-			},
+			// 		return nil, errors.New("Unauthorized")
+			// 	},
+			// },
 			// "authTest": &graphql.Field{
 			// 	Type:        graphql.String,
 			// 	Description: "Log into Dwitter",

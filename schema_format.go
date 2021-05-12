@@ -9,25 +9,19 @@ func FormatAsBasicDweetType(dweet *db.DweetModel) BasicDweetType {
 	if !present {
 		reply_id = ""
 	}
-	redweet_id, present := dweet.OriginalRedweetID()
-	if !present {
-		redweet_id = ""
-	}
 	return BasicDweetType{
-		DweetBody:         dweet.DweetBody,
-		ID:                dweet.ID,
-		Author:            FormatAsBasicUserType(dweet.Author()),
-		AuthorID:          dweet.AuthorID,
-		PostedAt:          dweet.PostedAt,
-		LastUpdatedAt:     dweet.LastUpdatedAt,
-		LikeCount:         dweet.LikeCount,
-		IsReply:           dweet.IsReply,
-		OriginalReplyID:   reply_id,
-		ReplyCount:        dweet.ReplyCount,
-		IsRedweet:         dweet.IsRedweet,
-		OriginalRedweetID: redweet_id,
-		RedweetCount:      dweet.RedweetCount,
-		Media:             dweet.Media,
+		DweetBody:       dweet.DweetBody,
+		ID:              dweet.ID,
+		Author:          FormatAsBasicUserType(dweet.Author()),
+		AuthorID:        dweet.AuthorID,
+		PostedAt:        dweet.PostedAt,
+		LastUpdatedAt:   dweet.LastUpdatedAt,
+		LikeCount:       dweet.LikeCount,
+		IsReply:         dweet.IsReply,
+		OriginalReplyID: reply_id,
+		ReplyCount:      dweet.ReplyCount,
+		RedweetCount:    dweet.RedweetCount,
+		Media:           dweet.Media,
 	}
 }
 
@@ -52,18 +46,6 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		reply_to = BasicDweetType{}
 	}
 
-	redweet_id, present := dweet.OriginalRedweetID()
-	if !present {
-		redweet_id = ""
-	}
-	original_redweet_dweet, present := dweet.RedweetOf()
-	var redweet_of BasicDweetType
-	if present {
-		reply_to = FormatAsBasicDweetType(original_redweet_dweet)
-	} else {
-		redweet_of = BasicDweetType{}
-	}
-
 	var reply_dweets []BasicDweetType
 	reply_dweets_db_schema := dweet.ReplyDweets()
 	for i := 0; i < len(like_users_db_schema); i++ {
@@ -71,24 +53,21 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 	}
 
 	return DweetType{
-		DweetBody:         dweet.DweetBody,
-		ID:                dweet.ID,
-		Author:            author,
-		AuthorID:          dweet.AuthorID,
-		PostedAt:          dweet.PostedAt,
-		LastUpdatedAt:     dweet.LastUpdatedAt,
-		LikeCount:         dweet.LikeCount,
-		LikeUsers:         like_users,
-		IsReply:           dweet.IsReply,
-		OriginalReplyID:   reply_id,
-		ReplyTo:           reply_to,
-		ReplyCount:        dweet.ReplyCount,
-		ReplyDweets:       reply_dweets,
-		IsRedweet:         dweet.IsRedweet,
-		OriginalRedweetID: redweet_id,
-		RedweetOf:         redweet_of,
-		RedweetCount:      dweet.RedweetCount,
-		Media:             dweet.Media,
+		DweetBody:       dweet.DweetBody,
+		ID:              dweet.ID,
+		Author:          author,
+		AuthorID:        dweet.AuthorID,
+		PostedAt:        dweet.PostedAt,
+		LastUpdatedAt:   dweet.LastUpdatedAt,
+		LikeCount:       dweet.LikeCount,
+		LikeUsers:       like_users,
+		IsReply:         dweet.IsReply,
+		OriginalReplyID: reply_id,
+		ReplyTo:         reply_to,
+		ReplyCount:      dweet.ReplyCount,
+		ReplyDweets:     reply_dweets,
+		RedweetCount:    dweet.RedweetCount,
+		Media:           dweet.Media,
 	}
 }
 
@@ -225,18 +204,6 @@ func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 		reply_to = BasicDweetType{}
 	}
 
-	redweet_id, present := dweet.OriginalRedweetID()
-	if !present {
-		redweet_id = ""
-	}
-	original_redweet_dweet, present := dweet.RedweetOf()
-	var redweet_of BasicDweetType
-	if present {
-		redweet_of = FormatAsBasicDweetType(original_redweet_dweet)
-	} else {
-		redweet_of = BasicDweetType{}
-	}
-
 	var reply_dweets []BasicDweetType
 	reply_dweets_db_schema := dweet.ReplyDweets()
 	for i := 0; i < len(reply_dweets_db_schema); i++ {
@@ -244,24 +211,21 @@ func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 	}
 
 	return DweetType{
-		DweetBody:         dweet.DweetBody,
-		ID:                dweet.ID,
-		Author:            author,
-		AuthorID:          dweet.AuthorID,
-		PostedAt:          dweet.PostedAt,
-		LastUpdatedAt:     dweet.LastUpdatedAt,
-		LikeCount:         dweet.LikeCount,
-		LikeUsers:         []BasicUserType{},
-		IsReply:           dweet.IsReply,
-		OriginalReplyID:   reply_id,
-		ReplyTo:           reply_to,
-		ReplyCount:        dweet.ReplyCount,
-		ReplyDweets:       reply_dweets,
-		IsRedweet:         dweet.IsRedweet,
-		OriginalRedweetID: redweet_id,
-		RedweetOf:         redweet_of,
-		RedweetCount:      dweet.RedweetCount,
-		Media:             dweet.Media,
+		DweetBody:       dweet.DweetBody,
+		ID:              dweet.ID,
+		Author:          author,
+		AuthorID:        dweet.AuthorID,
+		PostedAt:        dweet.PostedAt,
+		LastUpdatedAt:   dweet.LastUpdatedAt,
+		LikeCount:       dweet.LikeCount,
+		LikeUsers:       []BasicUserType{},
+		IsReply:         dweet.IsReply,
+		OriginalReplyID: reply_id,
+		ReplyTo:         reply_to,
+		ReplyCount:      dweet.ReplyCount,
+		ReplyDweets:     reply_dweets,
+		RedweetCount:    dweet.RedweetCount,
+		Media:           dweet.Media,
 	}
 }
 
@@ -280,18 +244,6 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 		reply_to = BasicDweetType{}
 	}
 
-	redweet_id, present := dweet.OriginalRedweetID()
-	if !present {
-		redweet_id = ""
-	}
-	original_redweet_dweet, present := dweet.RedweetOf()
-	var redweet_of BasicDweetType
-	if present {
-		redweet_of = FormatAsBasicDweetType(original_redweet_dweet)
-	} else {
-		redweet_of = BasicDweetType{}
-	}
-
 	var reply_dweets []BasicDweetType
 	reply_dweets_db_schema := dweet.ReplyDweets()
 	for i := 0; i < len(reply_dweets_db_schema); i++ {
@@ -304,23 +256,20 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 	}
 
 	return DweetType{
-		DweetBody:         dweet.DweetBody,
-		ID:                dweet.ID,
-		Author:            author,
-		AuthorID:          dweet.AuthorID,
-		PostedAt:          dweet.PostedAt,
-		LastUpdatedAt:     dweet.LastUpdatedAt,
-		LikeCount:         dweet.LikeCount,
-		LikeUsers:         likes,
-		IsReply:           dweet.IsReply,
-		OriginalReplyID:   reply_id,
-		ReplyTo:           reply_to,
-		ReplyCount:        dweet.ReplyCount,
-		ReplyDweets:       reply_dweets,
-		IsRedweet:         dweet.IsRedweet,
-		OriginalRedweetID: redweet_id,
-		RedweetOf:         redweet_of,
-		RedweetCount:      dweet.RedweetCount,
-		Media:             dweet.Media,
+		DweetBody:       dweet.DweetBody,
+		ID:              dweet.ID,
+		Author:          author,
+		AuthorID:        dweet.AuthorID,
+		PostedAt:        dweet.PostedAt,
+		LastUpdatedAt:   dweet.LastUpdatedAt,
+		LikeCount:       dweet.LikeCount,
+		LikeUsers:       likes,
+		IsReply:         dweet.IsReply,
+		OriginalReplyID: reply_id,
+		ReplyTo:         reply_to,
+		ReplyCount:      dweet.ReplyCount,
+		ReplyDweets:     reply_dweets,
+		RedweetCount:    dweet.RedweetCount,
+		Media:           dweet.Media,
 	}
 }

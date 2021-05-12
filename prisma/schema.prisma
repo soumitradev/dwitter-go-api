@@ -9,62 +9,32 @@ generator db {
 }
 
 model User {
-    dbID           String   @default(uuid()) @id
+    dbID           String    @default(uuid()) @id
 
-    username       String   @unique @db.VarChar(20)
+    username       String    @unique @db.VarChar(20)
     passwordHash   String
 
-    firstName      String   @db.VarChar(40)
-    lastName       String?  @db.VarChar(40)
+    firstName      String    @db.VarChar(40)
+    lastName       String?   @db.VarChar(40)
 
-    email          String   @db.VarChar(100) @unique
+    email          String    @db.VarChar(100) @unique
 
-    bio            String   @db.VarChar(160)
+    bio            String    @db.VarChar(160)
 
-    dweets         Dweet[]  @relation("Dweets")
+    dweets         Dweet[]   @relation("Dweets")
+    redweets       Redweet[] @relation("Redweeted")
 
-    likedDweets    Dweet[]  @relation("Likes")
+    likedDweets    Dweet[]   @relation("Likes")
     
-    followerCount  Int      @default(0)
-    followers      User[]   @relation("Follow")
+    followerCount  Int       @default(0)
+    followers      User[]    @relation("Follow")
 
-    followingCount Int      @default(0)
-    following      User[]   @relation("Follow")
+    followingCount Int       @default(0)
+    following      User[]    @relation("Follow")
 
-    createdAt      DateTime @default(now())
+    createdAt      DateTime  @default(now())
 }
 
-model Dweet {
-    dbID              String   @default(uuid()) @id
-    dweetBody         String   @db.VarChar(240)
-
-    ID                String   @unique @db.Char(10)
-
-    author            User     @relation("Dweets", fields: [authorID], references: [dbID])
-    authorID          String
-
-    postedAt          DateTime @default(now())
-    lastUpdatedAt     DateTime @default(now())
-
-    likeCount         Int      @default(0)
-    likeUsers         User[]   @relation("Likes")
-
-    isReply           Boolean  @default(false)
-    originalReplyID   String?
-    replyTo           Dweet?   @relation("Replies", fields: [originalReplyID], references: [dbID])
-    replyCount        Int      @default(0)
-    replyDweets       Dweet[]  @relation("Replies")
-    
-    isRedweet         Boolean  @default(false)
-    originalRedweetID String?
-    redweetOf         Dweet?   @relation("Redweets", fields: [originalRedweetID], references: [dbID])
-    redweetCount      Int      @default(0)
-    redweetDweets     Dweet[]  @relation("Redweets")
-
-    media             String[]
-}
-
-// Coming soon
 // model Dweet {
 //     dbID              String   @default(uuid()) @id
 //     dweetBody         String   @db.VarChar(240)
@@ -86,18 +56,50 @@ model Dweet {
 //     replyCount        Int      @default(0)
 //     replyDweets       Dweet[]  @relation("Replies")
     
+//     isRedweet         Boolean  @default(false)
+//     originalRedweetID String?
+//     redweetOf         Dweet?   @relation("Redweets", fields: [originalRedweetID], references: [dbID])
 //     redweetCount      Int      @default(0)
-//     redweetDweets     Redweet[]  @relation("Redweets")
+//     redweetDweets     Dweet[]  @relation("Redweets")
 
 //     media             String[]
 // }
 
-// model Redweet {
-//     dbID              String   @default(uuid()) @id
+// Coming soon
 
-//     author            User     @relation("Dweets", fields: [authorID], references: [dbID])
-//     authorID          String
+model Dweet {
+    dbID              String    @default(uuid()) @id
+    dweetBody         String    @db.VarChar(240)
 
-//     originalRedweetID String
-//     redweetOf         Dweet   @relation("Redweets", fields: [originalRedweetID], references: [dbID])
-// }
+    ID                String    @unique @db.Char(10)
+
+    author            User      @relation("Dweets", fields: [authorID], references: [dbID])
+    authorID          String
+
+    postedAt          DateTime  @default(now())
+    lastUpdatedAt     DateTime  @default(now())
+
+    likeCount         Int       @default(0)
+    likeUsers         User[]    @relation("Likes")
+
+    isReply           Boolean   @default(false)
+    originalReplyID   String?
+    replyTo           Dweet?    @relation("Replies", fields: [originalReplyID], references: [dbID])
+    replyCount        Int       @default(0)
+    replyDweets       Dweet[]   @relation("Replies")
+    
+    redweetCount      Int       @default(0)
+    redweetDweets     Redweet[] @relation("Redweets")
+
+    media             String[]
+}
+
+model Redweet {
+    dbID              String   @default(uuid()) @id
+
+    author            User     @relation("Redweeted", fields: [authorID], references: [dbID])
+    authorID          String
+
+    originalRedweetID String
+    redweetOf         Dweet    @relation("Redweets", fields: [originalRedweetID], references: [dbID])
+}
