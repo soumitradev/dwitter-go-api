@@ -273,3 +273,12 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 		Media:           dweet.Media,
 	}
 }
+
+func FormatAsRedweetType(redweet *db.RedweetModel) RedweetType {
+	return RedweetType{
+		Author:            FormatAsBasicUserType(redweet.Author()),
+		AuthorID:          redweet.AuthorID,
+		RedweetOf:         FormatAsBasicDweetType(redweet.RedweetOf()),
+		OriginalRedweetID: redweet.OriginalRedweetID,
+	}
+}

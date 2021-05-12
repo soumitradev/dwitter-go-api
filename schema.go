@@ -67,6 +67,13 @@ type DweetType struct {
 	Media           []string         `json:"media"`
 }
 
+type RedweetType struct {
+	Author            BasicUserType  `json:"author"`
+	AuthorID          string         `json:"author_id"`
+	RedweetOf         BasicDweetType `json:"redweet_of"`
+	OriginalRedweetID string         `json:"original_redweet_id"`
+}
+
 var basicUserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "BasicUser",
@@ -235,6 +242,26 @@ var dweetSchema = graphql.NewObject(
 			},
 			"media": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
+			},
+		},
+	},
+)
+
+var redweetSchema = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Redweet",
+		Fields: graphql.Fields{
+			"author": &graphql.Field{
+				Type: basicUserSchema,
+			},
+			"author_id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"redweet_of": &graphql.Field{
+				Type: basicDweetSchema,
+			},
+			"original_redweet_id": &graphql.Field{
+				Type: graphql.String,
 			},
 		},
 	},

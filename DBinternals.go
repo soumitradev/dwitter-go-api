@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"dwitter_go_graphql/prisma/db"
@@ -37,27 +38,17 @@ func GetUser(userID string) (*db.UserModel, error) {
 }
 
 // Get User data with dweets of user
-func GetUserDweets(userID string, dweets_to_fetch int) (*db.UserModel, error) {
+func GetUserDweets(userID string) (*db.UserModel, error) {
 	var user *db.UserModel
 	var err error
-	if dweets_to_fetch < 0 {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Dweets.Fetch(),
-		).Exec(ctx)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		user, err = client.User.FindUnique(
-			db.User.Username.Equals(userID),
-		).With(
-			db.User.Dweets.Fetch().Take(dweets_to_fetch),
-		).Exec(ctx)
-		if err != nil {
-			return nil, err
-		}
+	user, err = client.User.FindUnique(
+		db.User.Username.Equals(userID),
+	).With(
+		db.User.Dweets.Fetch(),
+		db.User.Redweets.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return user, err
 }
@@ -259,41 +250,33 @@ func NewReply(originalPostID, userID, body string, mediaLinks []string) (*db.Dwe
 	return createdReply, err
 }
 
-// TODO: implement
 // Create a new Redweet of a Dweet
-// func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
-// 	now := time.Now()
-// 	// Get post and user
-// 	post, err := GetPostBasic(originalPostID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func NewRedweet(originalPostID, userID string) (*db.RedweetModel, error) {
+	// Create a Redweet
+	createdRedweet, err := client.Redweet.CreateOne(
+		db.Redweet.Author.Link(
+			db.User.Username.Contains(userID),
+		),
+		db.Redweet.RedweetOf.Link(
+			db.Dweet.ID.Equals(originalPostID),
+		),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-// 	// Create a Redweet
-// 	createdRedweet, err := client.Dweet.CreateOne(
-// 		db.Dweet.DweetBody.Set(post.DweetBody),
-// 		db.Dweet.ID.Set(genID(10)),
-// 		db.Dweet.Author.Link(db.User.Username.Equals(userID)),
-// 		db.Dweet.Media.Set(post.Media),
-// 		db.Dweet.PostedAt.Set(now),
-// 		db.Dweet.LastUpdatedAt.Set(now),
-// 	).Exec(ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	// Update original Dweet to show redweet
+	_, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(originalPostID),
+	).Update(
+		db.Dweet.RedweetDweets.Link(
+			db.Redweet.DbID.Equals(createdRedweet.DbID),
+		),
+		db.Dweet.RedweetCount.Increment(1),
+	).Exec(ctx)
 
-// 	// Update original Dweet to show redweet
-// 	_, err = client.Dweet.FindUnique(
-// 		db.Dweet.ID.Equals(post.ID),
-// 	).Update(
-// 		db.Dweet.RedweetDweets.Link(
-// 			db.Dweet.ID.Equals(createdRedweet.ID),
-// 		),
-// 		db.Dweet.RedweetCount.Increment(1),
-// 	).Exec(ctx)
-
-// 	return createdRedweet, err
-// }
+	return createdRedweet, err
+}
 
 // Create a follower relation
 func NewFollower(followedID string, followerID string) (*db.UserModel, error) {
@@ -358,32 +341,11 @@ func UpdateUser(userID, username, firstName, lastName, email, bio string) (*db.U
 func UpdateDweet(postID, body string, mediaLinks []string) (*db.DweetModel, error) {
 	post, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
-	).With(
-		db.Dweet.RedweetDweets.Fetch(),
 	).Update(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.LastUpdatedAt.Set(time.Now()),
 	).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: implement
-	// redweets := post.RedweetDweets()
-	// for i := 0; i < len(redweets); i++ {
-	// 	_, err := client.Dweet.FindUnique(
-	// 		db.Dweet.ID.Equals(redweets[i].ID),
-	// 	).Update(
-	// 		db.Dweet.DweetBody.Set(body),
-	// 	).Exec(ctx)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	// Return updated post
-	post, err = GetPostBasic(postID)
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +403,7 @@ func DeleteLike(postID string, userID string) (*db.DweetModel, error) {
 // Delete a User
 func DeleteUser(userID string) (*db.UserModel, error) {
 	// Get all the user's Dweets (we must delete these first since they depend on the User, and deleting the User first will render the DB invalid)
-	user, err := GetUserDweets(userID, -1)
+	user, err := GetUserDweets(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -455,8 +417,13 @@ func DeleteUser(userID string) (*db.UserModel, error) {
 	// Delete all user's Dweets
 	dweets := user.Dweets()
 	for i := 0; i < len(dweets); i++ {
-		// TODO: implement
-		// DeleteDweet(dweets[i].ID)
+		DeleteDweet(dweets[i].ID)
+	}
+
+	// Delete all user's Redweets
+	redweets := user.Redweets()
+	for i := 0; i < len(redweets); i++ {
+		DeleteRedweet(redweets[i].OriginalRedweetID, user.Username)
 	}
 
 	// Remove all likes of the User
@@ -473,77 +440,103 @@ func DeleteUser(userID string) (*db.UserModel, error) {
 	return user, err
 }
 
-// TODO: implement
 // Delete a Dweet
-// func DeleteDweet(postID string) (*db.DweetModel, error) {
-// 	// Get all the replies to the post (these need to be deleted first since they depend on the root Dweet)
-// 	post, err := GetPostBasic(postID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func DeleteDweet(postID string) (*db.DweetModel, error) {
+	// Get all the replies to the post (these need to be deleted first since they depend on the root Dweet)
+	post, err := GetPostBasic(postID)
+	if err != nil {
+		return nil, err
+	}
 
-// 	// If the Dweet itself is a reply, remove the reply from the original post
-// 	if post.IsReply {
-// 		// Find the dweet that was replied to
-// 		id, exist := post.OriginalReplyID()
-// 		if !exist {
-// 			return nil, errors.New("original Dweet not found")
-// 		}
-// 		// Remove the Reply from the post
-// 		_, err := client.Dweet.FindUnique(
-// 			db.Dweet.ID.Equals(id),
-// 		).Update(
-// 			db.Dweet.ReplyCount.Decrement(1),
-// 		).Exec(ctx)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
+	// If the Dweet itself is a reply, remove the reply from the original post
+	if post.IsReply {
+		// Find the dweet that was replied to
+		id, exist := post.OriginalReplyID()
+		if !exist {
+			return nil, errors.New("original Dweet not found")
+		}
 
-// 	// Delete all the dependent posts (this includes redweets and replies to the post) recursively using RAW SQL
-// 	// We use RAW SQL here because prisma-go-client doesn't support cascade deletes yet:
-// 	// Link: https://github.com/prisma/prisma-client-go/issues/201
+		// Remove the Reply from the post
+		_, err := client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(id),
+		).Update(
+			db.Dweet.ReplyCount.Decrement(1),
+			db.Dweet.ReplyDweets.Unlink(
+				db.Dweet.ID.Equals(postID),
+			),
+		).Exec(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-// 	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
-// 	delQuery := `with recursive all_posts (id, parentid1, parentid2, root_id) as (select t1.db_id, t1.original_reply_id as parentid1, t1.original_redweet_id as parentid2, t1.db_id as root_id from public."Dweet" t1 union all select c1.db_id, c1.original_reply_id as parentid1, c1.original_redweet_id as parentid2, p.root_id from public."Dweet" c1 join all_posts p on ((p.id = c1.original_reply_id) OR (p.id = c1.original_redweet_id)) ) DELETE FROM public."Dweet"  WHERE db_id IN (SELECT id FROM all_posts WHERE root_id = $1);`
-// 	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
+	dweet, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.RedweetDweets.Fetch().With(
+			db.Redweet.Author.Fetch(),
+		),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return post, err
-// }
+	for _, redweet := range dweet.RedweetDweets() {
+		DeleteRedweet(redweet.OriginalRedweetID, redweet.Author().Username)
+	}
 
-// TODO: implement
+	// TODO: Maybe a non-raw SQL solution?
+	// Delete all the dependent posts (this includes redweets and replies to the post) recursively using RAW SQL
+	// We use RAW SQL here because prisma-go-client doesn't support cascade deletes yet:
+	// Link: https://github.com/prisma/prisma-client-go/issues/201
+
+	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
+	delQuery := `WITH RECURSIVE all_posts (id, parentid1, root_id) AS (SELECT t1.db_id, t1.original_reply_id AS parentid1, t1.db_id AS root_id FROM public."Dweet" t1 UNION ALL SELECT c1.db_id, c1.original_reply_id AS parentid1, p.root_id FROM public."Dweet" c1 JOIN all_posts p ON (p.id = c1.original_reply_id) ) DELETE FROM public."Dweet" WHERE db_id IN ( SELECT id FROM all_posts WHERE root_id = $1);`
+	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
+
+	return post, err
+}
+
 // Remove a Redweet
-// func DeleteRedweet(postID string) (*db.DweetModel, error) {
-// 	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
-// 	post, err := GetPostBasic(postID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func DeleteRedweet(postID string, userID string) (*db.RedweetModel, error) {
+	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
+	user, err := client.User.FindUnique(
+		db.User.Username.Equals(userID),
+	).With(
+		db.User.Redweets.Fetch(
+			db.Redweet.OriginalRedweetID.Equals(postID),
+		),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-// 	// Find the dweet that was redweeted
-// 	id, exist := post.OriginalRedweetID()
-// 	if !exist {
-// 		return nil, errors.New("original Dweet not found")
-// 	}
+	// If no such redweet exists, return
+	if len(user.Redweets()) == 0 {
+		return nil, nil
+	}
 
-// 	// Remove the Redweet from the post
-// 	_, err = client.Dweet.FindUnique(
-// 		db.Dweet.ID.Equals(id),
-// 	).Update(
-// 		db.Dweet.RedweetCount.Decrement(1),
-// 	).Exec(ctx)
+	// Remove the Redweet from the post
+	_, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).Update(
+		db.Dweet.RedweetCount.Decrement(1),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	redweet, err := client.Redweet.FindUnique(
+		db.Redweet.DbID.Equals(user.Redweets()[0].DbID),
+	).With(
+		db.Redweet.Author.Fetch(),
+		db.Redweet.RedweetOf.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+	).Delete().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-// 	// Delete all the dependent posts (this includes redweets and replies to the post) recursively using RAW SQL
-// 	// We use RAW SQL here because prisma-go-client doesn't support cascade deletes yet:
-// 	// Link: https://github.com/prisma/prisma-client-go/issues/201
-
-// 	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
-// 	delQuery := `with recursive all_posts (id, parentid1, parentid2, root_id) as (select t1.db_id, t1.original_reply_id as parentid1, t1.original_redweet_id as parentid2, t1.db_id as root_id from public."Dweet" t1 union all select c1.db_id, c1.original_reply_id as parentid1, c1.original_redweet_id as parentid2, p.root_id from public."Dweet" c1 join all_posts p on ((p.id = c1.original_reply_id) OR (p.id = c1.original_redweet_id)) ) DELETE FROM public."Dweet"  WHERE db_id IN (SELECT id FROM all_posts WHERE root_id = $1);`
-// 	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
-
-// 	return post, err
-// }
+	return redweet, err
+}

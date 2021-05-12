@@ -35,38 +35,6 @@ model User {
     createdAt      DateTime  @default(now())
 }
 
-// model Dweet {
-//     dbID              String   @default(uuid()) @id
-//     dweetBody         String   @db.VarChar(240)
-
-//     ID                String   @unique @db.Char(10)
-
-//     author            User     @relation("Dweets", fields: [authorID], references: [dbID])
-//     authorID          String
-
-//     postedAt          DateTime @default(now())
-//     lastUpdatedAt     DateTime @default(now())
-
-//     likeCount         Int      @default(0)
-//     likeUsers         User[]   @relation("Likes")
-
-//     isReply           Boolean  @default(false)
-//     originalReplyID   String?
-//     replyTo           Dweet?   @relation("Replies", fields: [originalReplyID], references: [dbID])
-//     replyCount        Int      @default(0)
-//     replyDweets       Dweet[]  @relation("Replies")
-    
-//     isRedweet         Boolean  @default(false)
-//     originalRedweetID String?
-//     redweetOf         Dweet?   @relation("Redweets", fields: [originalRedweetID], references: [dbID])
-//     redweetCount      Int      @default(0)
-//     redweetDweets     Dweet[]  @relation("Redweets")
-
-//     media             String[]
-// }
-
-// Coming soon
-
 model Dweet {
     dbID              String    @default(uuid()) @id
     dweetBody         String    @db.VarChar(240)
@@ -100,6 +68,6 @@ model Redweet {
     author            User     @relation("Redweeted", fields: [authorID], references: [dbID])
     authorID          String
 
-    originalRedweetID String
     redweetOf         Dweet    @relation("Redweets", fields: [originalRedweetID], references: [dbID])
+    originalRedweetID String
 }
