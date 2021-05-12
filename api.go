@@ -233,7 +233,6 @@ var mutationHandler = graphql.NewObject(
 					return user, nil
 				},
 			},
-			// TODO: Check field completeness
 			"createDweet": &graphql.Field{
 				Type:        dweetSchema,
 				Description: "Create a dweet authored by authenticated user",
@@ -242,7 +241,8 @@ var mutationHandler = graphql.NewObject(
 						Type: graphql.NewNonNull(graphql.String),
 					},
 					"media": &graphql.ArgumentConfig{
-						Type: graphql.NewList(graphql.String),
+						Type:         graphql.NewList(graphql.String),
+						DefaultValue: []string{},
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -258,11 +258,10 @@ var mutationHandler = graphql.NewObject(
 						body, bodyPresent := params.Args["body"].(string)
 						media, mediaPresent := params.Args["media"].([]string)
 						if bodyPresent && mediaPresent {
-							dweetObj, err := NewDweet(body, data["username"].(string), media)
-							user := FormatAsDweetType(dweetObj)
-							return user, err
+							dweet, err := AuthCreateDweet(body, data["username"].(string), media)
+							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
+						return nil, errors.New("invalid request, \"body\" not present")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -279,7 +278,8 @@ var mutationHandler = graphql.NewObject(
 						Type: graphql.NewNonNull(graphql.String),
 					},
 					"media": &graphql.ArgumentConfig{
-						Type: graphql.NewList(graphql.String),
+						Type:         graphql.NewList(graphql.String),
+						DefaultValue: []string{},
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -292,15 +292,14 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Create a reply to a dweet, and return formatted
-						body, bodyPresent := params.Args["body"].(string)
 						originalID, idPresent := params.Args["id"].(string)
+						body, bodyPresent := params.Args["body"].(string)
 						media, mediaPresent := params.Args["media"].([]string)
 						if bodyPresent && mediaPresent && idPresent {
-							dweetObj, err := NewReply(originalID, body, data["username"].(string), media)
-							user := FormatAsDweetType(dweetObj)
-							return user, err
+							dweet, err := AuthCreateReply(originalID, body, data["username"].(string), media)
+							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"id\", \"body\", or \"media\" not present")
+						return nil, errors.New("invalid request, \"id\", or \"body\" not present")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -326,8 +325,7 @@ var mutationHandler = graphql.NewObject(
 						// Create a reply to a dweet, and return formatted
 						originalID, idPresent := params.Args["id"].(string)
 						if idPresent {
-							dweetObj, err := NewRedweet(originalID, data["username"].(string))
-							dweet := FormatAsDweetType(dweetObj)
+							dweet, err := AuthCreateRedweet(originalID, data["username"].(string))
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -356,8 +354,7 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						username, present := params.Args["username"].(string)
 						if present {
-							userObj, err := NewFollower(username, data["username"].(string))
-							user := FormatAsUserType(userObj)
+							user, err := AuthFollow(username, data["username"].(string))
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -386,8 +383,7 @@ var mutationHandler = graphql.NewObject(
 						// Make user like dweet, and return formatted
 						id, present := params.Args["id"].(string)
 						if present {
-							dweetObj, err := NewLike(id, data["username"].(string))
-							dweet := FormatAsDweetType(dweetObj)
+							dweet, err := AuthLike(id, data["username"].(string))
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -416,8 +412,7 @@ var mutationHandler = graphql.NewObject(
 						// Make user like dweet, and return formatted
 						id, present := params.Args["id"].(string)
 						if present {
-							dweetObj, err := DeleteLike(id, data["username"].(string))
-							dweet := FormatAsDweetType(dweetObj)
+							dweet, err := AuthUnlike(id, data["username"].(string))
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -446,8 +441,7 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						username, present := params.Args["username"].(string)
 						if present {
-							userObj, err := DeleteFollower(username, data["username"].(string))
-							user := FormatAsUserType(userObj)
+							user, err := AuthUnfollow(username, data["username"].(string))
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -456,6 +450,7 @@ var mutationHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
+			// TODO: Field checking
 			"editDweet": &graphql.Field{
 				Type:        dweetSchema,
 				Description: "Edit a dweet authored by authenticated user",

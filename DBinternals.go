@@ -269,16 +269,11 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 		return nil, err
 	}
 
-	user, err := GetUser(userID)
-	if err != nil {
-		return nil, err
-	}
-
 	// Create a Redweet
 	createdRedweet, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(post.DweetBody),
 		db.Dweet.ID.Set(genID(10)),
-		db.Dweet.Author.Link(db.User.Username.Equals(user.Username)),
+		db.Dweet.Author.Link(db.User.Username.Equals(userID)),
 		db.Dweet.Media.Set(post.Media),
 		db.Dweet.IsRedweet.Set(true),
 		db.Dweet.RedweetOf.Link(
@@ -298,7 +293,6 @@ func NewRedweet(originalPostID, userID string) (*db.DweetModel, error) {
 		db.Dweet.RedweetDweets.Link(
 			db.Dweet.ID.Equals(createdRedweet.ID),
 		),
-		db.Dweet.LastUpdatedAt.Set(now),
 		db.Dweet.RedweetCount.Increment(1),
 	).Exec(ctx)
 
