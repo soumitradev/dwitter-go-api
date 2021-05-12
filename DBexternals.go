@@ -403,12 +403,26 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string) (DweetTyp
 		db.Dweet.ID.Equals(postID),
 	).With(
 		db.Dweet.Author.Fetch(),
+		db.Dweet.ReplyTo.Fetch(),
+		db.Dweet.ReplyDweets.Fetch(),
+		db.Dweet.RedweetOf.Fetch(),
+		db.Dweet.LikeUsers.Fetch(),
 	).Exec(ctx)
 	if err != nil {
 		return DweetType{}, err
 	}
 
-	npost := FormatAsDweetType(post)
+	user, err := client.User.FindUnique(
+		db.User.Username.Equals(postID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return DweetType{}, err
+	}
+
+	mutuals := HashIntersectUsers(user.Following(), post.LikeUsers())
+	npost := AuthFormatAsDweetType(post, mutuals)
 	return npost, err
 }
 
@@ -416,6 +430,15 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string) (DweetTyp
 func AuthUpdateUser(userID, firstName, lastName, email, bio string) (UserType, error) {
 	user, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
+	).With(
+		db.User.Dweets.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.User.LikedDweets.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.User.Followers.Fetch(),
+		db.User.Following.Fetch(),
 	).Update(
 		db.User.FirstName.Set(firstName),
 		db.User.LastName.Set(lastName),
@@ -671,7 +694,19 @@ func AuthDeleteDweet(postID string, userID string) (DweetType, error) {
 	dweet, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
-		db.Dweet.Author.Fetch(),
+		db.Dweet.Author.Fetch().With(
+			db.User.Following.Fetch(),
+		),
+		db.Dweet.RedweetOf.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.Dweet.ReplyTo.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.Dweet.LikeUsers.Fetch(),
+		db.Dweet.ReplyDweets.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
 	).Exec(ctx)
 	if err != nil {
 		return DweetType{}, err
@@ -683,7 +718,8 @@ func AuthDeleteDweet(postID string, userID string) (DweetType, error) {
 			return DweetType{}, err
 		}
 
-		formatted := FormatAsDweetType(dweet)
+		mutuals := HashIntersectUsers(dweet.LikeUsers(), dweet.Author().Following())
+		formatted := AuthFormatAsDweetType(dweet, mutuals)
 		return formatted, err
 	}
 
@@ -696,7 +732,19 @@ func AuthDeleteRedweet(postID string, userID string) (DweetType, error) {
 	dweet, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
-		db.Dweet.Author.Fetch(),
+		db.Dweet.Author.Fetch().With(
+			db.User.Following.Fetch(),
+		),
+		db.Dweet.RedweetOf.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.Dweet.ReplyTo.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
+		db.Dweet.LikeUsers.Fetch(),
+		db.Dweet.ReplyDweets.Fetch().With(
+			db.Dweet.Author.Fetch(),
+		),
 	).Exec(ctx)
 	if err != nil {
 		return DweetType{}, err
@@ -708,7 +756,8 @@ func AuthDeleteRedweet(postID string, userID string) (DweetType, error) {
 			return DweetType{}, err
 		}
 
-		formatted := FormatAsDweetType(dweet)
+		mutuals := HashIntersectUsers(dweet.LikeUsers(), dweet.Author().Following())
+		formatted := AuthFormatAsDweetType(dweet, mutuals)
 		return formatted, err
 	}
 
