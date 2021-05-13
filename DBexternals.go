@@ -691,7 +691,7 @@ func FetchFollowing(userID string, numberToFetch int, dweetsToFetch int) ([]User
 
 // Delete a dweet
 func AuthDeleteDweet(postID string, userID string) (DweetType, error) {
-	dweet, err := client.Dweet.FindUnique(
+	deleted, err := client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
 		db.Dweet.Author.Fetch().With(
@@ -709,14 +709,14 @@ func AuthDeleteDweet(postID string, userID string) (DweetType, error) {
 		return DweetType{}, err
 	}
 
-	if dweet.Author().Username == userID {
-		dweet, err := DeleteDweet(postID)
+	if deleted.Author().Username == userID {
+		_, err := DeleteDweet(postID)
 		if err != nil {
 			return DweetType{}, err
 		}
 
-		mutuals := HashIntersectUsers(dweet.LikeUsers(), dweet.Author().Following())
-		formatted := AuthFormatAsDweetType(dweet, mutuals)
+		mutuals := HashIntersectUsers(deleted.LikeUsers(), deleted.Author().Following())
+		formatted := AuthFormatAsDweetType(deleted, mutuals)
 		return formatted, err
 	}
 
@@ -816,11 +816,6 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 	).With(
 		db.User.Redweets.Fetch(
 			db.Redweet.OriginalRedweetID.Equals(originalPostID),
-		).With(
-			db.Redweet.Author.Fetch(),
-			db.Redweet.RedweetOf.Fetch().With(
-				db.Dweet.Author.Fetch(),
-			),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -828,13 +823,21 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 	}
 
 	if len(user.Redweets()) > 0 {
-		return FormatAsRedweetType(&user.Redweets()[0]), err
+		redweet, err := client.Redweet.FindUnique(
+			db.Redweet.DbID.Equals(user.Redweets()[0].DbID),
+		).With(
+			db.Redweet.Author.Fetch(),
+			db.Redweet.RedweetOf.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+		).Exec(ctx)
+		return FormatAsRedweetType(redweet), err
 	}
 
 	// Create a Redweet
 	createdRedweet, err := client.Redweet.CreateOne(
 		db.Redweet.Author.Link(
-			db.User.Username.Contains(userID),
+			db.User.Username.Equals(userID),
 		),
 		db.Redweet.RedweetOf.Link(
 			db.Dweet.ID.Equals(originalPostID),
@@ -858,6 +861,9 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 		),
 		db.Dweet.RedweetCount.Increment(1),
 	).Exec(ctx)
+	if err != nil {
+		return RedweetType{}, err
+	}
 
 	return FormatAsRedweetType(createdRedweet), err
 }

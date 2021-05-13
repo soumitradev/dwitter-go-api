@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"dwitter_go_graphql/prisma/db"
@@ -485,14 +486,34 @@ func DeleteDweet(postID string) (*db.DweetModel, error) {
 		DeleteRedweet(redweet.OriginalRedweetID, redweet.Author().Username)
 	}
 
-	// TODO: Maybe a non-raw SQL solution?
+	dweet, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).With(
+		db.Dweet.ReplyDweets.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, daughterDweet := range dweet.ReplyDweets() {
+		DeleteDweet(daughterDweet.ID)
+	}
+
+	_, err = client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(postID),
+	).Delete().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// The following comment block is kept as an homage to the great recursive SQL function that once resided here.
+	// May the soul of this legendary query rest in peace. It was a honor to use you.
+
 	// Delete all the dependent posts (this includes redweets and replies to the post) recursively using RAW SQL
 	// We use RAW SQL here because prisma-go-client doesn't support cascade deletes yet:
 	// Link: https://github.com/prisma/prisma-client-go/issues/201
-
 	// Recursive SQL function with modifications from: https://stackoverflow.com/q/10381243
-	delQuery := `WITH RECURSIVE all_posts (id, parentid1, root_id) AS (SELECT t1.db_id, t1.original_reply_id AS parentid1, t1.db_id AS root_id FROM public."Dweet" t1 UNION ALL SELECT c1.db_id, c1.original_reply_id AS parentid1, p.root_id FROM public."Dweet" c1 JOIN all_posts p ON (p.id = c1.original_reply_id) ) DELETE FROM public."Dweet" WHERE db_id IN ( SELECT id FROM all_posts WHERE root_id = $1);`
-	_, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
+	// delQuery := `WITH RECURSIVE all_posts (id, parentid1, root_id) AS (SELECT t1.db_id, t1.original_reply_id AS parentid1, t1.db_id AS root_id FROM public."Dweet" t1 UNION ALL SELECT c1.db_id, c1.original_reply_id AS parentid1, p.root_id FROM public."Dweet" c1 JOIN all_posts p ON (p.id = c1.original_reply_id) ) DELETE FROM public."Dweet" WHERE db_id IN ( SELECT id FROM all_posts WHERE root_id = $1);`
+	// _, err = client.Prisma.ExecuteRaw(delQuery, post.DbID).Exec(ctx)
 
 	return post, err
 }
@@ -505,6 +526,11 @@ func DeleteRedweet(postID string, userID string) (*db.RedweetModel, error) {
 	).With(
 		db.User.Redweets.Fetch(
 			db.Redweet.OriginalRedweetID.Equals(postID),
+		).With(
+			db.Redweet.Author.Fetch(),
+			db.Redweet.RedweetOf.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
 		),
 	).Exec(ctx)
 	if err != nil {
@@ -526,17 +552,14 @@ func DeleteRedweet(postID string, userID string) (*db.RedweetModel, error) {
 		return nil, err
 	}
 
-	redweet, err := client.Redweet.FindUnique(
+	fmt.Printf("wtf")
+
+	_, err = client.Redweet.FindUnique(
 		db.Redweet.DbID.Equals(user.Redweets()[0].DbID),
-	).With(
-		db.Redweet.Author.Fetch(),
-		db.Redweet.RedweetOf.Fetch().With(
-			db.Dweet.Author.Fetch(),
-		),
 	).Delete().Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return redweet, err
+	return &user.Redweets()[0], err
 }

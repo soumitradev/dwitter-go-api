@@ -310,7 +310,7 @@ var mutationHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			"createRedweet": &graphql.Field{
+			"redweet": &graphql.Field{
 				Type:        redweetSchema,
 				Description: "Create a redweet of a dweet by authenticated user",
 				Args: graphql.FieldConfigArgument{
@@ -545,7 +545,7 @@ var mutationHandler = graphql.NewObject(
 				},
 			},
 			"deleteDweet": &graphql.Field{
-				Type:        userSchema,
+				Type:        dweetSchema,
 				Description: "Delete dweet authored by user",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
