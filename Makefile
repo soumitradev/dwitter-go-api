@@ -1,4 +1,4 @@
-run: migrate
+run:
 	go run .
 
 migrate: clean

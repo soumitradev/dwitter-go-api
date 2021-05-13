@@ -1,0 +1,87 @@
+fragment UserFrag on User {
+  username
+  first_name
+  last_name
+  email
+  bio
+  dweets {
+    ...BasicDweetFrag
+  }
+  liked_dweets {
+    ...BasicDweetFrag
+  }
+  follower_count
+  followers {
+    ...BasicUserFrag
+  }
+  following_count
+  following {
+    ...BasicUserFrag
+  }
+  created_at
+}
+
+fragment BasicUserFrag on BasicUser {
+  username
+  first_name
+  last_name
+  email
+  bio
+  follower_count
+  following_count
+  created_at
+}
+
+fragment DweetFrag on Dweet {
+  dweet_body
+  id
+  author {
+    ...BasicUserFrag
+  }
+  author_id
+  posted_at
+  last_updated_at
+  like_count
+  like_users {
+    ...BasicUserFrag
+  }
+  is_reply
+  original_reply_id
+  reply_to {
+    ...BasicDweetFrag
+  }
+  reply_count
+  reply_dweets {
+    ...BasicDweetFrag
+  }
+  redweet_count
+  media
+}
+
+fragment BasicDweetFrag on BasicDweet {
+  dweet_body
+  id
+  author {
+    ...BasicUserFrag
+  }
+  author_id
+  posted_at
+  last_updated_at
+  like_count
+  is_reply
+  original_reply_id
+  reply_count
+  redweet_count
+  media
+}
+
+fragment RedweetFrag on Redweet {
+  author {
+    ...BasicUserFrag
+  }
+  author_id
+  redweet_of {
+    ...BasicDweetFrag
+  }
+  original_redweet_id
+}

@@ -6,23 +6,6 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-// TODO Testing:
-// query:
-// - dweet
-// - user
-// - likedDweets
-// - followers
-// - following
-
-// mutation:
-// - createUser
-// - follow
-// - like
-// - unfollow
-// - unlike
-// - editDweet
-// - editUser
-
 // Create a handler that handles graphql queries
 var queryHandler = graphql.NewObject(
 	graphql.ObjectConfig{
@@ -375,7 +358,7 @@ var mutationHandler = graphql.NewObject(
 					if isAuth {
 						// Make user follow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
-						dweetsToFetch, dweetsPresent := params.Args["username"].(int)
+						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						if userPresent && dweetsPresent {
 							user, err := AuthFollow(username, data["username"].(string), dweetsToFetch)
 							return user, err
@@ -477,7 +460,7 @@ var mutationHandler = graphql.NewObject(
 					if isAuth {
 						// Make user follow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
-						dweetsToFetch, numPresent := params.Args["username"].(int)
+						dweetsToFetch, numPresent := params.Args["dweetsToFetch"].(int)
 						if userPresent && numPresent {
 							user, err := AuthUnfollow(username, data["username"].(string), dweetsToFetch)
 							return user, err
@@ -499,7 +482,8 @@ var mutationHandler = graphql.NewObject(
 						Type: graphql.NewNonNull(graphql.String),
 					},
 					"media": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.NewList(graphql.String)),
+						Type:         graphql.NewList(graphql.String),
+						DefaultValue: []interface{}{},
 					},
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
@@ -518,10 +502,14 @@ var mutationHandler = graphql.NewObject(
 						// Edit dweet, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						body, bodyPresent := params.Args["body"].(string)
-						media, mediaPresent := params.Args["media"].([]string)
+						media, mediaPresent := params.Args["media"].([]interface{})
 						repliesToFetch, numPresent := params.Args["repliesToFetch"].(int)
 						if bodyPresent && mediaPresent && idPresent && numPresent {
-							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, media, repliesToFetch)
+							mediaList := []string{}
+							for _, link := range media {
+								mediaList = append(mediaList, link.(string))
+							}
+							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")

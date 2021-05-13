@@ -418,7 +418,7 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	}
 
 	user, err := client.User.FindUnique(
-		db.User.Username.Equals(postID),
+		db.User.Username.Equals(userID),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
@@ -657,6 +657,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+					db.Dweet.LikeUsers.Fetch(),
 				),
 				db.User.Following.Fetch(),
 			).Exec(ctx)
@@ -672,6 +673,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 					db.Dweet.ReplyDweets.Fetch().Take(numberOfReplies).With(
 						db.Dweet.Author.Fetch(),
 					),
+					db.Dweet.LikeUsers.Fetch(),
 				),
 				db.User.Following.Fetch(),
 			).Exec(ctx)
@@ -689,6 +691,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+					db.Dweet.LikeUsers.Fetch(),
 				),
 				db.User.Following.Fetch(),
 			).Exec(ctx)
@@ -704,6 +707,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 					db.Dweet.ReplyDweets.Fetch().Take(numberOfReplies).With(
 						db.Dweet.Author.Fetch(),
 					),
+					db.Dweet.LikeUsers.Fetch(),
 				),
 				db.User.Following.Fetch(),
 			).Exec(ctx)
@@ -1098,20 +1102,18 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 			personBeingFollowed, err = client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(
-				db.User.Followers.Fetch().With(
-					db.User.Dweets.Fetch().With(
-						db.Dweet.Author.Fetch(),
-					),
+				db.User.Followers.Fetch(),
+				db.User.Dweets.Fetch().Take(dweetsToFetch).With(
+					db.Dweet.Author.Fetch(),
 				),
 			).Exec(ctx)
 		} else {
 			personBeingFollowed, err = client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(
-				db.User.Followers.Fetch().With(
-					db.User.Dweets.Fetch().Take(dweetsToFetch).With(
-						db.Dweet.Author.Fetch(),
-					),
+				db.User.Followers.Fetch(),
+				db.User.Dweets.Fetch().Take(dweetsToFetch).With(
+					db.Dweet.Author.Fetch(),
 				),
 			).Exec(ctx)
 		}
@@ -1250,6 +1252,7 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 
 		// Find known people that liked thw dweet
 		mutuals := HashIntersectUsers(likedPost.LikeUsers(), user.Following())
+		mutuals = append(mutuals, *user)
 
 		formatted := AuthFormatAsDweetType(likedPost, mutuals)
 		return formatted, err
@@ -1389,8 +1392,6 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 		// Find known people that liked the dweet
 		mutuals := HashIntersectUsers(post.LikeUsers(), user.Following())
 
-		mutuals = append(mutuals, *user)
-
 		formatted := AuthFormatAsDweetType(post, mutuals)
 
 		return formatted, err
@@ -1478,6 +1479,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 			db.User.Username.Equals(followedID),
 		).With(
 			db.User.Followers.Fetch(),
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
 		).Exec(ctx)
 		if err != nil {
 			return UserType{}, err
@@ -1494,7 +1498,7 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 		}
 
 		mutuals := HashIntersectUsers(personBeingFollowed.Followers(), authenticatedUser.Following())
-		return AuthFormatAsUserType(authenticatedUser, mutuals), err
+		return AuthFormatAsUserType(personBeingFollowed, mutuals), err
 	}
 
 	// Add follower to followed's follower list
@@ -1502,10 +1506,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 		personBeingFollowed, err = client.User.FindUnique(
 			db.User.Username.Equals(followedID),
 		).With(
-			db.User.Followers.Fetch().With(
-				db.User.Dweets.Fetch().With(
-					db.Dweet.Author.Fetch(),
-				),
+			db.User.Followers.Fetch(),
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
 			),
 		).Update(
 			db.User.FollowerCount.Decrement(1),
@@ -1517,10 +1520,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 		personBeingFollowed, err = client.User.FindUnique(
 			db.User.Username.Equals(followedID),
 		).With(
-			db.User.Followers.Fetch().With(
-				db.User.Dweets.Fetch().Take(dweetsToFetch).With(
-					db.Dweet.Author.Fetch(),
-				),
+			db.User.Followers.Fetch(),
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
 			),
 		).Update(
 			db.User.FollowerCount.Decrement(1),

@@ -8,7 +8,7 @@ import (
 )
 
 func runDBTests() {
-	test()
+	// test()
 }
 
 func test() error {
