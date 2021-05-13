@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"dwitter_go_graphql/prisma/db"
@@ -551,8 +550,6 @@ func DeleteRedweet(postID string, userID string) (*db.RedweetModel, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("wtf")
 
 	_, err = client.Redweet.FindUnique(
 		db.Redweet.DbID.Equals(user.Redweets()[0].DbID),

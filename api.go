@@ -37,7 +37,7 @@ var queryHandler = graphql.NewObject(
 					},
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -75,7 +75,7 @@ var queryHandler = graphql.NewObject(
 					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 					// TOOD: Get mutuals boolean
 				},
@@ -112,11 +112,11 @@ var queryHandler = graphql.NewObject(
 				Args: graphql.FieldConfigArgument{
 					"numberToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -144,11 +144,11 @@ var queryHandler = graphql.NewObject(
 				Args: graphql.FieldConfigArgument{
 					"numberToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -176,11 +176,11 @@ var queryHandler = graphql.NewObject(
 				Args: graphql.FieldConfigArgument{
 					"numberToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
-						DefaultValue: -1,
+						DefaultValue: 0,
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -536,19 +536,19 @@ var mutationHandler = graphql.NewObject(
 				Args: graphql.FieldConfigArgument{
 					"firstName": &graphql.ArgumentConfig{
 						Type:         graphql.String,
-						DefaultValue: nil,
+						DefaultValue: "",
 					},
 					"lastName": &graphql.ArgumentConfig{
 						Type:         graphql.String,
-						DefaultValue: nil,
+						DefaultValue: "",
 					},
 					"email": &graphql.ArgumentConfig{
 						Type:         graphql.String,
-						DefaultValue: nil,
+						DefaultValue: "",
 					},
 					"bio": &graphql.ArgumentConfig{
 						Type:         graphql.String,
-						DefaultValue: nil,
+						DefaultValue: "",
 					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
