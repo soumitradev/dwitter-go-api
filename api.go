@@ -6,6 +6,23 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+// TODO Testing:
+// query:
+// - dweet
+// - user
+// - likedDweets
+// - followers
+// - following
+
+// mutation:
+// - createUser
+// - follow
+// - like
+// - unfollow
+// - unlike
+// - editDweet
+// - editUser
+
 // Create a handler that handles graphql queries
 var queryHandler = graphql.NewObject(
 	graphql.ObjectConfig{
@@ -22,7 +39,6 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
-					// TODO: add fetch mutual likes param
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -102,7 +118,6 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
-					// TODO: Fetch mutual likes boolean
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -135,7 +150,6 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
-					// TODO: Add a fetchMutuals param
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -168,7 +182,6 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: -1,
 					},
-					// TODO: Add a fetchMutuals param
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -346,7 +359,10 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Add fetch mutuals param
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -358,9 +374,10 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Make user follow the other user, and return formatted
-						username, present := params.Args["username"].(string)
-						if present {
-							user, err := AuthFollow(username, data["username"].(string))
+						username, userPresent := params.Args["username"].(string)
+						dweetsToFetch, dweetsPresent := params.Args["username"].(int)
+						if userPresent && dweetsPresent {
+							user, err := AuthFollow(username, data["username"].(string), dweetsToFetch)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -376,7 +393,10 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: add fetch mutual likes param
+					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -388,9 +408,10 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Make user like dweet, and return formatted
-						id, present := params.Args["id"].(string)
-						if present {
-							dweet, err := AuthLike(id, data["username"].(string))
+						id, idPresent := params.Args["id"].(string)
+						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
+						if idPresent && repliesPresent {
+							dweet, err := AuthLike(id, data["username"].(string), repliesToFetch)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -406,7 +427,10 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: add fetch mutual likes param
+					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -418,9 +442,10 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Make user like dweet, and return formatted
-						id, present := params.Args["id"].(string)
-						if present {
-							dweet, err := AuthUnlike(id, data["username"].(string))
+						id, idPresent := params.Args["id"].(string)
+						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
+						if idPresent && repliesPresent {
+							dweet, err := AuthUnlike(id, data["username"].(string), repliesToFetch)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -436,7 +461,10 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: add fetch mutuals param
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -448,9 +476,10 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Make user follow the other user, and return formatted
-						username, present := params.Args["username"].(string)
-						if present {
-							user, err := AuthUnfollow(username, data["username"].(string))
+						username, userPresent := params.Args["username"].(string)
+						dweetsToFetch, numPresent := params.Args["username"].(int)
+						if userPresent && numPresent {
+							user, err := AuthUnfollow(username, data["username"].(string), dweetsToFetch)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -472,8 +501,10 @@ var mutationHandler = graphql.NewObject(
 					"media": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.NewList(graphql.String)),
 					},
-					// TODO: add fetch mutual likes param
-					// TODO: add replies to fetch
+					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -488,8 +519,9 @@ var mutationHandler = graphql.NewObject(
 						id, idPresent := params.Args["id"].(string)
 						body, bodyPresent := params.Args["body"].(string)
 						media, mediaPresent := params.Args["media"].([]string)
-						if bodyPresent && mediaPresent && idPresent {
-							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, media)
+						repliesToFetch, numPresent := params.Args["repliesToFetch"].(int)
+						if bodyPresent && mediaPresent && idPresent && numPresent {
+							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, media, repliesToFetch)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -518,7 +550,18 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: nil,
 					},
-					// TODO: maybe allow to also fetch dweets and followers and following?
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"followersToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"followingToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -534,8 +577,11 @@ var mutationHandler = graphql.NewObject(
 						lastName, lastPresent := params.Args["lastName"].(string)
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
-						if firstPresent && lastPresent && emailPresent && bioPresent {
-							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio)
+						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
+						followersToFetch, followersPresent := params.Args["followersToFetch"].(int)
+						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
+						if firstPresent && lastPresent && emailPresent && bioPresent && dweetsPresent && followersPresent && followingPresent {
+							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, dweetsToFetch, followersToFetch, followingToFetch)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -551,7 +597,10 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: add fetch mutual likes param
+					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
@@ -563,9 +612,10 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Make user follow the other user, and return formatted
-						id, present := params.Args["id"].(string)
-						if present {
-							dweet, err := AuthDeleteDweet(id, data["username"].(string))
+						id, idPresent := params.Args["id"].(string)
+						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
+						if idPresent && repliesPresent {
+							dweet, err := AuthDeleteDweet(id, data["username"].(string), repliesToFetch)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
