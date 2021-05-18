@@ -108,6 +108,9 @@ func NoAuthGetPost(postID string, replies_to_fetch int) (DweetType, error) {
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -165,6 +168,9 @@ func AuthGetPost(postID string, replies_to_fetch int, viewUserID string) (DweetT
 			db.Dweet.LikeUsers.Fetch(),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -217,6 +223,9 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -262,6 +271,9 @@ func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserTyp
 				db.User.Following.Fetch(),
 			).Exec(ctx)
 		}
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
 
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
@@ -303,6 +315,10 @@ func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserTyp
 			).Exec(ctx)
 		}
 
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
+
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -323,26 +339,36 @@ func SignUpUser(username string, password string, firstName string, lastName str
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	createdUser, err := client.User.CreateOne(
-		db.User.Username.Set(username),
-		db.User.PasswordHash.Set(string(passwordHash)),
-		db.User.FirstName.Set(firstName),
-		db.User.Email.Set(email),
-		db.User.Bio.Set(bio),
-		db.User.CreatedAt.Set(time.Now()),
-		db.User.LastName.Set(lastName),
-	).With(
-		db.User.Dweets.Fetch().With(
-			db.Dweet.Author.Fetch(),
-		),
+	_, err1 := client.User.FindUnique(
+		db.User.Username.Equals(username),
 	).Exec(ctx)
+	_, err2 := client.User.FindUnique(
+		db.User.Email.Equals(email),
+	).Exec(ctx)
+	if (err1 == db.ErrNotFound) || (err2 == db.ErrNotFound) {
+		createdUser, err := client.User.CreateOne(
+			db.User.Username.Set(username),
+			db.User.PasswordHash.Set(string(passwordHash)),
+			db.User.FirstName.Set(firstName),
+			db.User.Email.Set(email),
+			db.User.Bio.Set(bio),
+			db.User.CreatedAt.Set(time.Now()),
+			db.User.LastName.Set(lastName),
+		).With(
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+			),
+		).Exec(ctx)
 
-	if err != nil {
-		return UserType{}, fmt.Errorf("internal server error: %v", err)
+		if err != nil {
+			return UserType{}, fmt.Errorf("internal server error: %v", err)
+		}
+
+		nuser := AuthFormatAsUserType(createdUser, []db.UserModel{})
+		return nuser, err
+	} else {
+		return UserType{}, errors.New("username/email already taken")
 	}
-
-	nuser := AuthFormatAsUserType(createdUser, []db.UserModel{})
-	return nuser, err
 }
 
 // Check given credentials and return true if valid
@@ -351,12 +377,12 @@ func CheckCreds(username string, password string) (bool, error) {
 		db.User.Username.Equals(username),
 	).Exec(ctx)
 	if err != nil {
-		return false, fmt.Errorf("internal server error: %v", errors.New("user not found"))
+		return false, errors.New("invalid username/password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return false, fmt.Errorf("internal server error: %v", errors.New("invalid password"))
+		return false, errors.New("invalid username/password")
 	}
 	return true, nil
 }
@@ -368,6 +394,9 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	).With(
 		db.Dweet.Author.Fetch(),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -411,6 +440,9 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 			db.Dweet.LastUpdatedAt.Set(time.Now()),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -420,6 +452,9 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -451,6 +486,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -475,6 +513,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -501,6 +542,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -525,6 +569,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -553,6 +600,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -577,6 +627,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -603,6 +656,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -627,6 +683,9 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 				).Exec(ctx)
+				if err == db.ErrNotFound {
+					return UserType{}, fmt.Errorf("user not found: %v", err)
+				}
 				if err != nil {
 					return UserType{}, fmt.Errorf("internal server error: %v", err)
 				}
@@ -711,6 +770,9 @@ func FetchLikedDweets(userID string, numberToFetch int, numberOfReplies int) ([]
 			).Exec(ctx)
 		}
 	}
+	if err == db.ErrNotFound {
+		return []DweetType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return []DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -787,6 +849,9 @@ func FetchFollowers(userID string, numberToFetch int, dweetsToFetch int) ([]User
 			).Exec(ctx)
 		}
 	}
+	if err == db.ErrNotFound {
+		return []UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return []UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -856,6 +921,9 @@ func FetchFollowing(userID string, numberToFetch int, dweetsToFetch int) ([]User
 			).Exec(ctx)
 		}
 	}
+	if err == db.ErrNotFound {
+		return []UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return []UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -865,6 +933,9 @@ func FetchFollowing(userID string, numberToFetch int, dweetsToFetch int) ([]User
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return []UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return []UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -917,6 +988,9 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int) (DweetTyp
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -939,6 +1013,9 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int) (DweetTyp
 // Delete a redweet
 func AuthDeleteRedweet(postID string, userID string) (RedweetType, error) {
 	redweet, err := DeleteRedweet(postID, userID)
+	if err == db.ErrNotFound {
+		return RedweetType{}, fmt.Errorf("redweet not found: %v", err)
+	}
 	if err != nil {
 		return RedweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -950,10 +1027,23 @@ func AuthDeleteRedweet(postID string, userID string) (RedweetType, error) {
 
 // Create a Post
 func AuthCreateDweet(body, authorID string, mediaLinks []string) (DweetType, error) {
+	randID := genID(10)
+	_, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(randID),
+	).Exec(ctx)
+
+	for err != db.ErrNotFound {
+		randID := genID(10)
+
+		_, err = client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(randID),
+		).Exec(ctx)
+	}
+
 	now := time.Now()
 	createdPost, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
-		db.Dweet.ID.Set(genID(10)),
+		db.Dweet.ID.Set(randID),
 		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
@@ -977,11 +1067,24 @@ func AuthCreateDweet(body, authorID string, mediaLinks []string) (DweetType, err
 
 // Create a Reply
 func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (DweetType, error) {
+	randID := genID(10)
+	_, err := client.Dweet.FindUnique(
+		db.Dweet.ID.Equals(randID),
+	).Exec(ctx)
+
+	for err != db.ErrNotFound {
+		randID := genID(10)
+
+		_, err = client.Dweet.FindUnique(
+			db.Dweet.ID.Equals(randID),
+		).Exec(ctx)
+	}
+
 	now := time.Now()
 	// Create a Reply
 	createdReply, err := client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
-		db.Dweet.ID.Set(genID(10)),
+		db.Dweet.ID.Set(randID),
 		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
@@ -1012,6 +1115,9 @@ func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (Dw
 		),
 		db.Dweet.ReplyCount.Increment(1),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("original dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1030,6 +1136,9 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 			db.Redweet.OriginalRedweetID.Equals(originalPostID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return RedweetType{}, fmt.Errorf("original dweet not found: %v", err)
+	}
 	if err != nil {
 		return RedweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1073,6 +1182,9 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 		),
 		db.Dweet.RedweetCount.Increment(1),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return RedweetType{}, fmt.Errorf("original dweet not found: %v", err)
+	}
 	if err != nil {
 		return RedweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1090,6 +1202,9 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 			db.User.Username.Equals(followerID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1115,6 +1230,9 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 				),
 			).Exec(ctx)
 		}
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1124,7 +1242,9 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 		).With(
 			db.User.Following.Fetch(),
 		).Exec(ctx)
-
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1163,6 +1283,9 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1178,6 +1301,9 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int) (UserTy
 			db.User.Username.Equals(followedID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1198,6 +1324,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 			db.User.Username.Equals(userID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1217,6 +1346,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 				),
 				db.Dweet.LikeUsers.Fetch(),
 			).Exec(ctx)
+			if err == db.ErrNotFound {
+				return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+			}
 			if err != nil {
 				return DweetType{}, fmt.Errorf("internal server error: %v", err)
 			}
@@ -1233,6 +1365,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 				),
 				db.Dweet.LikeUsers.Fetch(),
 			).Exec(ctx)
+			if err == db.ErrNotFound {
+				return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+			}
 			if err != nil {
 				return DweetType{}, fmt.Errorf("internal server error: %v", err)
 			}
@@ -1244,6 +1379,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 		).With(
 			db.User.Following.Fetch(),
 		).Exec(ctx)
+		if err == db.ErrNotFound {
+			return DweetType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1277,6 +1415,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 				db.User.Username.Equals(userID),
 			),
 		).Exec(ctx)
+		if err == db.ErrNotFound {
+			return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+		}
 		if err != nil {
 			return DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1298,6 +1439,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 				db.User.Username.Equals(userID),
 			),
 		).Exec(ctx)
+		if err == db.ErrNotFound {
+			return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+		}
 		if err != nil {
 			return DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1313,6 +1457,9 @@ func AuthLike(likedPostID, userID string, repliesToFetch int) (DweetType, error)
 			db.Dweet.ID.Equals(like.ID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1337,6 +1484,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 			db.User.Username.Equals(userID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1357,6 +1507,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 				),
 				db.Dweet.LikeUsers.Fetch(),
 			).Exec(ctx)
+			if err == db.ErrNotFound {
+				return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+			}
 			if err != nil {
 				return DweetType{}, fmt.Errorf("internal server error: %v", err)
 			}
@@ -1373,6 +1526,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 				),
 				db.Dweet.LikeUsers.Fetch(),
 			).Exec(ctx)
+			if err == db.ErrNotFound {
+				return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+			}
 			if err != nil {
 				return DweetType{}, fmt.Errorf("internal server error: %v", err)
 			}
@@ -1383,6 +1539,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 		).With(
 			db.User.Following.Fetch(),
 		).Exec(ctx)
+		if err == db.ErrNotFound {
+			return DweetType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1434,6 +1593,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1443,6 +1605,9 @@ func AuthUnlike(postID string, userID string, repliesToFetch int) (DweetType, er
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return DweetType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1467,6 +1632,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 			db.User.Username.Equals(followerID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1481,6 +1649,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 				db.Dweet.Author.Fetch(),
 			),
 		).Exec(ctx)
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1491,6 +1662,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 			db.User.Following.Fetch(),
 		).Exec(ctx)
 
+		if err == db.ErrNotFound {
+			return UserType{}, fmt.Errorf("user not found: %v", err)
+		}
 		if err != nil {
 			return UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
@@ -1529,6 +1703,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 			),
 		).Exec(ctx)
 	}
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
@@ -1544,6 +1721,9 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 			db.User.Username.Equals(followedID),
 		),
 	).Exec(ctx)
+	if err == db.ErrNotFound {
+		return UserType{}, fmt.Errorf("user not found: %v", err)
+	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
