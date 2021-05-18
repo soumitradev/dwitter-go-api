@@ -33,6 +33,7 @@ model User {
     following      User[]    @relation("Follow")
 
     createdAt      DateTime  @default(now())
+    tokenVersion   Int
 }
 
 model Dweet {

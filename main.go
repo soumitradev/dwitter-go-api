@@ -74,6 +74,7 @@ func main() {
 
 	// Handle login using a non-GraphQL solution
 	router.HandleFunc("/login", loginHandler).Methods("POST")
+	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
 
 	// Create an HTTP server
 	srv := &http.Server{

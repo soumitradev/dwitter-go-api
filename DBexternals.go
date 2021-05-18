@@ -4,6 +4,7 @@ import (
 	"dwitter_go_graphql/prisma/db"
 	"errors"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -352,6 +353,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 			db.User.FirstName.Set(firstName),
 			db.User.Email.Set(email),
 			db.User.Bio.Set(bio),
+			db.User.TokenVersion.Set(rand.Intn(10000)),
 			db.User.CreatedAt.Set(time.Now()),
 			db.User.LastName.Set(lastName),
 		).With(

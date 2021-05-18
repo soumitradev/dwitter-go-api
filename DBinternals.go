@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"math/rand"
 	"time"
 
 	"dwitter_go_graphql/prisma/db"
@@ -145,6 +146,7 @@ func NewUser(username, passwordHash, firstName, lastName, email, bio string) (*d
 		db.User.FirstName.Set(firstName),
 		db.User.Email.Set(email),
 		db.User.Bio.Set(bio),
+		db.User.TokenVersion.Set(rand.Intn(10000)),
 		db.User.CreatedAt.Set(time.Now()),
 		db.User.LastName.Set(lastName),
 	).Exec(ctx)

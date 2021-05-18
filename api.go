@@ -25,7 +25,7 @@ var queryHandler = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -64,7 +64,7 @@ var queryHandler = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -104,7 +104,7 @@ var queryHandler = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -136,7 +136,7 @@ var queryHandler = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -168,7 +168,7 @@ var queryHandler = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -249,7 +249,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -286,7 +286,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -317,7 +317,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -350,7 +350,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -384,7 +384,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -418,7 +418,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -452,7 +452,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -493,7 +493,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -554,7 +554,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -593,7 +593,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
@@ -623,7 +623,7 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-					data, isAuth, err := VerifyToken(tokenString)
+					data, isAuth, err := VerifyAccessToken(tokenString)
 					if err != nil {
 						return nil, err
 					}
