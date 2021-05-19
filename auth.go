@@ -64,7 +64,7 @@ func AccessToken(userID string) (string, error) {
 	token_claims := jwt.MapClaims{}
 	token_claims["authorized"] = true
 	token_claims["username"] = userID
-	token_claims["exp"] = time.Now().Add(time.Second * 15).Unix()
+	token_claims["exp"] = time.Now().Add(time.Minute * 15).Unix()
 
 	acces_token := jwt.NewWithClaims(jwt.SigningMethodHS256, token_claims)
 

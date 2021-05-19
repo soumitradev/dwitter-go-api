@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
 )
@@ -49,8 +50,8 @@ func main() {
 	// When returning from main(), make sure to disconnect from database
 	defer DisconnectDB()
 
-	// Create a new router
-	router := mux.NewRouter()
+	// Create a new router, and add middleware
+	router := mux.NewRouter().StrictSlash(true)
 
 	// Create a graphql query handler
 	h := handler.New(&handler.Config{
@@ -75,6 +76,11 @@ func main() {
 	// Handle login using a non-GraphQL solution
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
+
+	router.Use(handlers.CompressHandler)
+	router.Use(LoggingHandler)
+	router.Use(ContentTypeHandler)
+	router.Use(RecoveryHandler)
 
 	// Create an HTTP server
 	srv := &http.Server{
