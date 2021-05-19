@@ -52,8 +52,6 @@ func SplitCookie(cookieString string) string {
 
 // Create an Access Token
 func AccessToken(userID string) (string, error) {
-	os.Setenv("ACCESS_SECRET", "MYVERYSECRETKEY")
-
 	_, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).Exec(ctx)
@@ -78,8 +76,6 @@ func AccessToken(userID string) (string, error) {
 
 // Create a Refresh Token
 func RefreshToken(userID string) (string, error) {
-	os.Setenv("REFRESH_SECRET", "MYOTHERVERYSECRETKEY")
-
 	userDB, err := client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).Exec(ctx)

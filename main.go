@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
+	"github.com/joho/godotenv"
 )
 
 // func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
@@ -40,11 +41,15 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	// Load .env
+	godotenv.Load()
+
 	// Seed the random function
 	initRandom()
 
 	// Connect to database, and seed the database
 	ConnectDB()
+	initCDN()
 	runDBTests()
 
 	// When returning from main(), make sure to disconnect from database
@@ -71,16 +76,18 @@ func main() {
 	})
 
 	// Map /graphql to the graphql handler, and attach a middleware to it
-	router.Handle("/graphql", customMiddleware(h))
+	router.Handle("/graphql", h)
 
 	// Handle login using a non-GraphQL solution
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
+	router.HandleFunc("/media_upload", uploadFile).Methods("POST")
 
 	router.Use(handlers.CompressHandler)
 	router.Use(LoggingHandler)
 	router.Use(ContentTypeHandler)
 	router.Use(RecoveryHandler)
+	router.Use(customMiddleware)
 
 	// Create an HTTP server
 	srv := &http.Server{
