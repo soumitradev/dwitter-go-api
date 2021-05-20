@@ -235,6 +235,197 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	return nuser, err
 }
 
+// Get dweet when authenticated
+func AuthSearchPosts(text string, numberToFetch int, repliesToFetch int, viewUserID string) ([]DweetType, error) {
+	// When viewing a Dweet (when not logged in):
+	// - I need the basic dweet info: Body, Author
+	// - Likes, Redweets and reply counts
+	// - Some replies (more can be loaded on scrolling)
+
+	// Get your own following-list
+	viewUser, err := client.User.FindUnique(
+		db.User.Username.Equals(viewUserID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return []DweetType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	following := viewUser.Following()
+
+	var posts []db.DweetModel
+
+	// Fetch the user requested with like_users so we see who liked the dweet
+	if numberToFetch < 0 {
+		if repliesToFetch < 0 {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.LikeUsers.Fetch(),
+			).Exec(ctx)
+		} else {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().Take(repliesToFetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.LikeUsers.Fetch(),
+			).Exec(ctx)
+		}
+	} else {
+		if repliesToFetch < 0 {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).Take(numberToFetch).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.LikeUsers.Fetch(),
+			).Exec(ctx)
+		} else {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).Take(numberToFetch).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().Take(repliesToFetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.LikeUsers.Fetch(),
+			).Exec(ctx)
+		}
+	}
+	if err == db.ErrNotFound {
+		return []DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
+	if err != nil {
+		return []DweetType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	var formatted []DweetType
+
+	for _, post := range posts {
+		// If the dweet is liked by requesting user, include the requesting user in the like_users list
+		likes := post.LikeUsers()
+		selfLike := false
+		for _, user := range likes {
+			if user.Username == viewUserID {
+				selfLike = true
+			}
+		}
+		// Find known people that liked thw dweet
+		mutuals := HashIntersectUsers(likes, following)
+
+		// Add requesting user to like_users list
+		if selfLike {
+			mutuals = append(mutuals, *viewUser)
+		}
+
+		// Send back the dweet requested, along with like_users
+		npost := AuthFormatAsDweetType(&post, mutuals)
+		formatted = append(formatted, npost)
+	}
+
+	return formatted, err
+}
+
+// Get dweet when not authenticated
+func NoAuthSearchPosts(text string, numToFetch int, replies_to_fetch int) ([]DweetType, error) {
+	// When viewing a Dweet (when not logged in):
+	// - I need the basic dweet info: Body, Author
+	// - Likes, Redweets and reply counts
+	// - Some replies (more can be loaded on scrolling)
+
+	var posts []db.DweetModel
+	var err error
+	if numToFetch < 0 {
+		if replies_to_fetch < 0 {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+			).Exec(ctx)
+		} else {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+			).Exec(ctx)
+		}
+	} else {
+		if replies_to_fetch < 0 {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).Take(numToFetch).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+			).Exec(ctx)
+		} else {
+			posts, err = client.Dweet.FindMany(
+				db.Dweet.DweetBody.Contains(text),
+			).Take(numToFetch).With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().Take(replies_to_fetch).With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+			).Exec(ctx)
+		}
+	}
+
+	if err == db.ErrNotFound {
+		return []DweetType{}, fmt.Errorf("dweet not found: %v", err)
+	}
+	if err != nil {
+		return []DweetType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	var formatted []DweetType
+	for _, post := range posts {
+		npost := NoAuthFormatAsDweetType(&post)
+		formatted = append(formatted, npost)
+	}
+	return formatted, err
+}
+
 // Get user when authenticated
 func AuthGetUser(userID string, dweets_to_fetch int, viewUserID string) (UserType, error) {
 	// When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.

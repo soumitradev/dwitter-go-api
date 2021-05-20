@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/graphql-go/graphql"
 )
@@ -18,6 +19,8 @@ var queryHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -49,6 +52,53 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("param \"id\" or missing")
 				},
 			},
+			// TODO: Advanced search
+			"dweets": &graphql.Field{
+				Type:        graphql.NewList(dweetSchema),
+				Description: "Search dweets by content",
+				Args: graphql.FieldConfigArgument{
+					"text": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+
+					// TODO: Pagination
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+				},
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, isAuth, err := VerifyAccessToken(tokenString)
+					if err != nil {
+						return nil, err
+					}
+
+					if isAuth {
+						txt, txtPresent := params.Args["text"].(string)
+						num, numPresent := params.Args["dweetsToFetch"].(int)
+						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
+						if txtPresent && numPresent && numRepliesPresent {
+							posts, err := AuthSearchPosts(txt, num, numReplies, data["username"].(string))
+							return posts, err
+						}
+					} else {
+						txt, txtPresent := params.Args["text"].(string)
+						num, numPresent := params.Args["dweetsToFetch"].(int)
+						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
+						if txtPresent && numPresent && numRepliesPresent {
+							posts, err := NoAuthSearchPosts(txt, num, numReplies)
+							return posts, err
+						}
+					}
+
+					return nil, errors.New("param \"text\" or missing")
+				},
+			},
 			"user": &graphql.Field{
 				Type:        userSchema,
 				Description: "Get user by username",
@@ -56,11 +106,11 @@ var queryHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TOOD: Get mutuals boolean
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -89,6 +139,7 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("param \"username\" missing")
 				},
 			},
+			// TODO: Pagination
 			"likedDweets": &graphql.Field{
 				Type:        graphql.NewList(dweetSchema),
 				Description: "Get liked dweets of authenticated user",
@@ -97,6 +148,7 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -121,6 +173,7 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
+			// TODO: Pagination
 			"followers": &graphql.Field{
 				Type:        graphql.NewList(userSchema),
 				Description: "Get followers of authenticated user",
@@ -129,6 +182,7 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -153,6 +207,7 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
+			// TODO: Pagination
 			"following": &graphql.Field{
 				Type:        graphql.NewList(userSchema),
 				Description: "Get users that authenticated user follows",
@@ -161,6 +216,7 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -342,6 +398,7 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -376,6 +433,7 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -410,6 +468,7 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -444,6 +503,7 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -485,6 +545,7 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.NewList(graphql.String),
 						DefaultValue: []interface{}{},
 					},
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -538,14 +599,17 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
+					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					// TODO: Pagination
 					"followersToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					// TODO: Pagination
 					"followingToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -585,6 +649,7 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -658,10 +723,42 @@ var mutationHandler = graphql.NewObject(
 	},
 )
 
+// Create a handler that handles graphql mutations
+var subscriptionHandler = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Subscription",
+		Fields: graphql.Fields{
+			"feed": &graphql.Field{
+				Type: graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
+					Name:        "FeedObject",
+					Types:       []*graphql.Object{dweetSchema, redweetSchema},
+					Description: "An object representing either a dweet or a redweet object.",
+				})),
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					// Check authentication
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, isAuth, err := VerifyAccessToken(tokenString)
+					if err != nil {
+						return nil, err
+					}
+
+					if isAuth {
+						// TODO: Implement a feed
+						fmt.Println(data)
+					}
+
+					return nil, errors.New("Unauthorized")
+				},
+			},
+		},
+	},
+)
+
 // Create schema from handlers
 var schema, SchemaError = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query:    queryHandler,
-		Mutation: mutationHandler,
+		Query:        queryHandler,
+		Mutation:     mutationHandler,
+		Subscription: subscriptionHandler,
 	},
 )
