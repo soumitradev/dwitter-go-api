@@ -277,6 +277,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	tokenData, err := GenerateTokens(loginData.Username, loginData.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
 	}
 
 	// Send the refresh token in a HTTPOnly cookie

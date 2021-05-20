@@ -262,6 +262,7 @@ func NewRedweet(originalPostID, userID string) (*db.RedweetModel, error) {
 		db.Redweet.RedweetOf.Link(
 			db.Dweet.ID.Equals(originalPostID),
 		),
+		db.Redweet.RedweetTime.Set(time.Now()),
 	).Exec(ctx)
 	if err != nil {
 		return nil, err

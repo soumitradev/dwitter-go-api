@@ -280,5 +280,6 @@ func FormatAsRedweetType(redweet *db.RedweetModel) RedweetType {
 		AuthorID:          redweet.AuthorID,
 		RedweetOf:         FormatAsBasicDweetType(redweet.RedweetOf()),
 		OriginalRedweetID: redweet.OriginalRedweetID,
+		RedweetTime:       redweet.RedweetTime,
 	}
 }

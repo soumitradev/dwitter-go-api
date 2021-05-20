@@ -1356,6 +1356,7 @@ func AuthCreateRedweet(originalPostID, userID string) (RedweetType, error) {
 		db.Redweet.RedweetOf.Link(
 			db.Dweet.ID.Equals(originalPostID),
 		),
+		db.Redweet.RedweetTime.Set(time.Now()),
 	).With(
 		db.Redweet.Author.Fetch(),
 		db.Redweet.RedweetOf.Fetch().With(
@@ -1924,5 +1925,74 @@ func AuthUnfollow(followedID string, followerID string, dweetsToFetch int) (User
 	mutuals := HashIntersectUsers(personBeingFollowed.Followers(), authenticatedUser.Following())
 	formatted := AuthFormatAsUserType(personBeingFollowed, mutuals)
 
+	return formatted, err
+}
+
+func GetFeed(username string) ([]interface{}, error) {
+	// grab followed users by username
+	// Grab their dweets and redweets
+	// Merge the lists, format and return
+	user, err := client.User.FindUnique(
+		db.User.Username.Equals(username),
+	).With(
+		db.User.Following.Fetch().With(
+			db.User.Dweets.Fetch().With(
+				db.Dweet.Author.Fetch(),
+				db.Dweet.ReplyDweets.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.ReplyTo.Fetch().With(
+					db.Dweet.Author.Fetch(),
+				),
+				db.Dweet.LikeUsers.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
+			),
+
+			db.User.Redweets.Fetch().With(
+				db.Redweet.Author.Fetch(),
+				db.Redweet.RedweetOf.Fetch().With(
+					db.Dweet.Author.Fetch(),
+					db.Dweet.ReplyTo.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
+					db.Dweet.LikeUsers.Fetch(),
+				),
+			).OrderBy(
+				db.Redweet.RedweetTime.Order(db.DESC),
+			),
+		),
+	).Exec(ctx)
+
+	if err == db.ErrNotFound {
+		return []interface{}{}, fmt.Errorf("user not found: %v", err)
+	}
+	if err != nil {
+		return []interface{}{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	following := user.Following()
+
+	var posts []db.DweetModel
+	var redweets []db.RedweetModel
+
+	for _, feedUser := range following {
+		posts = MergeDweetLists(posts, feedUser.Dweets())
+		redweets = MergeRedweetLists(redweets, feedUser.Redweets())
+	}
+
+	merged := MergeDweetRedweetList(posts, redweets)
+
+	var formatted []interface{}
+	for _, post := range merged {
+		var npost interface{}
+		if dweet, ok := post.(db.DweetModel); ok {
+			npost = AuthFormatAsDweetType(&dweet, HashIntersectUsers(dweet.LikeUsers(), user.Following()))
+		}
+		if redweet, ok := post.(db.RedweetModel); ok {
+			npost = FormatAsRedweetType(&redweet)
+		}
+		formatted = append(formatted, npost)
+	}
 	return formatted, err
 }

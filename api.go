@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/graphql-go/graphql"
 )
@@ -729,11 +728,7 @@ var subscriptionHandler = graphql.NewObject(
 		Name: "Subscription",
 		Fields: graphql.Fields{
 			"feed": &graphql.Field{
-				Type: graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
-					Name:        "FeedObject",
-					Types:       []*graphql.Object{dweetSchema, redweetSchema},
-					Description: "An object representing either a dweet or a redweet object.",
-				})),
+				Type: feedObjectSchema,
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
@@ -743,8 +738,8 @@ var subscriptionHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// TODO: Implement a feed
-						fmt.Println(data)
+						obj, err := GetFeed(data["username"].(string))
+						return obj, err
 					}
 
 					return nil, errors.New("Unauthorized")

@@ -71,4 +71,5 @@ model Redweet {
 
     redweetOf         Dweet    @relation("Redweets", fields: [originalRedweetID], references: [ID])
     originalRedweetID String   @db.Char(10)
+    redweetTime       DateTime
 }

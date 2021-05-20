@@ -72,6 +72,7 @@ type RedweetType struct {
 	AuthorID          string         `json:"author_id"`
 	RedweetOf         BasicDweetType `json:"redweet_of"`
 	OriginalRedweetID string         `json:"original_redweet_id"`
+	RedweetTime       time.Time      `json:"redweet_time"`
 }
 
 var basicUserSchema = graphql.NewObject(
@@ -263,6 +264,22 @@ var redweetSchema = graphql.NewObject(
 			"original_redweet_id": &graphql.Field{
 				Type: graphql.String,
 			},
+			"redweet_time": &graphql.Field{
+				Type: graphql.DateTime,
+			},
 		},
 	},
 )
+
+var feedObjectSchema = graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
+	Name:        "FeedObject",
+	Types:       []*graphql.Object{dweetSchema, redweetSchema},
+	Description: "An object representing either a dweet or a redweet object.",
+	ResolveType: func(params graphql.ResolveTypeParams) *graphql.Object {
+		if _, ok := params.Value.(DweetType); ok {
+			return dweetSchema
+		} else {
+			return redweetSchema
+		}
+	},
+}))

@@ -10,27 +10,17 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/functionalfoundry/graphqlws"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
 	"github.com/joho/godotenv"
 )
 
-// func ExecuteReq(query string, schema graphql.Schema) *graphql.Result {
-// 	// ctx := context.WithValue(context.Background(), "token", request.URL.Query().Get("token"))
-// 	res := graphql.Do(graphql.Params{
-// 		Schema:        schema,
-// 		RequestString: query,
-// 		Context:       ctx,
-// 	})
-
-// 	if len(res.Errors) > 0 {
-// 		fmt.Printf("Errors: %v\n", res.Errors)
-// 	}
-// 	return res
-// }
+var subscriptionManager graphqlws.SubscriptionManager
 
 func main() {
+
 	if SchemaError != nil {
 		// Check for an error in schema at runtime
 		panic(SchemaError)
@@ -75,6 +65,23 @@ func main() {
 		},
 	})
 
+	subscriptionManager = graphqlws.NewSubscriptionManager(&schema)
+
+	graphqlwsHandler := graphqlws.NewHandler(graphqlws.HandlerConfig{
+		// Wire up the GraphqL WebSocket handler with the subscription manager
+		SubscriptionManager: subscriptionManager,
+
+		// Optional: Add a hook to resolve auth tokens into users that are
+		// then stored on the GraphQL WS connections
+		Authenticate: func(authToken string) (interface{}, error) {
+			data, _, err := VerifyAccessToken(authToken)
+			if err != nil {
+				return nil, err
+			}
+			return data["username"].(string), nil
+		},
+	})
+
 	// Map /graphql to the graphql handler, and attach a middleware to it
 	router.Handle("/graphql", h)
 
@@ -82,6 +89,7 @@ func main() {
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
 	router.HandleFunc("/media_upload", uploadFile).Methods("POST")
+	router.Handle("/subscriptions", graphqlwsHandler)
 
 	router.Use(handlers.CompressHandler)
 	router.Use(LoggingHandler)
@@ -107,6 +115,8 @@ func main() {
 			log.Println(err)
 		}
 	}()
+
+	initSubscriptions()
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
