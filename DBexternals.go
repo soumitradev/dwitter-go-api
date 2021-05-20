@@ -235,6 +235,121 @@ func NoAuthGetUser(userID string, dweets_to_fetch int) (UserType, error) {
 	return nuser, err
 }
 
+func NoAuthSearchUsers(text string, numToFetch int, numDweets int) ([]UserType, error) {
+	var users []db.UserModel
+	var err error
+
+	if numToFetch < 0 {
+		if numDweets < 0 {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch(),
+			).Exec(ctx)
+		} else {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch().Take(numDweets),
+			).Exec(ctx)
+		}
+	} else {
+		if numDweets < 0 {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch(),
+			).Take(numToFetch).Exec(ctx)
+		} else {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch().Take(numDweets),
+			).Take(numToFetch).Exec(ctx)
+		}
+	}
+
+	if err == db.ErrNotFound {
+		return []UserType{}, fmt.Errorf("users not found: %v", err)
+	}
+	if err != nil {
+		return []UserType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	var formatted []UserType
+	for _, user := range users {
+		nuser := NoAuthFormatAsUserType(&user)
+		formatted = append(formatted, nuser)
+	}
+	return formatted, err
+}
+
+func AuthSearchUsers(text string, numToFetch int, numDweets int, viewUserID string) ([]UserType, error) {
+	var users []db.UserModel
+	var err error
+
+	// Get your own following-list
+	viewUser, err := client.User.FindUnique(
+		db.User.Username.Equals(viewUserID),
+	).With(
+		db.User.Following.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return []UserType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	following := viewUser.Following()
+
+	if numToFetch < 0 {
+		if numDweets < 0 {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch(),
+				db.User.Followers.Fetch(),
+			).Exec(ctx)
+		} else {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch().Take(numDweets),
+				db.User.Followers.Fetch(),
+			).Exec(ctx)
+		}
+	} else {
+		if numDweets < 0 {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch(),
+				db.User.Followers.Fetch(),
+			).Take(numToFetch).Exec(ctx)
+		} else {
+			users, err = client.User.FindMany(
+				db.User.Username.Contains(text),
+			).With(
+				db.User.Dweets.Fetch().Take(numDweets),
+				db.User.Followers.Fetch(),
+			).Take(numToFetch).Exec(ctx)
+		}
+	}
+
+	if err == db.ErrNotFound {
+		return []UserType{}, fmt.Errorf("users not found: %v", err)
+	}
+	if err != nil {
+		return []UserType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	var formatted []UserType
+	for _, user := range users {
+		mutuals := HashIntersectUsers(user.Followers(), following)
+		nuser := AuthFormatAsUserType(&user, mutuals)
+		formatted = append(formatted, nuser)
+	}
+	return formatted, err
+}
+
 // Get dweet when authenticated
 func AuthSearchPosts(text string, numberToFetch int, repliesToFetch int, viewUserID string) ([]DweetType, error) {
 	// When viewing a Dweet (when not logged in):
@@ -315,7 +430,7 @@ func AuthSearchPosts(text string, numberToFetch int, repliesToFetch int, viewUse
 		}
 	}
 	if err == db.ErrNotFound {
-		return []DweetType{}, fmt.Errorf("dweet not found: %v", err)
+		return []DweetType{}, fmt.Errorf("dweets not found: %v", err)
 	}
 	if err != nil {
 		return []DweetType{}, fmt.Errorf("internal server error: %v", err)
@@ -412,7 +527,7 @@ func NoAuthSearchPosts(text string, numToFetch int, replies_to_fetch int) ([]Dwe
 	}
 
 	if err == db.ErrNotFound {
-		return []DweetType{}, fmt.Errorf("dweet not found: %v", err)
+		return []DweetType{}, fmt.Errorf("dweets not found: %v", err)
 	}
 	if err != nil {
 		return []DweetType{}, fmt.Errorf("internal server error: %v", err)

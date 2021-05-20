@@ -95,7 +95,7 @@ var queryHandler = graphql.NewObject(
 						}
 					}
 
-					return nil, errors.New("param \"text\" or missing")
+					return nil, errors.New("param \"text\" missing")
 				},
 			},
 			"user": &graphql.Field{
@@ -136,6 +136,52 @@ var queryHandler = graphql.NewObject(
 					}
 
 					return nil, errors.New("param \"username\" missing")
+				},
+			},
+			// TODO: Advanced search
+			"users": &graphql.Field{
+				Type:        graphql.NewList(basicUserSchema),
+				Description: "Search users by username",
+				Args: graphql.FieldConfigArgument{
+					"text": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					// TODO: Pagination
+					"numberToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+				},
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
+					data, isAuth, err := VerifyAccessToken(tokenString)
+					if err != nil {
+						return nil, err
+					}
+
+					if isAuth {
+						txt, txtPresent := params.Args["text"].(string)
+						num, numPresent := params.Args["numberToFetch"].(int)
+						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
+						if txtPresent && numPresent && numDweetsPresent {
+							posts, err := AuthSearchUsers(txt, num, numDweets, data["username"].(string))
+							return posts, err
+						}
+					} else {
+						txt, txtPresent := params.Args["text"].(string)
+						num, numPresent := params.Args["numberToFetch"].(int)
+						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
+						if txtPresent && numPresent && numDweetsPresent {
+							posts, err := NoAuthSearchUsers(txt, num, numDweets)
+							return posts, err
+						}
+					}
+
+					return nil, errors.New("param \"text\" missing")
 				},
 			},
 			// TODO: Pagination
