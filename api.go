@@ -18,9 +18,11 @@ var queryHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-
-					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -35,15 +37,17 @@ var queryHandler = graphql.NewObject(
 					if isAuth {
 						id, idPresent := params.Args["id"].(string)
 						numReplies, numPresent := params.Args["repliesToFetch"].(int)
-						if idPresent && numPresent {
-							post, err := AuthGetPost(id, numReplies, data["username"].(string))
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if idPresent && numPresent && offsetPresent {
+							post, err := AuthGetPost(id, numReplies, replyOffset, data["username"].(string))
 							return post, err
 						}
 					} else {
 						id, idPresent := params.Args["id"].(string)
 						numReplies, numPresent := params.Args["repliesToFetch"].(int)
-						if idPresent && numPresent {
-							post, err := NoAuthGetPost(id, numReplies)
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if idPresent && numPresent && offsetPresent {
+							post, err := NoAuthGetPost(id, numReplies, replyOffset)
 							return post, err
 						}
 					}
@@ -59,13 +63,19 @@ var queryHandler = graphql.NewObject(
 					"text": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-
-					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					"dweetsOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -80,17 +90,21 @@ var queryHandler = graphql.NewObject(
 					if isAuth {
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["dweetsToFetch"].(int)
+						numOffset, numOffsetPresent := params.Args["dweetsOffset"].(int)
 						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
-						if txtPresent && numPresent && numRepliesPresent {
-							posts, err := AuthSearchPosts(txt, num, numReplies, data["username"].(string))
+						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && numRepliesPresent && replyOffsetPresent {
+							posts, err := AuthSearchPosts(txt, num, numOffset, numReplies, replyOffset, data["username"].(string))
 							return posts, err
 						}
 					} else {
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["dweetsToFetch"].(int)
+						numOffset, numOffsetPresent := params.Args["dweetsOffset"].(int)
 						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
-						if txtPresent && numPresent && numRepliesPresent {
-							posts, err := NoAuthSearchPosts(txt, num, numReplies)
+						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && numRepliesPresent && replyOffsetPresent {
+							posts, err := NoAuthSearchPosts(txt, num, numOffset, numReplies, replyOffset)
 							return posts, err
 						}
 					}
@@ -105,8 +119,11 @@ var queryHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -120,17 +137,18 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						username, userPresent := params.Args["username"].(string)
-						numReplies, numPresent := params.Args["dweetsToFetch"].(int)
-						if userPresent && numPresent {
-							user, err := AuthGetUser(username, numReplies, data["username"].(string))
+						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
+						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
+						if userPresent && numPresent && dweetOffsetPresent {
+							user, err := AuthGetUser(username, numDweets, dweetOffset, data["username"].(string))
 							return user, err
 						}
 					} else {
-
 						username, userPresent := params.Args["username"].(string)
 						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
-						if userPresent && numPresent {
-							user, err := NoAuthGetUser(username, numDweets)
+						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
+						if userPresent && numPresent && dweetOffsetPresent {
+							user, err := NoAuthGetUser(username, numDweets, dweetOffset)
 							return user, err
 						}
 					}
@@ -140,18 +158,25 @@ var queryHandler = graphql.NewObject(
 			},
 			// TODO: Advanced search
 			"users": &graphql.Field{
-				Type:        graphql.NewList(basicUserSchema),
+				Type:        graphql.NewList(userSchema),
 				Description: "Search users by username",
 				Args: graphql.FieldConfigArgument{
 					"text": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"numberToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
+					"numberOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -166,17 +191,21 @@ var queryHandler = graphql.NewObject(
 					if isAuth {
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["numberToFetch"].(int)
+						numOffset, numOffsetPresent := params.Args["numberOffset"].(int)
 						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
-						if txtPresent && numPresent && numDweetsPresent {
-							posts, err := AuthSearchUsers(txt, num, numDweets, data["username"].(string))
+						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
+							posts, err := AuthSearchUsers(txt, num, numOffset, numDweets, dweetOffset, data["username"].(string))
 							return posts, err
 						}
 					} else {
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["numberToFetch"].(int)
+						numOffset, numOffsetPresent := params.Args["numberOffset"].(int)
 						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
-						if txtPresent && numPresent && numDweetsPresent {
-							posts, err := NoAuthSearchUsers(txt, num, numDweets)
+						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
+							posts, err := NoAuthSearchUsers(txt, num, numOffset, numDweets, dweetOffset)
 							return posts, err
 						}
 					}
@@ -184,7 +213,6 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("param \"text\" missing")
 				},
 			},
-			// TODO: Pagination
 			"likedDweets": &graphql.Field{
 				Type:        graphql.NewList(dweetSchema),
 				Description: "Get liked dweets of authenticated user",
@@ -193,8 +221,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TODO: Pagination
+					"numberOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -208,9 +243,11 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						numDweets, dweetPresent := params.Args["numberToFetch"].(int)
+						numOffset, numOffsetPresent := params.Args["numberOffset"].(int)
 						numReplies, repliesPresent := params.Args["repliesToFetch"].(int)
-						if dweetPresent && repliesPresent {
-							post, err := FetchLikedDweets(data["username"].(string), numDweets, numReplies)
+						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
+						if dweetPresent && repliesPresent && numOffsetPresent && replyOffsetPresent {
+							post, err := FetchLikedDweets(data["username"].(string), numDweets, numOffset, numReplies, replyOffset)
 							return post, err
 						}
 					}
@@ -218,7 +255,6 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			// TODO: Pagination
 			"followers": &graphql.Field{
 				Type:        graphql.NewList(userSchema),
 				Description: "Get followers of authenticated user",
@@ -227,8 +263,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TODO: Pagination
+					"numberOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -242,9 +285,11 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						numUsers, usersPresent := params.Args["numberToFetch"].(int)
+						numOffset, usersOffsetPresent := params.Args["numberOffset"].(int)
 						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						if usersPresent && dweetsPresent {
-							post, err := FetchFollowers(data["username"].(string), numUsers, numDweets)
+						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
+						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
+							post, err := FetchFollowers(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
 							return post, err
 						}
 					}
@@ -252,7 +297,6 @@ var queryHandler = graphql.NewObject(
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			// TODO: Pagination
 			"following": &graphql.Field{
 				Type:        graphql.NewList(userSchema),
 				Description: "Get users that authenticated user follows",
@@ -261,8 +305,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TODO: Pagination
+					"numberOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -275,9 +326,11 @@ var queryHandler = graphql.NewObject(
 					}
 					if isAuth {
 						numUsers, usersPresent := params.Args["numberToFetch"].(int)
+						numOffset, usersOffsetPresent := params.Args["numberOffset"].(int)
 						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						if usersPresent && dweetsPresent {
-							post, err := FetchFollowing(data["username"].(string), numUsers, numDweets)
+						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
+						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
+							post, err := FetchFollowing(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
 							return post, err
 						}
 					}
@@ -443,8 +496,11 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -461,8 +517,9 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
 						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						if userPresent && dweetsPresent {
-							user, err := AuthFollow(username, data["username"].(string), dweetsToFetch)
+						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+						if userPresent && dweetsPresent && offsetPresent {
+							user, err := AuthFollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -478,8 +535,11 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -496,8 +556,9 @@ var mutationHandler = graphql.NewObject(
 						// Make user like dweet, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
-						if idPresent && repliesPresent {
-							dweet, err := AuthLike(id, data["username"].(string), repliesToFetch)
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if idPresent && repliesPresent && offsetPresent {
+							dweet, err := AuthLike(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -513,8 +574,11 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -531,8 +595,9 @@ var mutationHandler = graphql.NewObject(
 						// Make user like dweet, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
-						if idPresent && repliesPresent {
-							dweet, err := AuthUnlike(id, data["username"].(string), repliesToFetch)
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if idPresent && repliesPresent && offsetPresent {
+							dweet, err := AuthUnlike(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -548,8 +613,11 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"dweetsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -566,8 +634,9 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
 						dweetsToFetch, numPresent := params.Args["dweetsToFetch"].(int)
-						if userPresent && numPresent {
-							user, err := AuthUnfollow(username, data["username"].(string), dweetsToFetch)
+						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+						if userPresent && numPresent && offsetPresent {
+							user, err := AuthUnfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -590,8 +659,11 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.NewList(graphql.String),
 						DefaultValue: []interface{}{},
 					},
-					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -610,12 +682,13 @@ var mutationHandler = graphql.NewObject(
 						body, bodyPresent := params.Args["body"].(string)
 						media, mediaPresent := params.Args["media"].([]interface{})
 						repliesToFetch, numPresent := params.Args["repliesToFetch"].(int)
-						if bodyPresent && mediaPresent && idPresent && numPresent {
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if bodyPresent && mediaPresent && idPresent && numPresent && offsetPresent {
 							mediaList := []string{}
 							for _, link := range media {
 								mediaList = append(mediaList, link.(string))
 							}
-							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch)
+							dweet, err := AuthUpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -644,18 +717,27 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
-					// TODO: Pagination
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TODO: Pagination
+					"dweetsOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"followersToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					// TODO: Pagination
+					"followersOffset": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
 					"followingToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"followingOffet": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -675,10 +757,13 @@ var mutationHandler = graphql.NewObject(
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
 						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
+						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						followersToFetch, followersPresent := params.Args["followersToFetch"].(int)
+						followersOffset, followersOffsetPresent := params.Args["followersOffset"].(int)
 						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
-						if firstPresent && lastPresent && emailPresent && bioPresent && dweetsPresent && followersPresent && followingPresent {
-							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, dweetsToFetch, followersToFetch, followingToFetch)
+						followingOffset, followingOffsetPresent := params.Args["followingOffset"].(int)
+						if firstPresent && lastPresent && emailPresent && bioPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
+							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -694,8 +779,11 @@ var mutationHandler = graphql.NewObject(
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					// TODO: Pagination
 					"repliesToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.Int,
+						DefaultValue: 0,
+					},
+					"repliesOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -712,8 +800,9 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
-						if idPresent && repliesPresent {
-							dweet, err := AuthDeleteDweet(id, data["username"].(string), repliesToFetch)
+						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
+						if idPresent && repliesPresent && offsetPresent {
+							dweet, err := AuthDeleteDweet(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
