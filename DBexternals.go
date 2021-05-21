@@ -659,6 +659,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 			db.User.FirstName.Set(firstName),
 			db.User.Email.Set(email),
 			db.User.Bio.Set(bio),
+			db.User.ProfilePicURL.Set(defaultPFPURL),
 			db.User.TokenVersion.Set(rand.Intn(10000)),
 			db.User.CreatedAt.Set(time.Now()),
 			db.User.LastName.Set(lastName),
@@ -717,7 +718,14 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	oldMedia := post.Media
 	toDelete := HashDifference(oldMedia, mediaLinks)
 	for _, mediaLink := range toDelete {
-		DeleteFile(mediaLink)
+		loc, err := LinkToLocation(mediaLink)
+		if err != nil {
+			return DweetType{}, err
+		}
+		err = DeleteLocation(loc)
+		if err != nil {
+			return DweetType{}, err
+		}
 	}
 
 	if repliesToFetch < 0 {
@@ -780,7 +788,7 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 }
 
 // Update a user
-func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetch int, dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (UserType, error) {
+func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dweetsToFetch int, dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (UserType, error) {
 	var user *db.UserModel
 	var err error
 	if followingToFetch < 0 {
@@ -802,6 +810,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			} else {
 				user, err = client.User.FindUnique(
@@ -820,6 +829,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			}
 		} else {
@@ -840,6 +850,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			} else {
 				user, err = client.User.FindUnique(
@@ -858,6 +869,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			}
 		}
@@ -880,6 +892,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			} else {
 				user, err = client.User.FindUnique(
@@ -898,6 +911,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			}
 		} else {
@@ -918,6 +932,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			} else {
 				user, err = client.User.FindUnique(
@@ -936,6 +951,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 					db.User.LastName.Set(lastName),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
+					db.User.ProfilePicURL.Set(PfpUrl),
 				).Exec(ctx)
 			}
 		}
@@ -945,6 +961,17 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio string, dweetsToFetc
 	}
 	if err != nil {
 		return UserType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	if user.ProfilePicURL != PfpUrl {
+		loc, err := LinkToLocation(user.ProfilePicURL)
+		if err != nil {
+			return UserType{}, err
+		}
+		err = DeleteLocation(loc)
+		if err != nil {
+			return UserType{}, err
+		}
 	}
 
 	nuser := FormatAsUserType(user)
@@ -1255,7 +1282,14 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffs
 		// Delete the media that isn't used anymore
 		oldMedia := deleted.Media
 		for _, mediaLink := range oldMedia {
-			DeleteFile(mediaLink)
+			loc, err := LinkToLocation(mediaLink)
+			if err != nil {
+				return DweetType{}, err
+			}
+			err = DeleteLocation(loc)
+			if err != nil {
+				return DweetType{}, err
+			}
 		}
 
 		if err != nil {

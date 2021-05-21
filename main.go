@@ -19,7 +19,10 @@ import (
 
 var subscriptionManager graphqlws.SubscriptionManager
 
+var defaultPFPURL = "https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media"
+
 func main() {
+
 	if SchemaError != nil {
 		// Check for an error in schema at runtime
 		panic(SchemaError)
@@ -87,7 +90,8 @@ func main() {
 	// Handle login using a non-GraphQL solution
 	router.HandleFunc("/login", loginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
-	router.HandleFunc("/media_upload", uploadFile).Methods("POST")
+	router.HandleFunc("/media_upload", uploadMedia).Methods("POST")
+	router.HandleFunc("/pfp_upload", uploadPfp).Methods("POST")
 	router.Handle("/subscriptions", graphqlwsHandler)
 
 	router.Use(handlers.CompressHandler)

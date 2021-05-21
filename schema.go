@@ -14,6 +14,7 @@ type BasicUserType struct {
 	LastName       string    `json:"last_name"`
 	Email          string    `json:"email"`
 	Bio            string    `json:"bio"`
+	PfpUrl         string    `json:"pfp_url"`
 	FollowerCount  int       `json:"follower_count"`
 	FollowingCount int       `json:"following_count"`
 	CreatedAt      time.Time `json:"created_at"`
@@ -25,6 +26,7 @@ type UserType struct {
 	LastName       string           `json:"last_name"`
 	Email          string           `json:"email"`
 	Bio            string           `json:"bio"`
+	PfpUrl         string           `json:"pfp_url"`
 	Dweets         []BasicDweetType `json:"dweets"`
 	LikedDweets    []BasicDweetType `json:"liked_dweets"`
 	FollowerCount  int              `json:"follower_count"`
@@ -94,6 +96,9 @@ var basicUserSchema = graphql.NewObject(
 			"bio": &graphql.Field{
 				Type: graphql.String,
 			},
+			"pfp_url": &graphql.Field{
+				Type: graphql.String,
+			},
 			"follower_count": &graphql.Field{
 				Type: graphql.Int,
 			},
@@ -124,6 +129,9 @@ var userSchema = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"bio": &graphql.Field{
+				Type: graphql.String,
+			},
+			"pfp_url": &graphql.Field{
 				Type: graphql.String,
 			},
 			"dweets": &graphql.Field{

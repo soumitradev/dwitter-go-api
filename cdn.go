@@ -44,82 +44,218 @@ func initCDN() {
 	}
 }
 
-func DeleteFile(link string) error {
-	re1, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/\w+\.\w+\?generation\=\d+\&alt\=media$`)
+func LinkToLocation(link string) (string, error) {
+	re1, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/\w+\%2F\w+\.\w+\?.+$`)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	matched := re1.MatchString(link)
 	if matched {
 		re2, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/`)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		nlink := re2.ReplaceAllString(link, "")
-		re3, err := regexp.Compile(`\?generation\=\d+\&alt\=media$`)
+		re3, err := regexp.Compile(`\?.+$`)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
-		finlink := re3.ReplaceAllString(nlink, "")
+		stem := re3.ReplaceAllString(nlink, "")
 
-		o := bucket.Object(finlink)
-		if err := o.Delete(ctx); err != nil {
-			if err.Error() == "storage: object doesn't exist" {
-				return errors.New("media not found")
-			}
-			return fmt.Errorf("Object(%q).Delete: %v", finlink, err)
+		re4, err := regexp.Compile(`\%2F`)
+		if err != nil {
+			return "", err
 		}
+		finlink := re4.ReplaceAllString(stem, "/")
 
-		return nil
+		return finlink, nil
 	} else {
-		return errors.New("media link invalid")
+		return "", errors.New("media link invalid")
+	}
+}
+
+func DeleteLocation(location string) error {
+	o := bucket.Object(location)
+	if err := o.Delete(ctx); err != nil {
+		if err.Error() == "storage: object doesn't exist" {
+			return errors.New("media not found")
+		}
+		return fmt.Errorf("Object(%q).Delete: %v", location, err)
+	}
+	return nil
+}
+
+// Handle login requests
+func uploadMedia(w http.ResponseWriter, r *http.Request) {
+	auth := r.Header.Get("authorization")
+	tokenString := SplitAuthToken(auth)
+
+	_, isAuth, err := VerifyAccessToken(tokenString)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if isAuth {
+
+		supportedFormats := map[string]bool{
+			"image/bmp":       true, // BMP
+			"image/gif":       true, // GIF
+			"image/jpeg":      true, // JPEG
+			"image/webp":      true, // WEBP
+			"image/png":       true, // PNG
+			"video/mp4":       true, // MP4
+			"video/x-msvideo": true, // AVI
+			"video/ogg":       true, // OGG
+			"video/webm":      true, // WEBM
+		}
+
+		// Check if content type is "multipart/form-data"
+		if r.Header.Get("Content-Type") != "" {
+			value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
+			if value != "multipart/form-data" {
+				msg := "Content-Type header is not multipart/form-data"
+				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+
+		// Limit size to 8*8MB = 64MB
+		err := r.ParseMultipartForm(64 << 20)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		formdata := r.MultipartForm
+		files := formdata.File["files"]
+
+		if len(files) > 8 {
+			msg := "Too many files. Limit is 8 files."
+			http.Error(w, msg, http.StatusBadRequest)
+			return
+		}
+
+		for _, file := range files {
+			if file.Size > (8 << 20) {
+				msg := "File too large. Limit is 8 files, 8MB each."
+				http.Error(w, msg, http.StatusRequestEntityTooLarge)
+				return
+			}
+			if !supportedFormats[file.Header.Get("Content-Type")] {
+				msg := "Format unsupported."
+				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+
+		links := []string{}
+
+		for i := range files {
+			file, err := files[i].Open()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer file.Close()
+
+			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+			defer cancel()
+
+			// Upload an object with storage.Writer.
+
+			randID := genID(30)
+			found := true
+			for found {
+				query := &storage.Query{Prefix: randID}
+				it := bucket.Objects(ctx, query)
+				numObj := 0
+				for {
+					_, err := it.Next()
+					if err == iterator.Done {
+						if numObj == 0 {
+							found = false
+							break
+						}
+					}
+					if err != nil {
+						log.Fatal(err)
+					}
+					numObj += 1
+					break
+				}
+				if numObj != 0 {
+					randID = genID(30)
+				}
+			}
+
+			obj := bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
+			wc := obj.NewWriter(ctx)
+			if _, err = io.Copy(wc, file); err != nil {
+				panic(fmt.Errorf("io.Copy: %v", err))
+			}
+			if err := wc.Close(); err != nil {
+				panic(fmt.Errorf("io.Copy: %v", err))
+			}
+			links = append(links, wc.Attrs().MediaLink)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(links)
 	}
 }
 
 // Handle login requests
-func uploadFile(w http.ResponseWriter, r *http.Request) {
+func uploadPfp(w http.ResponseWriter, r *http.Request) {
+	auth := r.Header.Get("authorization")
+	tokenString := SplitAuthToken(auth)
 
-	supportedFormats := map[string]bool{
-		"image/bmp":       true, // BMP
-		"image/gif":       true, // GIF
-		"image/jpeg":      true, // JPEG
-		"image/webp":      true, // WEBP
-		"image/png":       true, // PNG
-		"video/mp4":       true, // MP4
-		"video/x-msvideo": true, // AVI
-		"video/ogg":       true, // OGG
-		"video/webm":      true, // WEBM
+	data, isAuth, err := VerifyAccessToken(tokenString)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
 	}
 
-	// Check if content type is "multipart/form-data"
-	if r.Header.Get("Content-Type") != "" {
-		value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
-		if value != "multipart/form-data" {
-			msg := "Content-Type header is not multipart/form-data"
-			http.Error(w, msg, http.StatusUnsupportedMediaType)
+	username := data["username"].(string)
+
+	if isAuth {
+		supportedFormats := map[string]bool{
+			"image/bmp":  true, // BMP
+			"image/gif":  true, // GIF
+			"image/jpeg": true, // JPEG
+			"image/webp": true, // WEBP
+			"image/png":  true, // PNG
+		}
+
+		// Check if content type is "multipart/form-data"
+		if r.Header.Get("Content-Type") != "" {
+			value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
+			if value != "multipart/form-data" {
+				msg := "Content-Type header is not multipart/form-data"
+				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+
+		// Limit size to 8MB
+		err := r.ParseMultipartForm(8 << 20)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}
 
-	// Limit size to 8*8MB = 64MB
-	err := r.ParseMultipartForm(64 << 20)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		formdata := r.MultipartForm
+		files := formdata.File["files"]
 
-	formdata := r.MultipartForm
-	files := formdata.File["files"]
+		if len(files) > 1 {
+			msg := "Too many files. Limit is 1 file."
+			http.Error(w, msg, http.StatusBadRequest)
+			return
+		}
 
-	if len(files) > 8 {
-		msg := "Too many files. Limit is 8 files."
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-
-	for _, file := range files {
+		file := files[0]
 		if file.Size > (8 << 20) {
-			msg := "File too large. Limit is 8 files, 8MB each."
+			msg := "File too large. Limit is 8MB."
 			http.Error(w, msg, http.StatusRequestEntityTooLarge)
 			return
 		}
@@ -128,60 +264,59 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, msg, http.StatusUnsupportedMediaType)
 			return
 		}
-	}
 
-	links := []string{}
+		links := []string{}
 
-	for i := range files {
-		fmt.Println(files[i].Header)
-		file, err := files[i].Open()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer file.Close()
+		for i := range files {
+			file, err := files[i].Open()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer file.Close()
 
-		ctx, cancel := context.WithTimeout(ctx, time.Second*50)
-		defer cancel()
+			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+			defer cancel()
 
-		// Upload an object with storage.Writer.
+			// Upload an object with storage.Writer.
 
-		randID := genID(30)
-		found := true
-		for found {
-			query := &storage.Query{Prefix: randID}
-			it := bucket.Objects(ctx, query)
-			numObj := 0
-			for {
-				_, err := it.Next()
-				if err == iterator.Done {
-					if numObj == 0 {
-						found = false
-						break
+			randID := genID(30)
+			found := true
+			for found {
+				query := &storage.Query{Prefix: randID}
+				it := bucket.Objects(ctx, query)
+				numObj := 0
+				for {
+					_, err := it.Next()
+					if err == iterator.Done {
+						if numObj == 0 {
+							found = false
+							break
+						}
 					}
+					if err != nil {
+						log.Fatal(err)
+					}
+					numObj += 1
+					break
 				}
-				if err != nil {
-					log.Fatal(err)
+				if numObj != 0 {
+					randID = genID(30)
 				}
-				numObj += 1
-				break
 			}
-			if numObj != 0 {
-				randID = genID(30)
+
+			obj := bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
+			wc := obj.NewWriter(ctx)
+			if _, err = io.Copy(wc, file); err != nil {
+				panic(fmt.Errorf("io.Copy: %v", err))
 			}
+			if err := wc.Close(); err != nil {
+				panic(fmt.Errorf("io.Copy: %v", err))
+			}
+			links = append(links, wc.Attrs().MediaLink)
 		}
 
-		obj := bucket.Object(randID + filepath.Ext(files[i].Filename))
-		wc := obj.NewWriter(ctx)
-		if _, err = io.Copy(wc, file); err != nil {
-			panic(fmt.Errorf("io.Copy: %v", err))
-		}
-		if err := wc.Close(); err != nil {
-			panic(fmt.Errorf("io.Copy: %v", err))
-		}
-		links = append(links, wc.Attrs().MediaLink)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(links)
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(links)
 }

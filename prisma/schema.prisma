@@ -21,6 +21,8 @@ model User {
 
     bio            String    @db.VarChar(160)
 
+    profilePicURL  String
+
     dweets         Dweet[]   @relation("Dweets")
     redweets       Redweet[] @relation("Redweeted")
 

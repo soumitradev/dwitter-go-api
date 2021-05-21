@@ -717,6 +717,10 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
+					"pfp_url": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "",
+					},
 					"dweetsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
@@ -756,14 +760,15 @@ var mutationHandler = graphql.NewObject(
 						lastName, lastPresent := params.Args["lastName"].(string)
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
+						PfpUrl, pfpPresent := params.Args["pfp_url"].(string)
 						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						followersToFetch, followersPresent := params.Args["followersToFetch"].(int)
 						followersOffset, followersOffsetPresent := params.Args["followersOffset"].(int)
 						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
 						followingOffset, followingOffsetPresent := params.Args["followingOffset"].(int)
-						if firstPresent && lastPresent && emailPresent && bioPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
-							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
+						if firstPresent && lastPresent && emailPresent && bioPresent && pfpPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
+							user, err := AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
