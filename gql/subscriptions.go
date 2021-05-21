@@ -1,18 +1,19 @@
-package main
+package gql
 
 import (
+	"dwitter_go_graphql/consts"
 	"time"
 
 	"github.com/functionalfoundry/graphqlws"
 	"github.com/graphql-go/graphql"
 )
 
-func initSubscriptions() {
+func InitSubscriptions() {
 	go func() {
 		for {
 			// Every 5 mins, update the subscriptions
 			time.Sleep(5 * time.Minute)
-			subscriptions := subscriptionManager.Subscriptions()
+			subscriptions := consts.SubscriptionManager.Subscriptions()
 
 			for conn := range subscriptions {
 				// Things you have access to here:
@@ -31,11 +32,11 @@ func initSubscriptions() {
 
 					// Re-execute the subscription query
 					params := graphql.Params{
-						Schema:         schema, // The GraphQL schema
+						Schema:         Schema, // The GraphQL schema
 						RequestString:  subscription.Query,
 						VariableValues: subscription.Variables,
 						OperationName:  subscription.OperationName,
-						Context:        ctx,
+						Context:        consts.BaseCtx,
 					}
 					result := graphql.Do(params)
 

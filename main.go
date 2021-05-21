@@ -2,6 +2,13 @@ package main
 
 import (
 	"context"
+	"dwitter_go_graphql/auth"
+	"dwitter_go_graphql/cdn"
+	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/database"
+	"dwitter_go_graphql/gql"
+	"dwitter_go_graphql/middleware"
+	"dwitter_go_graphql/util"
 	"flag"
 	"fmt"
 	"log"
@@ -18,15 +25,11 @@ import (
 	"github.com/unrolled/secure"
 )
 
-var subscriptionManager graphqlws.SubscriptionManager
-
-var defaultPFPURL = "https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media"
-
 func main() {
 
-	if SchemaError != nil {
+	if gql.SchemaError != nil {
 		// Check for an error in schema at runtime
-		panic(SchemaError)
+		panic(gql.SchemaError)
 	}
 
 	// Set flag for timeout to close all connections before quitting
@@ -38,46 +41,46 @@ func main() {
 	godotenv.Load()
 
 	// Seed the random function
-	initRandom()
+	util.InitRandom()
 
 	// Connect to database, and seed the database
-	ConnectDB()
-	initCDN()
-	runDBTests()
+	database.ConnectDB()
+	cdn.InitCDN()
+	database.RunDBTests()
 
 	// When returning from main(), make sure to disconnect from database
-	defer DisconnectDB()
+	defer database.DisconnectDB()
 
 	// Create a new router, and add middleware
 	router := mux.NewRouter().StrictSlash(true)
 
 	// Create a graphql query handler
 	h := handler.New(&handler.Config{
-		Schema:     &schema,
+		Schema:     &gql.Schema,
 		Pretty:     true,
 		GraphiQL:   false,
 		Playground: true,
 		// This is a way to pass context about the request into the resolver function of graphql
 		RootObjectFn: func(myCtx context.Context, r *http.Request) map[string]interface{} {
 			// Pass down the authorization token to the graphql query
-			auth := r.Header.Get("authorization")
-			tokenString := SplitAuthToken(auth)
+			authHeader := r.Header.Get("authorization")
+			tokenString := auth.SplitAuthToken(authHeader)
 			return map[string]interface{}{
 				"token": tokenString,
 			}
 		},
 	})
 
-	subscriptionManager = graphqlws.NewSubscriptionManager(&schema)
+	consts.SubscriptionManager = graphqlws.NewSubscriptionManager(&gql.Schema)
 
 	graphqlwsHandler := graphqlws.NewHandler(graphqlws.HandlerConfig{
 		// Wire up the GraphqL WebSocket handler with the subscription manager
-		SubscriptionManager: subscriptionManager,
+		SubscriptionManager: consts.SubscriptionManager,
 
 		// Optional: Add a hook to resolve auth tokens into users that are
 		// then stored on the GraphQL WS connections
 		Authenticate: func(authToken string) (interface{}, error) {
-			data, _, err := VerifyAccessToken(authToken)
+			data, _, err := auth.VerifyAccessToken(authToken)
 			if err != nil {
 				return nil, err
 			}
@@ -89,10 +92,10 @@ func main() {
 	router.Handle("/graphql", h)
 
 	// Handle login using a non-GraphQL solution
-	router.HandleFunc("/login", loginHandler).Methods("POST")
-	router.HandleFunc("/refresh_token", refreshHandler).Methods("POST")
-	router.HandleFunc("/media_upload", uploadMedia).Methods("POST")
-	router.HandleFunc("/pfp_upload", uploadPfp).Methods("POST")
+	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
+	router.HandleFunc("/refresh_token", auth.RefreshHandler).Methods("POST")
+	router.HandleFunc("/media_upload", cdn.UploadMedia).Methods("POST")
+	router.HandleFunc("/pfp_upload", cdn.UploadPfp).Methods("POST")
 	router.Handle("/subscriptions", graphqlwsHandler)
 
 	secureMiddleware := secure.New(secure.Options{
@@ -100,10 +103,10 @@ func main() {
 	})
 
 	router.Use(handlers.CompressHandler)
-	router.Use(LoggingHandler)
-	router.Use(ContentTypeHandler)
-	router.Use(RecoveryHandler)
-	router.Use(customMiddleware)
+	router.Use(middleware.LoggingHandler)
+	router.Use(middleware.ContentTypeHandler)
+	router.Use(middleware.RecoveryHandler)
+	router.Use(middleware.CustomMiddleware)
 	router.Use(secureMiddleware.Handler)
 
 	// Create an HTTP server
@@ -125,7 +128,7 @@ func main() {
 		}
 	}()
 
-	initSubscriptions()
+	gql.InitSubscriptions()
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
@@ -136,15 +139,15 @@ func main() {
 	<-c
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	BaseCtx, cancel := context.WithTimeout(consts.BaseCtx, wait)
 	defer cancel()
 
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
-	srv.Shutdown(ctx)
+	srv.Shutdown(BaseCtx)
 
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
-	// <-ctx.Done() if your application should wait for other services
+	// <-main.BaseCtx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
 	log.Println("Shutting down")
 	os.Exit(0)

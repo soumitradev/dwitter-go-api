@@ -1,8 +1,11 @@
-package main
+package cdn
 
 import (
 	"bytes"
 	"context"
+	"dwitter_go_graphql/auth"
+	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/util"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,32 +29,28 @@ import (
 	"google.golang.org/api/option"
 )
 
-var bucket *storage.BucketHandle
-
-var mediaCreatedButNotUsed map[string]bool
-
-func initCDN() {
+func InitCDN() {
 	opt := option.WithCredentialsFile("./cdn_key.json")
 
-	mediaCreatedButNotUsed = make(map[string]bool)
+	consts.MediaCreatedButNotUsed = make(map[string]bool)
 
 	config := &firebase.Config{
 		StorageBucket: "dwitter-72e9d.appspot.com",
 	}
 
-	app, err := firebase.NewApp(context.Background(), config, opt)
+	app, err := firebase.NewApp(consts.BaseCtx, config, opt)
 	if err != nil {
 		panic(fmt.Errorf("error initializing app: %v", err))
 	}
 
-	fireClient, err := app.Storage(context.Background())
+	fireClient, err := app.Storage(consts.BaseCtx)
 	if err != nil {
 		panic(fmt.Errorf("error initializing client: %v", err))
 	}
 
-	bucket, err = fireClient.DefaultBucket()
+	consts.Bucket, err = fireClient.DefaultBucket()
 	if err != nil {
-		panic(fmt.Errorf("error initializing bucket: %v", err))
+		panic(fmt.Errorf("error initializing consts.Bucket: %v", err))
 	}
 }
 
@@ -99,8 +98,8 @@ func DeleteLocation(location string, deleteThumb bool) error {
 		}
 		thumbLoc := re2.ReplaceAllString(thumbLocNoFormat, ".png")
 
-		o := bucket.Object(thumbLoc)
-		if err := o.Delete(ctx); err != nil {
+		o := consts.Bucket.Object(thumbLoc)
+		if err := o.Delete(consts.BaseCtx); err != nil {
 			if err.Error() == "storage: object doesn't exist" {
 				return errors.New("thumbnail for media not found")
 			}
@@ -108,8 +107,8 @@ func DeleteLocation(location string, deleteThumb bool) error {
 		}
 	}
 
-	o := bucket.Object(location)
-	if err := o.Delete(ctx); err != nil {
+	o := consts.Bucket.Object(location)
+	if err := o.Delete(consts.BaseCtx); err != nil {
 		if err.Error() == "storage: object doesn't exist" {
 			return errors.New("media not found")
 		}
@@ -119,18 +118,12 @@ func DeleteLocation(location string, deleteThumb bool) error {
 }
 
 // Handle login requests
-func uploadMedia(w http.ResponseWriter, r *http.Request) {
-	auth := r.Header.Get("authorization")
-	tokenString := SplitAuthToken(auth)
-
-	_, isAuth, err := VerifyAccessToken(tokenString)
+func UploadMedia(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("authorization")
+	_, err := auth.Authenticate(authHeader)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	if isAuth {
-
+	} else {
 		supportedFormats := map[string]bool{
 			"image/gif":  true, // GIF
 			"image/jpeg": true, // JPEG
@@ -193,16 +186,16 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+			myCtx, cancel := context.WithTimeout(consts.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
 
-			randID := genID(30)
+			randID := util.GenID(30)
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := bucket.Objects(ctx, query)
+				it := consts.Bucket.Objects(myCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -219,13 +212,13 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 				if numObj != 0 {
-					randID = genID(30)
+					randID = util.GenID(30)
 				}
 			}
 
 			// Write file to cloud
-			obj := bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
-			writer := obj.NewWriter(ctx)
+			obj := consts.Bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
+			writer := obj.NewWriter(myCtx)
 			if _, err = io.Copy(writer, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
@@ -234,7 +227,7 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Read it back
-			reader, err := obj.NewReader(ctx)
+			reader, err := obj.NewReader(myCtx)
 			if err != nil {
 				panic(fmt.Errorf("reader: %v", err))
 			}
@@ -255,7 +248,7 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 				}
 				thumb = imaging.Thumbnail(image, 640, 360, imaging.Lanczos)
 			} else {
-				tempVidPath := "./tmp/" + genID(40) + ".mp4"
+				tempVidPath := "./tmp/" + util.GenID(40) + ".mp4"
 				tempVid, err := os.Create(tempVidPath)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -267,7 +260,7 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				path, err := VideoThumb(tempVidPath)
+				path, err := videoThumb(tempVidPath)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -293,8 +286,8 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Save thumbnail
-			thumbObj := bucket.Object("thumb/" + randID + ".png")
-			thumbWriter := thumbObj.NewWriter(ctx)
+			thumbObj := consts.Bucket.Object("thumb/" + randID + ".png")
+			thumbWriter := thumbObj.NewWriter(myCtx)
 			if err = png.Encode(thumbWriter, thumb); err != nil {
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
@@ -303,7 +296,7 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			mlink := writer.Attrs().MediaLink
-			mediaCreatedButNotUsed[mlink] = true
+			consts.MediaCreatedButNotUsed[mlink] = true
 
 			go destroyObjectAfterExpire(10, mlink)
 
@@ -316,19 +309,12 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle login requests
-func uploadPfp(w http.ResponseWriter, r *http.Request) {
-	auth := r.Header.Get("authorization")
-	tokenString := SplitAuthToken(auth)
-
-	data, isAuth, err := VerifyAccessToken(tokenString)
+func UploadPfp(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("authorization")
+	username, err := auth.Authenticate(authHeader)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	username := data["username"].(string)
-
-	if isAuth {
+	} else {
 		supportedFormats := map[string]bool{
 			"image/bmp":  true, // BMP
 			"image/gif":  true, // GIF
@@ -385,16 +371,16 @@ func uploadPfp(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+			myCtx, cancel := context.WithTimeout(consts.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
 
-			randID := genID(30)
+			randID := util.GenID(30)
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := bucket.Objects(ctx, query)
+				it := consts.Bucket.Objects(myCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -411,12 +397,12 @@ func uploadPfp(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 				if numObj != 0 {
-					randID = genID(30)
+					randID = util.GenID(30)
 				}
 			}
 
-			obj := bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
-			wc := obj.NewWriter(ctx)
+			obj := consts.Bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
+			wc := obj.NewWriter(myCtx)
 			if _, err = io.Copy(wc, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
@@ -431,13 +417,13 @@ func uploadPfp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func VideoThumb(filepath string) (string, error) {
+func videoThumb(filepath string) (string, error) {
 	// command line args, path, and command
 	command := "ffmpeg"
 	frameExtractionTime := "0:00:00.000"
 	vframes := "1"
 	qv := "2"
-	output := "./tmp/" + time.Now().Format(time.Kitchen) + genID(40) + ".png"
+	output := "./tmp/" + time.Now().Format(time.Kitchen) + util.GenID(40) + ".png"
 
 	cmd := exec.Command(command,
 		"-ss", frameExtractionTime,
@@ -454,7 +440,7 @@ func VideoThumb(filepath string) (string, error) {
 
 func destroyObjectAfterExpire(minutes int, id string) {
 	time.Sleep(time.Minute * time.Duration(minutes))
-	if mediaCreatedButNotUsed[id] {
+	if consts.MediaCreatedButNotUsed[id] {
 		loc, err := LinkToLocation(id)
 		if err != nil {
 			fmt.Printf("Error finding media: %v", err)
