@@ -397,7 +397,7 @@ var mutationHandler = graphql.NewObject(
 					},
 					"media": &graphql.ArgumentConfig{
 						Type:         graphql.NewList(graphql.String),
-						DefaultValue: []string{},
+						DefaultValue: []interface{}{},
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -411,9 +411,13 @@ var mutationHandler = graphql.NewObject(
 					if isAuth {
 						// Create dweet, and return formatted
 						body, bodyPresent := params.Args["body"].(string)
-						media, mediaPresent := params.Args["media"].([]string)
+						media, mediaPresent := params.Args["media"].([]interface{})
 						if bodyPresent && mediaPresent {
-							dweet, err := AuthCreateDweet(body, data["username"].(string), media)
+							mediaList := []string{}
+							for _, link := range media {
+								mediaList = append(mediaList, link.(string))
+							}
+							dweet, err := AuthCreateDweet(body, data["username"].(string), mediaList)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" not present")
@@ -434,7 +438,7 @@ var mutationHandler = graphql.NewObject(
 					},
 					"media": &graphql.ArgumentConfig{
 						Type:         graphql.NewList(graphql.String),
-						DefaultValue: []string{},
+						DefaultValue: []interface{}{},
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -449,9 +453,13 @@ var mutationHandler = graphql.NewObject(
 						// Create a reply to a dweet, and return formatted
 						originalID, idPresent := params.Args["id"].(string)
 						body, bodyPresent := params.Args["body"].(string)
-						media, mediaPresent := params.Args["media"].([]string)
+						media, mediaPresent := params.Args["media"].([]interface{})
 						if bodyPresent && mediaPresent && idPresent {
-							dweet, err := AuthCreateReply(originalID, body, data["username"].(string), media)
+							mediaList := []string{}
+							for _, link := range media {
+								mediaList = append(mediaList, link.(string))
+							}
+							dweet, err := AuthCreateReply(originalID, body, data["username"].(string), mediaList)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\", or \"body\" not present")

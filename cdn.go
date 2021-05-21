@@ -28,8 +28,12 @@ import (
 
 var bucket *storage.BucketHandle
 
+var mediaCreatedButNotUsed map[string]bool
+
 func initCDN() {
 	opt := option.WithCredentialsFile("./cdn_key.json")
+
+	mediaCreatedButNotUsed = make(map[string]bool)
 
 	config := &firebase.Config{
 		StorageBucket: "dwitter-72e9d.appspot.com",
@@ -81,7 +85,29 @@ func LinkToLocation(link string) (string, error) {
 	}
 }
 
-func DeleteLocation(location string) error {
+func DeleteLocation(location string, deleteThumb bool) error {
+	if deleteThumb {
+		re1, err := regexp.Compile(`media\/`)
+		if err != nil {
+			return err
+		}
+		thumbLocNoFormat := re1.ReplaceAllString(location, "thumb/")
+
+		re2, err := regexp.Compile(`\.\w+$`)
+		if err != nil {
+			return err
+		}
+		thumbLoc := re2.ReplaceAllString(thumbLocNoFormat, ".png")
+
+		o := bucket.Object(thumbLoc)
+		if err := o.Delete(ctx); err != nil {
+			if err.Error() == "storage: object doesn't exist" {
+				return errors.New("thumbnail for media not found")
+			}
+			return fmt.Errorf("Object(%q).Delete: %v", location, err)
+		}
+	}
+
 	o := bucket.Object(location)
 	if err := o.Delete(ctx); err != nil {
 		if err.Error() == "storage: object doesn't exist" {
@@ -276,7 +302,12 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
 
-			links = append(links, writer.Attrs().MediaLink)
+			mlink := writer.Attrs().MediaLink
+			mediaCreatedButNotUsed[mlink] = true
+
+			go destroyObjectAfterExpire(10, mlink)
+
+			links = append(links, mlink)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -419,4 +450,18 @@ func VideoThumb(filepath string) (string, error) {
 	// ignore errors for examples-sake
 	err := cmd.Run()
 	return output, err
+}
+
+func destroyObjectAfterExpire(minutes int, id string) {
+	time.Sleep(time.Minute * time.Duration(minutes))
+	if mediaCreatedButNotUsed[id] {
+		loc, err := LinkToLocation(id)
+		if err != nil {
+			fmt.Printf("Error finding media: %v", err)
+		}
+		err = DeleteLocation(loc, true)
+		if err != nil {
+			fmt.Printf("Error auto-deleting media: %v", err)
+		}
+	}
 }

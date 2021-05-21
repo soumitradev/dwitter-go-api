@@ -722,7 +722,7 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 		if err != nil {
 			return DweetType{}, err
 		}
-		err = DeleteLocation(loc)
+		err = DeleteLocation(loc, true)
 		if err != nil {
 			return DweetType{}, err
 		}
@@ -768,6 +768,10 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	}
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
+	}
+
+	for _, link := range mediaLinks {
+		delete(mediaCreatedButNotUsed, link)
 	}
 
 	user, err := client.User.FindUnique(
@@ -968,7 +972,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 		if err != nil {
 			return UserType{}, err
 		}
-		err = DeleteLocation(loc)
+		err = DeleteLocation(loc, false)
 		if err != nil {
 			return UserType{}, err
 		}
@@ -1286,7 +1290,7 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffs
 			if err != nil {
 				return DweetType{}, err
 			}
-			err = DeleteLocation(loc)
+			err = DeleteLocation(loc, true)
 			if err != nil {
 				return DweetType{}, err
 			}
@@ -1356,6 +1360,10 @@ func AuthCreateDweet(body, authorID string, mediaLinks []string) (DweetType, err
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	for _, link := range mediaLinks {
+		delete(mediaCreatedButNotUsed, link)
+	}
+
 	post := AuthFormatAsDweetType(createdPost, []db.UserModel{})
 	return post, err
 }
@@ -1399,6 +1407,9 @@ func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (Dw
 	).Exec(ctx)
 	if err != nil {
 		return DweetType{}, fmt.Errorf("internal server error: %v", err)
+	}
+	for _, link := range mediaLinks {
+		delete(mediaCreatedButNotUsed, link)
 	}
 
 	// Update original Dweet to show reply
