@@ -710,7 +710,14 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	}
 
 	if post.Author().Username != userID {
-		return DweetType{}, fmt.Errorf("internal server error: %v", errors.New("not authorized to edit dweet"))
+		return DweetType{}, fmt.Errorf("authorization error: %v", errors.New("not authorized to edit dweet"))
+	}
+
+	// Delete the media that isn't used anymore
+	oldMedia := post.Media
+	toDelete := HashDifference(oldMedia, mediaLinks)
+	for _, mediaLink := range toDelete {
+		DeleteFile(mediaLink)
 	}
 
 	if repliesToFetch < 0 {
@@ -1244,6 +1251,13 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffs
 
 	if deleted.Author().Username == userID {
 		_, err := DeleteDweet(postID)
+
+		// Delete the media that isn't used anymore
+		oldMedia := deleted.Media
+		for _, mediaLink := range oldMedia {
+			DeleteFile(mediaLink)
+		}
+
 		if err != nil {
 			return DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}

@@ -20,7 +20,6 @@ import (
 var subscriptionManager graphqlws.SubscriptionManager
 
 func main() {
-
 	if SchemaError != nil {
 		// Check for an error in schema at runtime
 		panic(SchemaError)

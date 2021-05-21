@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/functionalfoundry/graphqlws"
@@ -14,7 +13,6 @@ func initSubscriptions() {
 			// Every 5 mins, update the subscriptions
 			time.Sleep(5 * time.Minute)
 			subscriptions := subscriptionManager.Subscriptions()
-			fmt.Println(subscriptions)
 
 			for conn := range subscriptions {
 				// Things you have access to here:
