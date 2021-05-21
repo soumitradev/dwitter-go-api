@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
 	"github.com/joho/godotenv"
+	"github.com/unrolled/secure"
 )
 
 var subscriptionManager graphqlws.SubscriptionManager
@@ -94,11 +95,16 @@ func main() {
 	router.HandleFunc("/pfp_upload", uploadPfp).Methods("POST")
 	router.Handle("/subscriptions", graphqlwsHandler)
 
+	secureMiddleware := secure.New(secure.Options{
+		FrameDeny: true,
+	})
+
 	router.Use(handlers.CompressHandler)
 	router.Use(LoggingHandler)
 	router.Use(ContentTypeHandler)
 	router.Use(RecoveryHandler)
 	router.Use(customMiddleware)
+	router.Use(secureMiddleware.Handler)
 
 	// Create an HTTP server
 	srv := &http.Server{

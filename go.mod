@@ -18,6 +18,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/prisma/prisma-client-go v0.8.0
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/unrolled/secure v1.0.9 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf
 	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e // indirect
