@@ -1,19 +1,26 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/png"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"time"
 
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
+	"github.com/disintegration/imaging"
 	"github.com/golang/gddo/httputil/header"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -99,15 +106,16 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 	if isAuth {
 
 		supportedFormats := map[string]bool{
-			"image/bmp":       true, // BMP
-			"image/gif":       true, // GIF
-			"image/jpeg":      true, // JPEG
-			"image/webp":      true, // WEBP
-			"image/png":       true, // PNG
-			"video/mp4":       true, // MP4
-			"video/x-msvideo": true, // AVI
-			"video/ogg":       true, // OGG
-			"video/webm":      true, // WEBM
+			"image/gif":  true, // GIF
+			"image/jpeg": true, // JPEG
+			"image/png":  true, // PNG
+			"video/mp4":  true, // MP4
+		}
+		isImage := map[string]bool{
+			"image/gif":  true,  // GIF
+			"image/jpeg": true,  // JPEG
+			"image/png":  true,  // PNG
+			"video/mp4":  false, // MP4
 		}
 
 		// Check if content type is "multipart/form-data"
@@ -189,15 +197,86 @@ func uploadMedia(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			// Write file to cloud
 			obj := bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
-			wc := obj.NewWriter(ctx)
-			if _, err = io.Copy(wc, file); err != nil {
+			writer := obj.NewWriter(ctx)
+			if _, err = io.Copy(writer, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
-			if err := wc.Close(); err != nil {
+			if err := writer.Close(); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
-			links = append(links, wc.Attrs().MediaLink)
+
+			// Read it back
+			reader, err := obj.NewReader(ctx)
+			if err != nil {
+				panic(fmt.Errorf("reader: %v", err))
+			}
+			defer reader.Close()
+			data, err := ioutil.ReadAll(reader)
+			if err != nil {
+				panic(fmt.Errorf("ioutil.ReadAll: %v", err))
+			}
+
+			var thumb *image.NRGBA
+
+			if isImage[files[i].Header.Get("Content-Type")] {
+				// Make thumbnail
+				image, _, err := image.Decode(bytes.NewReader(data))
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				thumb = imaging.Thumbnail(image, 640, 360, imaging.Lanczos)
+			} else {
+				tempVidPath := "./tmp/" + genID(40) + ".mp4"
+				tempVid, err := os.Create(tempVidPath)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				_, err = tempVid.Write(data)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				path, err := VideoThumb(tempVidPath)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				picDat, err := imaging.Open(path)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				thumb = imaging.Thumbnail(picDat, 640, 360, imaging.Lanczos)
+
+				err = os.Remove(path)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				err = os.Remove(tempVidPath)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+
+			// Save thumbnail
+			thumbObj := bucket.Object("thumb/" + randID + ".png")
+			thumbWriter := thumbObj.NewWriter(ctx)
+			if err = png.Encode(thumbWriter, thumb); err != nil {
+				panic(fmt.Errorf("png.Encode: %v", err))
+			}
+			if err := thumbWriter.Close(); err != nil {
+				panic(fmt.Errorf("png.Encode: %v", err))
+			}
+
+			links = append(links, writer.Attrs().MediaLink)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -319,4 +398,25 @@ func uploadPfp(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(links)
 	}
+}
+
+func VideoThumb(filepath string) (string, error) {
+	// command line args, path, and command
+	command := "ffmpeg"
+	frameExtractionTime := "0:00:00.000"
+	vframes := "1"
+	qv := "2"
+	output := "./tmp/" + time.Now().Format(time.Kitchen) + genID(40) + ".png"
+
+	cmd := exec.Command(command,
+		"-ss", frameExtractionTime,
+		"-i", filepath, // to read from
+		"-vframes", vframes,
+		"-q:v", qv,
+		output)
+
+	// run the command and don't wait for it to finish. waiting exec is run
+	// ignore errors for examples-sake
+	err := cmd.Run()
+	return output, err
 }
