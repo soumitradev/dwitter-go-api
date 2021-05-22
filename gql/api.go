@@ -488,7 +488,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Create a reply to a dweet, and return formatted
+						// Create a redweet, and return formatted
 						originalID, idPresent := params.Args["id"].(string)
 						if idPresent {
 							redweet, err := database.Redweet(originalID, data["username"].(string))
@@ -608,7 +608,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Make user like dweet, and return formatted
+						// Make user unlike dweet, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
@@ -647,7 +647,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Make user follow the other user, and return formatted
+						// Make user unfollow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
 						dweetsToFetch, numPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
@@ -776,7 +776,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Edit dweet, and return formatted
+						// Edit user, and return formatted
 						firstName, firstPresent := params.Args["firstName"].(string)
 						lastName, lastPresent := params.Args["lastName"].(string)
 						email, emailPresent := params.Args["email"].(string)
@@ -823,7 +823,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Make user follow the other user, and return formatted
+						// Delete dweet, and return formatted
 						id, idPresent := params.Args["id"].(string)
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
@@ -854,7 +854,7 @@ var mutationHandler = graphql.NewObject(
 					}
 
 					if isAuth {
-						// Make user follow the other user, and return formatted
+						// Make user unredweet the dweet, and return formatted
 						id, present := params.Args["id"].(string)
 						if present {
 							redweet, err := database.DeleteRedweet(id, data["username"].(string))

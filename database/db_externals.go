@@ -15,78 +15,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-/*
-
-This code is getting a bit messy, and I think I know how to solve it.
-
-Use cases.
-
-So far, I have been looking at whatever I'm doing as an API. I was looking at it from a wrong perspective.
-
-This is an app. This is Dwitter. I don't care which data someone wants in what format.
-
-They can do that using multiple queries, and GraphQL handles a lot of it for them.
-
-My job here is to build Dwitter.
-
-I need to look at it like an app.
-
-When I'm looking at a User's profile, does it matter what posts they've liked?
-
-I'll have to start building my API based on how it'll be used, not on some weird hypothetical 3rd party.
-
-What do I need?
-
-When on the homepage (when logged in), I need:
-- A list of latest dweets from the people you follow
-- A create dweet button
-
-When viewing a User (when not logged in):
-- I need their basic info: Bio, Name, username
-- Followers and Following counts
-- Some of their Dweets (more can be loaded later on scrolling)
-
-When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
-Also, a button to follow/unfollow them.
-
-When viewing a Dweet (when not logged in):
-- I need the basic dweet info: Body, Author
-- Likes, Redweets and reply counts
-- Some replies (more can be loaded on scrolling)
-
-When viewing a Dweet when logged in, I need the same info except I also need the users that liked the Dweet
-(so I can show which people that the User follows liked the dweet)
-Also, a button to like/unlike it.
-Also, a button to redweet/unredweet it.
-Also, a button to create a reply to it
-
-If the dweet is your own, a button to edit it.
-
-
-When viewing your own profile when logged in:
-- I need their basic info: Bio, Name, username
-- Followers and Following counts
-- Some of their Dweets (more can be loaded later on scrolling)
-
-Here, we have 4 buttons:
-- Liked Dweets (to view dweets you liked)
-- Followers (to view people that follow you)
-- Following (to view people that you follow)
-- Edit Profile button to update the user
-
-Additionally, you can:
-- Delete a user
-- Delete a dweet
-
-*/
-
 // Get dweet when not authenticated
 func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
-	// When viewing a Dweet (when not logged in):
-	// - I need the basic dweet info: Body, Author
-	// - Likes, Redweets and reply counts
-	// - Some replies (more can be loaded on scrolling)
-
+	// Check params and return data accordingly
 	var post *db.DweetModel
 	var err error
 	if repliesToFetch < 0 {
@@ -127,11 +58,6 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 
 // Get dweet when authenticated
 func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername string) (schema.DweetType, error) {
-	// When viewing a Dweet (when not logged in):
-	// - I need the basic dweet info: Body, Author
-	// - Likes, Redweets and reply counts
-	// - Some replies (more can be loaded on scrolling)
-
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(viewerUsername),
@@ -146,7 +72,7 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 
 	var post *db.DweetModel
 
-	// Fetch the user requested with like_users so we see who liked the dweet
+	// Check params and return data accordingly
 	if repliesToFetch < 0 {
 		post, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
@@ -189,7 +115,7 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 			selfLike = true
 		}
 	}
-	// Find known people that liked thw dweet
+	// Find known people that liked the dweet
 	mutuals := util.HashIntersectUsers(likes, following)
 
 	// Add requesting user to like_users list
@@ -204,14 +130,11 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 
 // Get user when not authenticated
 func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema.UserType, error) {
-	// When viewing a User (when not logged in):
-	// - I need their basic info: Bio, Name, username
-	// - Followers and Following counts
-	// - Some of their Dweets (more can be loaded later on scrolling)
 
 	var user *db.UserModel
 	var err error
 
+	// Check params and return data accordingly
 	if repliesToFetch < 0 {
 		user, err = common.Client.User.FindUnique(
 			db.User.Username.Equals(username),
@@ -245,6 +168,7 @@ func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets 
 	var users []db.UserModel
 	var err error
 
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
@@ -282,6 +206,7 @@ func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets 
 		return []schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Format
 	var formatted []schema.UserType
 	for _, user := range users {
 		nuser := schema.NoAuthFormatAsUserType(&user)
@@ -307,6 +232,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, 
 
 	following := viewUser.Following()
 
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
@@ -348,6 +274,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, 
 		return []schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Get common followers and format and return
 	var formatted []schema.UserType
 	for _, user := range users {
 		mutuals := util.HashIntersectUsers(user.Followers(), following)
@@ -359,11 +286,6 @@ func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, 
 
 // Search dweets when authenticated
 func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int, viewerUsername string) ([]schema.DweetType, error) {
-	// When viewing a Dweet (when not logged in):
-	// - I need the basic dweet info: Body, Author
-	// - Likes, Redweets and reply counts
-	// - Some replies (more can be loaded on scrolling)
-
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(viewerUsername),
@@ -378,7 +300,7 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 
 	var posts []db.DweetModel
 
-	// Fetch the user requested with like_users so we see who liked the dweet
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
@@ -454,7 +376,7 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 				selfLike = true
 			}
 		}
-		// Find known people that liked thw dweet
+		// Find known people that liked the dweet
 		mutuals := util.HashIntersectUsers(likes, following)
 
 		// Add requesting user to like_users list
@@ -472,13 +394,10 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 
 // Search dweets when not authenticated
 func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
-	// When viewing a Dweet (when not logged in):
-	// - I need the basic dweet info: Body, Author
-	// - Likes, Redweets and reply counts
-	// - Some replies (more can be loaded on scrolling)
-
 	var posts []db.DweetModel
 	var err error
+
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
@@ -540,6 +459,7 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 		return []schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Format
 	var formatted []schema.DweetType
 	for _, post := range posts {
 		npost := schema.NoAuthFormatAsDweetType(&post)
@@ -550,8 +470,6 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 
 // Get user when authenticated
 func GetUser(username string, dweetsToFetch int, dweetOffset int, viewerUsername string) (schema.UserType, error) {
-	// When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
-
 	var user *db.UserModel
 	var mutuals []db.UserModel
 	var err error
@@ -653,6 +571,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Check if user with username or email already exists
 	_, err1 := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).Exec(common.BaseCtx)
@@ -660,6 +579,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 		db.User.Email.Equals(email),
 	).Exec(common.BaseCtx)
 	if (err1 == db.ErrNotFound) || (err2 == db.ErrNotFound) {
+		// Create user if no such user exists
 		createdUser, err := common.Client.User.CreateOne(
 			db.User.Username.Set(username),
 			db.User.PasswordHash.Set(string(passwordHash)),
@@ -701,6 +621,7 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Check if user owns dweet
 	if post.Author().Username != username {
 		return schema.DweetType{}, fmt.Errorf("authorization error: %v", errors.New("not authorized to edit dweet"))
 	}
@@ -719,6 +640,7 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 		}
 	}
 
+	// Check params and return data accordingly
 	if repliesToFetch < 0 {
 		post, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
@@ -761,10 +683,12 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Mark media as used to prevent auto-deletion on expiry
 	for _, link := range mediaLinks {
 		delete(common.MediaCreatedButNotUsed, link)
 	}
 
+	// Add common likes and format
 	user, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).With(
@@ -787,6 +711,8 @@ func UpdateUser(username string, firstName string, lastName string, email string
 	dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (schema.UserType, error) {
 	var user *db.UserModel
 	var err error
+
+	// Check params and return data accordingly
 	if followingToFetch < 0 {
 		if followersToFetch < 0 {
 			if dweetsToFetch < 0 {
@@ -959,17 +885,6 @@ func UpdateUser(username string, firstName string, lastName string, email string
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	if user.ProfilePicURL != PfpUrl {
-		loc, err := cdn.LinkToLocation(user.ProfilePicURL)
-		if err != nil {
-			return schema.UserType{}, err
-		}
-		err = cdn.DeleteLocation(loc, false)
-		if err != nil {
-			return schema.UserType{}, err
-		}
-	}
-
 	nuser := schema.FormatAsUserType(user)
 	return nuser, err
 }
@@ -978,6 +893,8 @@ func UpdateUser(username string, firstName string, lastName string, email string
 func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
 	var user *db.UserModel
 	var err error
+
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if repliesToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
@@ -1054,6 +971,7 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 		return []schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Add common likes and return formatted
 	var liked []schema.DweetType
 	for _, dweet := range user.LikedDweets() {
 		likes := dweet.LikeUsers()
@@ -1061,7 +979,7 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 		// Find known people that liked thw dweet
 		mutuals := util.HashIntersectUsers(likes, user.Following())
 
-		// Add requesting user to like_users list
+		// Add requesting user to likeUsers list
 		mutuals = append(mutuals, *user)
 
 		liked = append(liked, schema.AuthFormatAsDweetType(&dweet, mutuals))
@@ -1073,6 +991,8 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
 	var user *db.UserModel
 	var err error
+
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if dweetsToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
@@ -1133,6 +1053,7 @@ func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch
 		return []schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Add common followers and format
 	var followers []schema.UserType
 	for _, follower := range user.Followers() {
 		followerFollowers := follower.Followers()
@@ -1149,6 +1070,8 @@ func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch
 func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
 	var user *db.UserModel
 	var err error
+
+	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if dweetsToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
@@ -1205,6 +1128,7 @@ func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch
 		return []schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Add common followers and return
 	userFullFollowing, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(userID),
 	).With(
@@ -1234,6 +1158,8 @@ func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch
 func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	var deleted *db.DweetModel
 	var err error
+
+	// Check params and return data accordingly
 	if repliesToFetch < 0 {
 		deleted, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
@@ -1272,6 +1198,7 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Check if authorized to delete dweet
 	if deleted.Author().Username == username {
 		_, err := deleteDweet(postID)
 
@@ -1292,6 +1219,7 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 			return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 		}
 
+		// Format and return with common likes
 		mutuals := util.HashIntersectUsers(deleted.LikeUsers(), deleted.Author().Following())
 		formatted := schema.AuthFormatAsDweetType(deleted, mutuals)
 		return formatted, err
@@ -1316,6 +1244,7 @@ func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 
 // Create a Post
 func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, error) {
+	// Generate a unique ID
 	randID := util.GenID(10)
 	_, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
@@ -1350,16 +1279,19 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// Mark media as used to prevent deletion on expiry
 	for _, link := range mediaLinks {
 		delete(common.MediaCreatedButNotUsed, link)
 	}
 
+	// Format and return
 	post := schema.AuthFormatAsDweetType(createdPost, []db.UserModel{})
 	return post, err
 }
 
 // Create a Reply
 func NewReply(originalPostID string, body string, authorUsername string, mediaLinks []string) (schema.DweetType, error) {
+	// Generate unique ID
 	randID := util.GenID(10)
 	_, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
@@ -1439,6 +1371,7 @@ func Redweet(originalPostID, username string) (schema.RedweetType, error) {
 		return schema.RedweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	// If already redweeted, return redweet
 	if len(user.Redweets()) > 0 {
 		redweet, err := common.Client.Redweet.FindUnique(
 			db.Redweet.DbID.Equals(user.Redweets()[0].DbID),
@@ -2035,7 +1968,6 @@ func Unfollow(followedID string, followerID string, dweetsToFetch int, dweetOffs
 func GetFeed(username string) ([]interface{}, error) {
 	// grab followed users by username
 	// Grab their dweets and redweets
-	// Merge the lists, format and return
 	user, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).With(
@@ -2077,6 +2009,7 @@ func GetFeed(username string) ([]interface{}, error) {
 
 	following := user.Following()
 
+	// Merge the lists, format and return
 	var posts []db.DweetModel
 	var redweets []db.RedweetModel
 
