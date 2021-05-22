@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 
-func CustomMiddleware(next http.Handler) http.Handler {
+func SizeHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.ContentLength > (65 << 20) {
 			msg := "Request too large."

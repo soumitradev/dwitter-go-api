@@ -106,10 +106,10 @@ func deleteDweet(postID string) (*db.DweetModel, error) {
 }
 
 // Remove a Redweet
-func deleteRedweet(postID string, userID string) (*db.RedweetModel, error) {
+func deleteRedweet(postID string, username string) (*db.RedweetModel, error) {
 	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
 	user, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(userID),
+		db.User.Username.Equals(username),
 	).With(
 		db.User.Redweets.Fetch(
 			db.Redweet.OriginalRedweetID.Equals(postID),

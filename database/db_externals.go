@@ -80,7 +80,7 @@ Additionally, you can:
 */
 
 // Get dweet when not authenticated
-func NoAuthGetPost(postID string, replies_to_fetch int, replyOffset int) (schema.DweetType, error) {
+func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
 	// - Likes, Redweets and reply counts
@@ -88,7 +88,7 @@ func NoAuthGetPost(postID string, replies_to_fetch int, replyOffset int) (schema
 
 	var post *db.DweetModel
 	var err error
-	if replies_to_fetch < 0 {
+	if repliesToFetch < 0 {
 		post, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
 		).With(
@@ -107,7 +107,7 @@ func NoAuthGetPost(postID string, replies_to_fetch int, replyOffset int) (schema
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
-			).Take(replies_to_fetch).Skip(replyOffset),
+			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
@@ -125,7 +125,7 @@ func NoAuthGetPost(postID string, replies_to_fetch int, replyOffset int) (schema
 }
 
 // Get dweet when authenticated
-func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserID string) (schema.DweetType, error) {
+func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername string) (schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
 	// - Likes, Redweets and reply counts
@@ -133,7 +133,7 @@ func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserI
 
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(viewUserID),
+		db.User.Username.Equals(viewerUsername),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(common.BaseCtx)
@@ -146,7 +146,7 @@ func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserI
 	var post *db.DweetModel
 
 	// Fetch the user requested with like_users so we see who liked the dweet
-	if replies_to_fetch < 0 {
+	if repliesToFetch < 0 {
 		post, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
 		).With(
@@ -166,7 +166,7 @@ func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserI
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
-			).Take(replies_to_fetch).Skip(replyOffset),
+			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
@@ -184,7 +184,7 @@ func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserI
 	likes := post.LikeUsers()
 	selfLike := false
 	for _, user := range likes {
-		if user.Username == viewUserID {
+		if user.Username == viewerUsername {
 			selfLike = true
 		}
 	}
@@ -202,7 +202,7 @@ func AuthGetPost(postID string, replies_to_fetch int, replyOffset int, viewUserI
 }
 
 // Get user when not authenticated
-func NoAuthGetUser(userID string, dweets_to_fetch int, dweetOffset int) (schema.UserType, error) {
+func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema.UserType, error) {
 	// When viewing a User (when not logged in):
 	// - I need their basic info: Bio, Name, username
 	// - Followers and Following counts
@@ -211,9 +211,9 @@ func NoAuthGetUser(userID string, dweets_to_fetch int, dweetOffset int) (schema.
 	var user *db.UserModel
 	var err error
 
-	if dweets_to_fetch < 0 {
+	if repliesToFetch < 0 {
 		user, err = common.Client.User.FindUnique(
-			db.User.Username.Equals(userID),
+			db.User.Username.Equals(username),
 		).With(
 			db.User.Dweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -221,9 +221,9 @@ func NoAuthGetUser(userID string, dweets_to_fetch int, dweetOffset int) (schema.
 		).Exec(common.BaseCtx)
 	} else {
 		user, err = common.Client.User.FindUnique(
-			db.User.Username.Equals(userID),
+			db.User.Username.Equals(username),
 		).With(
-			db.User.Dweets.Fetch().Take(dweets_to_fetch).Take(dweetOffset).With(
+			db.User.Dweets.Fetch().Take(repliesToFetch).Take(dweetOffset).With(
 				db.Dweet.Author.Fetch(),
 			),
 		).Exec(common.BaseCtx)
@@ -239,11 +239,11 @@ func NoAuthGetUser(userID string, dweets_to_fetch int, dweetOffset int) (schema.
 	return nuser, err
 }
 
-func NoAuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int, dweetOffset int) ([]schema.UserType, error) {
+func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets int, dweetOffset int) ([]schema.UserType, error) {
 	var users []db.UserModel
 	var err error
 
-	if numToFetch < 0 {
+	if numberToFetch < 0 {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
 				db.User.Username.Contains(text),
@@ -263,13 +263,13 @@ func NoAuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int
 				db.User.Username.Contains(text),
 			).With(
 				db.User.Dweets.Fetch(),
-			).Take(numToFetch).Skip(numOffset).Exec(common.BaseCtx)
+			).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 		} else {
 			users, err = common.Client.User.FindMany(
 				db.User.Username.Contains(text),
 			).With(
 				db.User.Dweets.Fetch().Take(numDweets).Skip(dweetOffset),
-			).Take(numToFetch).Skip(numOffset).Exec(common.BaseCtx)
+			).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 		}
 	}
 
@@ -288,13 +288,13 @@ func NoAuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int
 	return formatted, err
 }
 
-func AuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int, dweetOffset int, viewUserID string) ([]schema.UserType, error) {
+func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, dweetOffset int, viewerUsername string) ([]schema.UserType, error) {
 	var users []db.UserModel
 	var err error
 
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(viewUserID),
+		db.User.Username.Equals(viewerUsername),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(common.BaseCtx)
@@ -304,17 +304,17 @@ func AuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int, 
 
 	following := viewUser.Following()
 
-	if numToFetch < 0 {
+	if numberToFetch < 0 {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch(),
 				db.User.Followers.Fetch(),
 			).Exec(common.BaseCtx)
 		} else {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch().Take(numDweets).Skip(numOffset),
 				db.User.Followers.Fetch(),
@@ -323,18 +323,18 @@ func AuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int, 
 	} else {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch(),
 				db.User.Followers.Fetch(),
-			).Take(numToFetch).Skip(dweetOffset).Exec(common.BaseCtx)
+			).Take(numberToFetch).Skip(dweetOffset).Exec(common.BaseCtx)
 		} else {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch().Take(numDweets).Skip(numOffset),
 				db.User.Followers.Fetch(),
-			).Take(numToFetch).Skip(dweetOffset).Exec(common.BaseCtx)
+			).Take(numberToFetch).Skip(dweetOffset).Exec(common.BaseCtx)
 		}
 	}
 
@@ -355,7 +355,7 @@ func AuthSearchUsers(text string, numToFetch int, numOffset int, numDweets int, 
 }
 
 // Get dweet when authenticated
-func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int, viewUserID string) ([]schema.DweetType, error) {
+func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int, viewerUsername string) ([]schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
 	// - Likes, Redweets and reply counts
@@ -363,7 +363,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(viewUserID),
+		db.User.Username.Equals(viewerUsername),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(common.BaseCtx)
@@ -379,7 +379,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 	if numberToFetch < 0 {
 		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
@@ -392,7 +392,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
@@ -407,7 +407,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 	} else {
 		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).Take(numberToFetch).Skip(numOffset).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
@@ -420,7 +420,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).Take(numberToFetch).Skip(numOffset).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
@@ -447,7 +447,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 		likes := post.LikeUsers()
 		selfLike := false
 		for _, user := range likes {
-			if user.Username == viewUserID {
+			if user.Username == viewerUsername {
 				selfLike = true
 			}
 		}
@@ -468,7 +468,7 @@ func AuthSearchPosts(text string, numberToFetch int, numOffset int, repliesToFet
 }
 
 // Get dweet when not authenticated
-func NoAuthSearchPosts(text string, numToFetch int, numOffset int, replies_to_fetch int, replyOffset int) ([]schema.DweetType, error) {
+func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
 	// - Likes, Redweets and reply counts
@@ -476,10 +476,10 @@ func NoAuthSearchPosts(text string, numToFetch int, numOffset int, replies_to_fe
 
 	var posts []db.DweetModel
 	var err error
-	if numToFetch < 0 {
-		if replies_to_fetch < 0 {
+	if numberToFetch < 0 {
+		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
@@ -491,22 +491,22 @@ func NoAuthSearchPosts(text string, numToFetch int, numOffset int, replies_to_fe
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
+				db.Dweet.DweetBody.Contains(query),
 			).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
-				).Take(replies_to_fetch).Skip(replyOffset),
+				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 			).Exec(common.BaseCtx)
 		}
 	} else {
-		if replies_to_fetch < 0 {
+		if repliesToFetch < 0 {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
-			).Take(numToFetch).Skip(numOffset).With(
+				db.Dweet.DweetBody.Contains(query),
+			).Take(numberToFetch).Skip(numOffset).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
@@ -517,12 +517,12 @@ func NoAuthSearchPosts(text string, numToFetch int, numOffset int, replies_to_fe
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
-				db.Dweet.DweetBody.Contains(text),
-			).Take(numToFetch).Skip(numOffset).With(
+				db.Dweet.DweetBody.Contains(query),
+			).Take(numberToFetch).Skip(numOffset).With(
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
-				).Take(replies_to_fetch).Skip(replyOffset),
+				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
@@ -546,18 +546,18 @@ func NoAuthSearchPosts(text string, numToFetch int, numOffset int, replies_to_fe
 }
 
 // Get user when authenticated
-func AuthGetUser(userID string, dweets_to_fetch int, dweetOffset int, viewUserID string) (schema.UserType, error) {
+func GetUser(username string, dweetsToFetch int, dweetOffset int, viewerUsername string) (schema.UserType, error) {
 	// When viewing a User when logged in, I need the same info, except I also need who follows them so I can show mutuals.
 
 	var user *db.UserModel
 	var mutuals []db.UserModel
 	var err error
 
-	if viewUserID == userID {
+	if viewerUsername == username {
 		// Fetch the user requested
-		if dweets_to_fetch < 0 {
+		if dweetsToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
-				db.User.Username.Equals(userID),
+				db.User.Username.Equals(username),
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
@@ -570,11 +570,11 @@ func AuthGetUser(userID string, dweets_to_fetch int, dweetOffset int, viewUserID
 			).Exec(common.BaseCtx)
 		} else {
 			user, err = common.Client.User.FindUnique(
-				db.User.Username.Equals(userID),
+				db.User.Username.Equals(username),
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
-				).Take(dweets_to_fetch).Skip(dweetOffset),
+				).Take(dweetsToFetch).Skip(dweetOffset),
 				db.User.LikedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
@@ -595,7 +595,7 @@ func AuthGetUser(userID string, dweets_to_fetch int, dweetOffset int, viewUserID
 	} else {
 		// Get your own following-list
 		viewUser, err := common.Client.User.FindUnique(
-			db.User.Username.Equals(viewUserID),
+			db.User.Username.Equals(viewerUsername),
 		).With(
 			db.User.Following.Fetch(),
 		).Exec(common.BaseCtx)
@@ -606,9 +606,9 @@ func AuthGetUser(userID string, dweets_to_fetch int, dweetOffset int, viewUserID
 		following := viewUser.Following()
 
 		// Fetch the user requested with followers so we get the mutuals
-		if dweets_to_fetch < 0 {
+		if dweetsToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
-				db.User.Username.Equals(userID),
+				db.User.Username.Equals(username),
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
@@ -617,11 +617,11 @@ func AuthGetUser(userID string, dweets_to_fetch int, dweetOffset int, viewUserID
 			).Exec(common.BaseCtx)
 		} else {
 			user, err = common.Client.User.FindUnique(
-				db.User.Username.Equals(userID),
+				db.User.Username.Equals(username),
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
-				).Take(dweets_to_fetch).Skip(dweetOffset),
+				).Take(dweetsToFetch).Skip(dweetOffset),
 				db.User.Followers.Fetch(),
 			).Exec(common.BaseCtx)
 		}
@@ -685,7 +685,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 }
 
 // Update a dweet
-func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+func UpdateDweet(postID string, username string, body string, mediaLinks []string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	post, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
@@ -698,7 +698,7 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	if post.Author().Username != userID {
+	if post.Author().Username != username {
 		return schema.DweetType{}, fmt.Errorf("authorization error: %v", errors.New("not authorized to edit dweet"))
 	}
 
@@ -763,7 +763,7 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 	}
 
 	user, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(userID),
+		db.User.Username.Equals(username),
 	).With(
 		db.User.Following.Fetch(),
 	).Exec(common.BaseCtx)
@@ -780,14 +780,15 @@ func AuthUpdateDweet(postID, userID, body string, mediaLinks []string, repliesTo
 }
 
 // Update a user
-func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dweetsToFetch int, dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (schema.UserType, error) {
+func UpdateUser(username string, firstName string, lastName string, email string, bio string, PfpUrl string, dweetsToFetch int,
+	dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (schema.UserType, error) {
 	var user *db.UserModel
 	var err error
 	if followingToFetch < 0 {
 		if followersToFetch < 0 {
 			if dweetsToFetch < 0 {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -806,7 +807,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 				).Exec(common.BaseCtx)
 			} else {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -827,7 +828,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 		} else {
 			if dweetsToFetch < 0 {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -846,7 +847,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 				).Exec(common.BaseCtx)
 			} else {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -869,7 +870,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 		if followersToFetch < 0 {
 			if dweetsToFetch < 0 {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -888,7 +889,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 				).Exec(common.BaseCtx)
 			} else {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -909,7 +910,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 		} else {
 			if dweetsToFetch < 0 {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -928,7 +929,7 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 				).Exec(common.BaseCtx)
 			} else {
 				user, err = common.Client.User.FindUnique(
-					db.User.Username.Equals(userID),
+					db.User.Username.Equals(username),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -971,11 +972,11 @@ func AuthUpdateUser(userID, firstName, lastName, email, bio, PfpUrl string, dwee
 }
 
 // Get User data with dweets that user liked
-func FetchLikedDweets(userID string, numberToFetch int, numOffset int, numberOfReplies int, replyOffset int) ([]schema.DweetType, error) {
+func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
 	var user *db.UserModel
 	var err error
 	if numberToFetch < 0 {
-		if numberOfReplies < 0 {
+		if repliesToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(userID),
 			).With(
@@ -1002,14 +1003,14 @@ func FetchLikedDweets(userID string, numberToFetch int, numOffset int, numberOfR
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
-					).Take(numberOfReplies).Skip(replyOffset),
+					).Take(repliesToFetch).Skip(replyOffset),
 					db.Dweet.LikeUsers.Fetch(),
 				),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
 		}
 	} else {
-		if numberOfReplies < 0 {
+		if repliesToFetch < 0 {
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(userID),
 			).With(
@@ -1036,7 +1037,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numOffset int, numberOfR
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
-					).Take(numberOfReplies).Skip(replyOffset),
+					).Take(repliesToFetch).Skip(replyOffset),
 					db.Dweet.LikeUsers.Fetch(),
 				).Take(numberToFetch).Skip(numOffset),
 				db.User.Following.Fetch(),
@@ -1066,7 +1067,7 @@ func FetchLikedDweets(userID string, numberToFetch int, numOffset int, numberOfR
 }
 
 // Get users that follow user
-func FetchFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
+func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
 	var user *db.UserModel
 	var err error
 	if numberToFetch < 0 {
@@ -1142,7 +1143,7 @@ func FetchFollowers(userID string, numberToFetch int, numOffset int, dweetsToFet
 }
 
 // Get users that user follows
-func FetchFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
+func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
 	var user *db.UserModel
 	var err error
 	if numberToFetch < 0 {
@@ -1227,7 +1228,7 @@ func FetchFollowing(userID string, numberToFetch int, numOffset int, dweetsToFet
 }
 
 // Delete a dweet
-func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	var deleted *db.DweetModel
 	var err error
 	if repliesToFetch < 0 {
@@ -1268,7 +1269,7 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffs
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	if deleted.Author().Username == userID {
+	if deleted.Author().Username == username {
 		_, err := deleteDweet(postID)
 
 		// Delete the media that isn't used anymore
@@ -1298,8 +1299,8 @@ func AuthDeleteDweet(postID string, userID string, repliesToFetch int, replyOffs
 }
 
 // Delete a redweet
-func AuthDeleteRedweet(postID string, userID string) (schema.RedweetType, error) {
-	redweet, err := deleteRedweet(postID, userID)
+func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
+	redweet, err := deleteRedweet(postID, username)
 	if err == db.ErrNotFound {
 		return schema.RedweetType{}, fmt.Errorf("redweet not found: %v", err)
 	}
@@ -1313,7 +1314,7 @@ func AuthDeleteRedweet(postID string, userID string) (schema.RedweetType, error)
 }
 
 // Create a Post
-func AuthCreateDweet(body, authorID string, mediaLinks []string) (schema.DweetType, error) {
+func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, error) {
 	randID := util.GenID(10)
 	_, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
@@ -1331,7 +1332,7 @@ func AuthCreateDweet(body, authorID string, mediaLinks []string) (schema.DweetTy
 	createdPost, err := common.Client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(randID),
-		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
+		db.Dweet.Author.Link(db.User.Username.Equals(username)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -1357,7 +1358,7 @@ func AuthCreateDweet(body, authorID string, mediaLinks []string) (schema.DweetTy
 }
 
 // Create a Reply
-func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (schema.DweetType, error) {
+func NewReply(originalPostID string, body string, authorUsername string, mediaLinks []string) (schema.DweetType, error) {
 	randID := util.GenID(10)
 	_, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
@@ -1376,11 +1377,11 @@ func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (sc
 	createdReply, err := common.Client.Dweet.CreateOne(
 		db.Dweet.DweetBody.Set(body),
 		db.Dweet.ID.Set(randID),
-		db.Dweet.Author.Link(db.User.Username.Equals(authorID)),
+		db.Dweet.Author.Link(db.User.Username.Equals(authorUsername)),
 		db.Dweet.Media.Set(mediaLinks),
 		db.Dweet.IsReply.Set(true),
 		db.Dweet.ReplyTo.Link(
-			db.Dweet.ID.Equals(originalID),
+			db.Dweet.ID.Equals(originalPostID),
 		),
 		db.Dweet.PostedAt.Set(now),
 		db.Dweet.LastUpdatedAt.Set(now),
@@ -1402,7 +1403,7 @@ func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (sc
 
 	// Update original Dweet to show reply
 	_, err = common.Client.Dweet.FindUnique(
-		db.Dweet.ID.Equals(originalID),
+		db.Dweet.ID.Equals(originalPostID),
 	).Update(
 		db.Dweet.ReplyDweets.Link(
 			db.Dweet.ID.Equals(createdReply.ID),
@@ -1421,10 +1422,10 @@ func AuthCreateReply(originalID, body, authorID string, mediaLinks []string) (sc
 }
 
 // Create a new Redweet of a Dweet
-func AuthCreateRedweet(originalPostID, userID string) (schema.RedweetType, error) {
+func Redweet(originalPostID, username string) (schema.RedweetType, error) {
 	// Create a Redweet
 	user, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(userID),
+		db.User.Username.Equals(username),
 	).With(
 		db.User.Redweets.Fetch(
 			db.Redweet.OriginalRedweetID.Equals(originalPostID),
@@ -1452,7 +1453,7 @@ func AuthCreateRedweet(originalPostID, userID string) (schema.RedweetType, error
 	// Create a Redweet
 	createdRedweet, err := common.Client.Redweet.CreateOne(
 		db.Redweet.Author.Link(
-			db.User.Username.Equals(userID),
+			db.User.Username.Equals(username),
 		),
 		db.Redweet.RedweetOf.Link(
 			db.Dweet.ID.Equals(originalPostID),
@@ -1488,7 +1489,7 @@ func AuthCreateRedweet(originalPostID, userID string) (schema.RedweetType, error
 }
 
 // Create a follower relation
-func AuthFollow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
+func Follow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
 	// Check if user already followed this user
 	personBeingFollowed, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -1610,7 +1611,7 @@ func AuthFollow(followedID string, followerID string, dweetsToFetch int, dweetOf
 }
 
 // Add a like to a dweet
-func AuthLike(likedPostID, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+func Like(likedPostID, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// Check if user already liked this dweet
 	likedPost, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(likedPostID),
@@ -1770,7 +1771,7 @@ func AuthLike(likedPostID, userID string, repliesToFetch int, replyOffset int) (
 }
 
 // Remove a like from a post
-func AuthUnlike(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 
 	likedPost, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
@@ -1918,7 +1919,7 @@ func AuthUnlike(postID string, userID string, repliesToFetch int, replyOffset in
 }
 
 // Create a follower relation
-func AuthUnfollow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
+func Unfollow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
 	// Check if user already unfollowed this user
 	personBeingFollowed, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(followedID),

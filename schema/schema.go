@@ -10,71 +10,71 @@ import (
 
 type BasicUserType struct {
 	Username       string    `json:"username"`
-	FirstName      string    `json:"first_name"`
-	LastName       string    `json:"last_name"`
+	FirstName      string    `json:"firstName"`
+	LastName       string    `json:"lastName"`
 	Email          string    `json:"email"`
 	Bio            string    `json:"bio"`
-	PfpUrl         string    `json:"pfp_url"`
-	FollowerCount  int       `json:"follower_count"`
-	FollowingCount int       `json:"following_count"`
-	CreatedAt      time.Time `json:"created_at"`
+	PfpUrl         string    `json:"pfpURL"`
+	FollowerCount  int       `json:"followerCount"`
+	FollowingCount int       `json:"followingCount"`
+	CreatedAt      time.Time `json:"createdAt"`
 }
 
 type UserType struct {
 	Username       string           `json:"username"`
-	FirstName      string           `json:"first_name"`
-	LastName       string           `json:"last_name"`
+	FirstName      string           `json:"firstName"`
+	LastName       string           `json:"lastName"`
 	Email          string           `json:"email"`
 	Bio            string           `json:"bio"`
-	PfpUrl         string           `json:"pfp_url"`
+	PfpUrl         string           `json:"pfpURL"`
 	Dweets         []BasicDweetType `json:"dweets"`
-	LikedDweets    []BasicDweetType `json:"liked_dweets"`
-	FollowerCount  int              `json:"follower_count"`
+	LikedDweets    []BasicDweetType `json:"likedDweets"`
+	FollowerCount  int              `json:"followerCount"`
 	Followers      []BasicUserType  `json:"followers"`
-	FollowingCount int              `json:"following_count"`
+	FollowingCount int              `json:"followingCount"`
 	Following      []BasicUserType  `json:"following"`
-	CreatedAt      time.Time        `json:"created_at"`
+	CreatedAt      time.Time        `json:"createdAt"`
 }
 
 type BasicDweetType struct {
-	DweetBody       string        `json:"dweet_body"`
+	DweetBody       string        `json:"dweetBody"`
 	ID              string        `json:"id"`
 	Author          BasicUserType `json:"author"`
-	AuthorID        string        `json:"author_id"`
-	PostedAt        time.Time     `json:"posted_at"`
-	LastUpdatedAt   time.Time     `json:"last_updated_at"`
-	LikeCount       int           `json:"like_count"`
-	IsReply         bool          `json:"is_reply"`
-	OriginalReplyID string        `json:"original_reply_id"`
-	ReplyCount      int           `json:"reply_count"`
-	RedweetCount    int           `json:"redweet_count"`
+	AuthorID        string        `json:"authorID"`
+	PostedAt        time.Time     `json:"postedAt"`
+	LastUpdatedAt   time.Time     `json:"lastUpdatedAt"`
+	LikeCount       int           `json:"likeCount"`
+	IsReply         bool          `json:"isReply"`
+	OriginalReplyID string        `json:"originalReplyID"`
+	ReplyCount      int           `json:"replyCount"`
+	RedweetCount    int           `json:"redweetCount"`
 	Media           []string      `json:"media"`
 }
 
 type DweetType struct {
-	DweetBody       string           `json:"dweet_body"`
+	DweetBody       string           `json:"dweetBody"`
 	ID              string           `json:"id"`
 	Author          BasicUserType    `json:"author"`
-	AuthorID        string           `json:"author_id"`
-	PostedAt        time.Time        `json:"posted_at"`
-	LastUpdatedAt   time.Time        `json:"last_updated_at"`
-	LikeCount       int              `json:"like_count"`
-	LikeUsers       []BasicUserType  `json:"like_users"`
-	IsReply         bool             `json:"is_reply"`
-	OriginalReplyID string           `json:"original_reply_id"`
-	ReplyTo         BasicDweetType   `json:"reply_to"`
-	ReplyCount      int              `json:"reply_count"`
-	ReplyDweets     []BasicDweetType `json:"reply_dweets"`
-	RedweetCount    int              `json:"redweet_count"`
+	AuthorID        string           `json:"authorID"`
+	PostedAt        time.Time        `json:"postedAt"`
+	LastUpdatedAt   time.Time        `json:"lastUpdatedAt"`
+	LikeCount       int              `json:"likeCount"`
+	LikeUsers       []BasicUserType  `json:"likeUsers"`
+	IsReply         bool             `json:"isReply"`
+	OriginalReplyID string           `json:"originalReplyID"`
+	ReplyTo         BasicDweetType   `json:"replyTo"`
+	ReplyCount      int              `json:"replyCount"`
+	ReplyDweets     []BasicDweetType `json:"replyDweets"`
+	RedweetCount    int              `json:"redweetCount"`
 	Media           []string         `json:"media"`
 }
 
 type RedweetType struct {
 	Author            BasicUserType  `json:"author"`
-	AuthorID          string         `json:"author_id"`
-	RedweetOf         BasicDweetType `json:"redweet_of"`
-	OriginalRedweetID string         `json:"original_redweet_id"`
-	RedweetTime       time.Time      `json:"redweet_time"`
+	AuthorID          string         `json:"authorID"`
+	RedweetOf         BasicDweetType `json:"redweetOf"`
+	OriginalRedweetID string         `json:"originalRedweetID"`
+	RedweetTime       time.Time      `json:"redweetTime"`
 }
 
 var BasicUserSchema = graphql.NewObject(
@@ -84,10 +84,10 @@ var BasicUserSchema = graphql.NewObject(
 			"username": &graphql.Field{
 				Type: graphql.String,
 			},
-			"first_name": &graphql.Field{
+			"firstName": &graphql.Field{
 				Type: graphql.String,
 			},
-			"last_name": &graphql.Field{
+			"lastName": &graphql.Field{
 				Type: graphql.String,
 			},
 			"email": &graphql.Field{
@@ -96,16 +96,16 @@ var BasicUserSchema = graphql.NewObject(
 			"bio": &graphql.Field{
 				Type: graphql.String,
 			},
-			"pfp_url": &graphql.Field{
+			"pfpURL": &graphql.Field{
 				Type: graphql.String,
 			},
-			"follower_count": &graphql.Field{
+			"followerCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"following_count": &graphql.Field{
+			"followingCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"created_at": &graphql.Field{
+			"createdAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
 		},
@@ -119,10 +119,10 @@ var UserSchema = graphql.NewObject(
 			"username": &graphql.Field{
 				Type: graphql.String,
 			},
-			"first_name": &graphql.Field{
+			"firstName": &graphql.Field{
 				Type: graphql.String,
 			},
-			"last_name": &graphql.Field{
+			"lastName": &graphql.Field{
 				Type: graphql.String,
 			},
 			"email": &graphql.Field{
@@ -131,28 +131,28 @@ var UserSchema = graphql.NewObject(
 			"bio": &graphql.Field{
 				Type: graphql.String,
 			},
-			"pfp_url": &graphql.Field{
+			"pfpURL": &graphql.Field{
 				Type: graphql.String,
 			},
 			"dweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
 			},
-			"liked_dweets": &graphql.Field{
+			"likedDweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
 			},
-			"follower_count": &graphql.Field{
+			"followerCount": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"followers": &graphql.Field{
 				Type: graphql.NewList(BasicUserSchema),
 			},
-			"following_count": &graphql.Field{
+			"followingCount": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"following": &graphql.Field{
 				Type: graphql.NewList(BasicUserSchema),
 			},
-			"created_at": &graphql.Field{
+			"createdAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
 		},
@@ -163,7 +163,7 @@ var BasicDweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "BasicDweet",
 		Fields: graphql.Fields{
-			"dweet_body": &graphql.Field{
+			"dweetBody": &graphql.Field{
 				Type: graphql.String,
 			},
 			"id": &graphql.Field{
@@ -172,28 +172,28 @@ var BasicDweetSchema = graphql.NewObject(
 			"author": &graphql.Field{
 				Type: BasicUserSchema,
 			},
-			"author_id": &graphql.Field{
+			"authorID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"posted_at": &graphql.Field{
+			"postedAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"last_updated_at": &graphql.Field{
+			"lastUpdatedAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"like_count": &graphql.Field{
+			"likeCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"is_reply": &graphql.Field{
+			"isReply": &graphql.Field{
 				Type: graphql.Boolean,
 			},
-			"original_reply_id": &graphql.Field{
+			"originalReplyID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"reply_count": &graphql.Field{
+			"replyCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"redweet_count": &graphql.Field{
+			"redweetCount": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"media": &graphql.Field{
@@ -207,7 +207,7 @@ var DweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Dweet",
 		Fields: graphql.Fields{
-			"dweet_body": &graphql.Field{
+			"dweetBody": &graphql.Field{
 				Type: graphql.String,
 			},
 			"id": &graphql.Field{
@@ -216,37 +216,37 @@ var DweetSchema = graphql.NewObject(
 			"author": &graphql.Field{
 				Type: BasicUserSchema,
 			},
-			"author_id": &graphql.Field{
+			"authorID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"posted_at": &graphql.Field{
+			"postedAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"last_updated_at": &graphql.Field{
+			"lastUpdatedAt": &graphql.Field{
 				Type: graphql.DateTime,
 			},
-			"like_count": &graphql.Field{
+			"likeCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"like_users": &graphql.Field{
+			"likeUsers": &graphql.Field{
 				Type: graphql.NewList(BasicUserSchema),
 			},
-			"is_reply": &graphql.Field{
+			"isReply": &graphql.Field{
 				Type: graphql.Boolean,
 			},
-			"original_reply_id": &graphql.Field{
+			"originalReplyID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"reply_to": &graphql.Field{
+			"replyTo": &graphql.Field{
 				Type: BasicDweetSchema,
 			},
-			"reply_count": &graphql.Field{
+			"replyCount": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"reply_dweets": &graphql.Field{
+			"replyDweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
 			},
-			"redweet_count": &graphql.Field{
+			"redweetCount": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"media": &graphql.Field{
@@ -263,16 +263,16 @@ var RedweetSchema = graphql.NewObject(
 			"author": &graphql.Field{
 				Type: BasicUserSchema,
 			},
-			"author_id": &graphql.Field{
+			"authorID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"redweet_of": &graphql.Field{
+			"redweetOf": &graphql.Field{
 				Type: BasicDweetSchema,
 			},
-			"original_redweet_id": &graphql.Field{
+			"originalRedweetID": &graphql.Field{
 				Type: graphql.String,
 			},
-			"redweet_time": &graphql.Field{
+			"redweetTime": &graphql.Field{
 				Type: graphql.DateTime,
 			},
 		},

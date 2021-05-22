@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"dwitter_go_graphql/prisma/db"
+	"errors"
 	"net/http"
 
 	"cloud.google.com/go/storage"
@@ -31,12 +32,12 @@ func CheckCreds(username string, password string) (bool, error) {
 		db.User.Username.Equals(username),
 	).Exec(BaseCtx)
 	if err != nil {
-		return false, err
+		return false, errors.New("username/password error")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return false, err
+		return false, errors.New("username/password error")
 	}
 	return true, nil
 }

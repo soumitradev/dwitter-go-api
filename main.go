@@ -66,8 +66,8 @@ func main() {
 	// Handle some endpoints using a non-GraphQL solution
 	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", auth.RefreshHandler).Methods("POST")
-	router.HandleFunc("/media_upload", cdn.UploadMedia).Methods("POST")
-	router.HandleFunc("/pfp_upload", cdn.UploadPFP).Methods("POST")
+	router.HandleFunc("/media_upload", cdn.UploadMediaHandler).Methods("POST")
+	router.HandleFunc("/pfp_upload", cdn.UploadPFPHandler).Methods("POST")
 	router.Handle("/subscriptions", common.GraphqlwsHandler)
 
 	// Initialize middleware and use it
@@ -79,7 +79,7 @@ func main() {
 	router.Use(middleware.LoggingHandler)
 	router.Use(middleware.ContentTypeHandler)
 	router.Use(middleware.RecoveryHandler)
-	router.Use(middleware.CustomMiddleware)
+	router.Use(middleware.SizeHandler)
 	router.Use(secureMiddleware.Handler)
 
 	// Create an HTTP server

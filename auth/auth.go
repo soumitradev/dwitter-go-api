@@ -52,22 +52,22 @@ func splitCookie(cookieString string) string {
 }
 
 // Create an Access Token
-func accessToken(userID string) (string, error) {
+func generateAccessToken(username string) (string, error) {
 	_, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(userID),
+		db.User.Username.Equals(username),
 	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return "", errors.New("user doesn't exist")
 	}
 
-	token_claims := jwt.MapClaims{}
-	token_claims["authorized"] = true
-	token_claims["username"] = userID
-	token_claims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	tokenClaims := jwt.MapClaims{}
+	tokenClaims["authorized"] = true
+	tokenClaims["username"] = username
+	tokenClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
 
-	acces_token := jwt.NewWithClaims(jwt.SigningMethodHS256, token_claims)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
 
-	token, err := acces_token.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	token, err := accessToken.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
 		return "", err
 	}
@@ -76,23 +76,23 @@ func accessToken(userID string) (string, error) {
 }
 
 // Create a Refresh Token
-func refreshToken(userID string) (string, error) {
+func generateRefreshToken(username string) (string, error) {
 	userDB, err := common.Client.User.FindUnique(
-		db.User.Username.Equals(userID),
+		db.User.Username.Equals(username),
 	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return "", errors.New("user doesn't exist")
 	}
 
-	token_claims := jwt.MapClaims{}
-	token_claims["authorized"] = true
-	token_claims["username"] = userID
-	token_claims["token_version"] = userDB.TokenVersion
-	token_claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
+	tokenClaims := jwt.MapClaims{}
+	tokenClaims["authorized"] = true
+	tokenClaims["username"] = username
+	tokenClaims["token_version"] = userDB.TokenVersion
+	tokenClaims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
 
-	access_token := jwt.NewWithClaims(jwt.SigningMethodHS256, token_claims)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
 
-	token, err := access_token.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
+	token, err := accessToken.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
 	if err != nil {
 		return "", err
 	}
@@ -104,12 +104,12 @@ func refreshToken(userID string) (string, error) {
 func generateTokens(username string, password string) (tokenType, error) {
 	authenticated, authErr := common.CheckCreds(username, password)
 	if authenticated {
-		JWT, err := accessToken(username)
+		JWT, err := generateAccessToken(username)
 		if err != nil {
 			return tokenType{}, err
 		}
 
-		refTok, err := refreshToken(username)
+		refTok, err := generateRefreshToken(username)
 		if err != nil {
 			return tokenType{}, err
 		}
@@ -222,10 +222,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576)
 
 	// Create a JSON decoder and decode the request JSON
-	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 	var loginData loginType
-	err := dec.Decode(&loginData)
+	err := decoder.Decode(&loginData)
 
 	// If any error occurred during the decoding, send an appropriate response
 	if err != nil {
@@ -267,7 +267,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decode it and check for an external JSON error
-	err = dec.Decode(&struct{}{})
+	err = decoder.Decode(&struct{}{})
 	if err != io.EOF {
 		msg := "Request body must only contain a single JSON object"
 		http.Error(w, msg, http.StatusBadRequest)
@@ -315,10 +315,10 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576)
 
 	// Create a JSON decoder and decode the request JSON
-	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 	var loginData loginType
-	err := dec.Decode(&loginData)
+	err := decoder.Decode(&loginData)
 
 	// If any error occurred during the decoding, send an appropriate response
 	if err != nil {
@@ -356,7 +356,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decode it and check for an external JSON error
-	err = dec.Decode(&struct{}{})
+	err = decoder.Decode(&struct{}{})
 	if err != io.EOF {
 		msg := "Request body must only contain a single JSON object"
 		http.Error(w, msg, http.StatusBadRequest)
@@ -385,7 +385,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	refTok, err := refreshToken(userID)
+	refTok, err := generateRefreshToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
 		http.Error(w, msg, http.StatusUnauthorized)
@@ -402,7 +402,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &c)
 
-	accessTok, err := accessToken(userID)
+	accessTok, err := generateAccessToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
 		http.Error(w, msg, http.StatusUnauthorized)

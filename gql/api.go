@@ -43,7 +43,7 @@ var queryHandler = graphql.NewObject(
 						numReplies, numPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
 						if idPresent && numPresent && offsetPresent {
-							post, err := database.AuthGetPost(id, numReplies, replyOffset, data["username"].(string))
+							post, err := database.GetPost(id, numReplies, replyOffset, data["username"].(string))
 							return post, err
 						}
 					} else {
@@ -51,7 +51,7 @@ var queryHandler = graphql.NewObject(
 						numReplies, numPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
 						if idPresent && numPresent && offsetPresent {
-							post, err := database.NoAuthGetPost(id, numReplies, replyOffset)
+							post, err := database.GetPostUnauth(id, numReplies, replyOffset)
 							return post, err
 						}
 					}
@@ -98,7 +98,7 @@ var queryHandler = graphql.NewObject(
 						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
 						if txtPresent && numPresent && numOffsetPresent && numRepliesPresent && replyOffsetPresent {
-							posts, err := database.AuthSearchPosts(txt, num, numOffset, numReplies, replyOffset, data["username"].(string))
+							posts, err := database.SearchPosts(txt, num, numOffset, numReplies, replyOffset, data["username"].(string))
 							return posts, err
 						}
 					} else {
@@ -108,7 +108,7 @@ var queryHandler = graphql.NewObject(
 						numReplies, numRepliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
 						if txtPresent && numPresent && numOffsetPresent && numRepliesPresent && replyOffsetPresent {
-							posts, err := database.NoAuthSearchPosts(txt, num, numOffset, numReplies, replyOffset)
+							posts, err := database.SearchPostsUnauth(txt, num, numOffset, numReplies, replyOffset)
 							return posts, err
 						}
 					}
@@ -144,7 +144,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						if userPresent && numPresent && dweetOffsetPresent {
-							user, err := database.AuthGetUser(username, numDweets, dweetOffset, data["username"].(string))
+							user, err := database.GetUser(username, numDweets, dweetOffset, data["username"].(string))
 							return user, err
 						}
 					} else {
@@ -152,7 +152,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						if userPresent && numPresent && dweetOffsetPresent {
-							user, err := database.NoAuthGetUser(username, numDweets, dweetOffset)
+							user, err := database.GetUserUnauth(username, numDweets, dweetOffset)
 							return user, err
 						}
 					}
@@ -199,7 +199,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
-							posts, err := database.AuthSearchUsers(txt, num, numOffset, numDweets, dweetOffset, data["username"].(string))
+							posts, err := database.SearchUsers(txt, num, numOffset, numDweets, dweetOffset, data["username"].(string))
 							return posts, err
 						}
 					} else {
@@ -209,7 +209,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
-							posts, err := database.NoAuthSearchUsers(txt, num, numOffset, numDweets, dweetOffset)
+							posts, err := database.SearchUsersUnauth(txt, num, numOffset, numDweets, dweetOffset)
 							return posts, err
 						}
 					}
@@ -251,7 +251,7 @@ var queryHandler = graphql.NewObject(
 						numReplies, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, replyOffsetPresent := params.Args["repliesOffset"].(int)
 						if dweetPresent && repliesPresent && numOffsetPresent && replyOffsetPresent {
-							post, err := database.FetchLikedDweets(data["username"].(string), numDweets, numOffset, numReplies, replyOffset)
+							post, err := database.GetLikedDweets(data["username"].(string), numDweets, numOffset, numReplies, replyOffset)
 							return post, err
 						}
 					}
@@ -293,7 +293,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
 						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
-							post, err := database.FetchFollowers(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
+							post, err := database.GetFollowers(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
 							return post, err
 						}
 					}
@@ -334,7 +334,7 @@ var queryHandler = graphql.NewObject(
 						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
 						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
-							post, err := database.FetchFollowing(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
+							post, err := database.GetFollowing(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
 							return post, err
 						}
 					}
@@ -421,7 +421,7 @@ var mutationHandler = graphql.NewObject(
 							for _, link := range media {
 								mediaList = append(mediaList, link.(string))
 							}
-							dweet, err := database.AuthCreateDweet(body, data["username"].(string), mediaList)
+							dweet, err := database.NewDweet(body, data["username"].(string), mediaList)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" not present")
@@ -463,7 +463,7 @@ var mutationHandler = graphql.NewObject(
 							for _, link := range media {
 								mediaList = append(mediaList, link.(string))
 							}
-							dweet, err := database.AuthCreateReply(originalID, body, data["username"].(string), mediaList)
+							dweet, err := database.NewReply(originalID, body, data["username"].(string), mediaList)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\", or \"body\" not present")
@@ -492,7 +492,7 @@ var mutationHandler = graphql.NewObject(
 						// Create a reply to a dweet, and return formatted
 						originalID, idPresent := params.Args["id"].(string)
 						if idPresent {
-							redweet, err := database.AuthCreateRedweet(originalID, data["username"].(string))
+							redweet, err := database.Redweet(originalID, data["username"].(string))
 							return redweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -536,7 +536,7 @@ var mutationHandler = graphql.NewObject(
 						}
 
 						if userPresent && dweetsPresent && offsetPresent {
-							user, err := database.AuthFollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
+							user, err := database.Follow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -575,7 +575,7 @@ var mutationHandler = graphql.NewObject(
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
 						if idPresent && repliesPresent && offsetPresent {
-							dweet, err := database.AuthLike(id, data["username"].(string), repliesToFetch, replyOffset)
+							dweet, err := database.Like(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -614,7 +614,7 @@ var mutationHandler = graphql.NewObject(
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
 						if idPresent && repliesPresent && offsetPresent {
-							dweet, err := database.AuthUnlike(id, data["username"].(string), repliesToFetch, replyOffset)
+							dweet, err := database.Unlike(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -658,7 +658,7 @@ var mutationHandler = graphql.NewObject(
 						}
 
 						if userPresent && numPresent && offsetPresent {
-							user, err := database.AuthUnfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
+							user, err := database.Unfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"username\" not present")
@@ -710,7 +710,7 @@ var mutationHandler = graphql.NewObject(
 							for _, link := range media {
 								mediaList = append(mediaList, link.(string))
 							}
-							dweet, err := database.AuthUpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch, replyOffset)
+							dweet, err := database.UpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -739,7 +739,7 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
-					"pfp_url": &graphql.ArgumentConfig{
+					"pfpURL": &graphql.ArgumentConfig{
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
@@ -782,7 +782,7 @@ var mutationHandler = graphql.NewObject(
 						lastName, lastPresent := params.Args["lastName"].(string)
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
-						PfpUrl, pfpPresent := params.Args["pfp_url"].(string)
+						PfpUrl, pfpPresent := params.Args["pfpURL"].(string)
 						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
 						followersToFetch, followersPresent := params.Args["followersToFetch"].(int)
@@ -790,7 +790,7 @@ var mutationHandler = graphql.NewObject(
 						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
 						followingOffset, followingOffsetPresent := params.Args["followingOffset"].(int)
 						if firstPresent && lastPresent && emailPresent && bioPresent && pfpPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
-							user, err := database.AuthUpdateUser(data["username"].(string), firstName, lastName, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
+							user, err := database.UpdateUser(data["username"].(string), firstName, lastName, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
@@ -829,7 +829,7 @@ var mutationHandler = graphql.NewObject(
 						repliesToFetch, repliesPresent := params.Args["repliesToFetch"].(int)
 						replyOffset, offsetPresent := params.Args["repliesOffset"].(int)
 						if idPresent && repliesPresent && offsetPresent {
-							dweet, err := database.AuthDeleteDweet(id, data["username"].(string), repliesToFetch, replyOffset)
+							dweet, err := database.DeleteDweet(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")
@@ -858,7 +858,7 @@ var mutationHandler = graphql.NewObject(
 						// Make user follow the other user, and return formatted
 						id, present := params.Args["id"].(string)
 						if present {
-							redweet, err := database.AuthDeleteRedweet(id, data["username"].(string))
+							redweet, err := database.DeleteRedweet(id, data["username"].(string))
 							return redweet, err
 						}
 						return nil, errors.New("invalid request, \"id\" not present")

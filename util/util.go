@@ -68,7 +68,8 @@ func HashDifference(a []string, b []string) []string {
 	return diff
 }
 
-// Modified Merge sort for merging dweets and redweets adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
+// Modified Merge sort for merging dweets and redweets
+// adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
 func MergeDweetRedweetList(dweets []db.DweetModel, redweets []db.RedweetModel) []interface{} {
 	result := make([]interface{}, len(dweets)+len(redweets))
 

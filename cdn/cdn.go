@@ -52,30 +52,30 @@ func init() {
 }
 
 func LinkToLocation(link string) (string, error) {
-	re1, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/\w+\%2F\w+\.\w+\?.+$`)
+	linkRegex, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/\w+\%2F\w+\.\w+\?.+$`)
 	if err != nil {
 		return "", err
 	}
-	matched := re1.MatchString(link)
+	matched := linkRegex.MatchString(link)
 	if matched {
-		re2, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/`)
+		prefixRegex, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/`)
 		if err != nil {
 			return "", err
 		}
-		nlink := re2.ReplaceAllString(link, "")
-		re3, err := regexp.Compile(`\?.+$`)
+		noPrefix := prefixRegex.ReplaceAllString(link, "")
+		queryRegex, err := regexp.Compile(`\?.+$`)
 		if err != nil {
 			return "", err
 		}
-		stem := re3.ReplaceAllString(nlink, "")
+		stem := queryRegex.ReplaceAllString(noPrefix, "")
 
-		re4, err := regexp.Compile(`\%2F`)
+		slashRegex, err := regexp.Compile(`\%2F`)
 		if err != nil {
 			return "", err
 		}
-		finlink := re4.ReplaceAllString(stem, "/")
+		finalLink := slashRegex.ReplaceAllString(stem, "/")
 
-		return finlink, nil
+		return finalLink, nil
 	} else {
 		return "", errors.New("media link invalid")
 	}
@@ -83,17 +83,17 @@ func LinkToLocation(link string) (string, error) {
 
 func DeleteLocation(location string, deleteThumb bool) error {
 	if deleteThumb {
-		re1, err := regexp.Compile(`media\/`)
+		mediaCheckRegex, err := regexp.Compile(`media\/`)
 		if err != nil {
 			return err
 		}
-		thumbLocNoFormat := re1.ReplaceAllString(location, "thumb/")
+		thumbLocNoFormat := mediaCheckRegex.ReplaceAllString(location, "thumb/")
 
-		re2, err := regexp.Compile(`\.\w+$`)
+		extensionRegex, err := regexp.Compile(`\.\w+$`)
 		if err != nil {
 			return err
 		}
-		thumbLoc := re2.ReplaceAllString(thumbLocNoFormat, ".png")
+		thumbLoc := extensionRegex.ReplaceAllString(thumbLocNoFormat, ".png")
 
 		o := common.Bucket.Object(thumbLoc)
 		if err := o.Delete(common.BaseCtx); err != nil {
@@ -115,7 +115,7 @@ func DeleteLocation(location string, deleteThumb bool) error {
 }
 
 // Handle login requests
-func UploadMedia(w http.ResponseWriter, r *http.Request) {
+func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("authorization")
 	_, err := auth.Authenticate(authHeader)
 	if err != nil {
@@ -151,8 +151,8 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		formdata := r.MultipartForm
-		files := formdata.File["files"]
+		formData := r.MultipartForm
+		files := formData.File["files"]
 
 		if len(files) > 8 {
 			msg := "Too many files. Limit is 8 files."
@@ -183,7 +183,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			myCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
+			operationCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
@@ -192,7 +192,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := common.Bucket.Objects(myCtx, query)
+				it := common.Bucket.Objects(operationCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -215,7 +215,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 
 			// Write file to cloud
 			obj := common.Bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
-			writer := obj.NewWriter(myCtx)
+			writer := obj.NewWriter(operationCtx)
 			if _, err = io.Copy(writer, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
@@ -224,7 +224,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Read it back
-			reader, err := obj.NewReader(myCtx)
+			reader, err := obj.NewReader(operationCtx)
 			if err != nil {
 				panic(fmt.Errorf("reader: %v", err))
 			}
@@ -257,7 +257,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				path, err := videoThumb(tempVidPath)
+				path, err := generateVideoThumbnail(tempVidPath)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -284,7 +284,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 
 			// Save thumbnail
 			thumbObj := common.Bucket.Object("thumb/" + randID + ".png")
-			thumbWriter := thumbObj.NewWriter(myCtx)
+			thumbWriter := thumbObj.NewWriter(operationCtx)
 			if err = png.Encode(thumbWriter, thumb); err != nil {
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
@@ -292,12 +292,12 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
 
-			mlink := writer.Attrs().MediaLink
-			common.MediaCreatedButNotUsed[mlink] = true
+			mediaLink := writer.Attrs().MediaLink
+			common.MediaCreatedButNotUsed[mediaLink] = true
 
-			go destroyObjectAfterExpire(10, mlink)
+			go destroyObjectAfterExpire(10, mediaLink)
 
-			links = append(links, mlink)
+			links = append(links, mediaLink)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -306,7 +306,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle login requests
-func UploadPFP(w http.ResponseWriter, r *http.Request) {
+func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("authorization")
 	username, err := auth.Authenticate(authHeader)
 	if err != nil {
@@ -337,8 +337,8 @@ func UploadPFP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		formdata := r.MultipartForm
-		files := formdata.File["files"]
+		formData := r.MultipartForm
+		files := formData.File["files"]
 
 		if len(files) > 1 {
 			msg := "Too many files. Limit is 1 file."
@@ -368,7 +368,7 @@ func UploadPFP(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			myCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
+			operationCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
@@ -377,7 +377,7 @@ func UploadPFP(w http.ResponseWriter, r *http.Request) {
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := common.Bucket.Objects(myCtx, query)
+				it := common.Bucket.Objects(operationCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -399,14 +399,14 @@ func UploadPFP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			obj := common.Bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
-			wc := obj.NewWriter(myCtx)
-			if _, err = io.Copy(wc, file); err != nil {
+			writer := obj.NewWriter(operationCtx)
+			if _, err = io.Copy(writer, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
-			if err := wc.Close(); err != nil {
+			if err := writer.Close(); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
-			links = append(links, wc.Attrs().MediaLink)
+			links = append(links, writer.Attrs().MediaLink)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -414,7 +414,7 @@ func UploadPFP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func videoThumb(filepath string) (string, error) {
+func generateVideoThumbnail(filepath string) (string, error) {
 	// command line args, path, and command
 	command := "ffmpeg"
 	frameExtractionTime := "0:00:00.000"
