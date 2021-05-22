@@ -1,27 +1,29 @@
-package consts
+package common
 
 import (
 	"context"
 	"dwitter_go_graphql/prisma/db"
+	"net/http"
 
 	"cloud.google.com/go/storage"
 	"github.com/functionalfoundry/graphqlws"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var SubscriptionManager graphqlws.SubscriptionManager
-
+const LetterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 const DefaultPFPURL = "https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media"
 
-var Bucket *storage.BucketHandle
-
-var MediaCreatedButNotUsed map[string]bool
-
-const LetterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
 var Client *db.PrismaClient
-
 var BaseCtx context.Context
+var Bucket *storage.BucketHandle
+var MediaCreatedButNotUsed map[string]bool
+var SubscriptionManager graphqlws.SubscriptionManager
+var GraphqlwsHandler http.Handler
+
+func init() {
+	BaseCtx = context.Background()
+	MediaCreatedButNotUsed = make(map[string]bool)
+}
 
 // Check given credentials and return true if valid
 func CheckCreds(username string, password string) (bool, error) {

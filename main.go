@@ -4,11 +4,10 @@ import (
 	"context"
 	"dwitter_go_graphql/auth"
 	"dwitter_go_graphql/cdn"
-	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/common"
 	"dwitter_go_graphql/database"
 	"dwitter_go_graphql/gql"
 	"dwitter_go_graphql/middleware"
-	"dwitter_go_graphql/util"
 	"flag"
 	"fmt"
 	"log"
@@ -17,7 +16,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/functionalfoundry/graphqlws"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
@@ -26,9 +24,14 @@ import (
 )
 
 func main() {
+	// When returning from main(), make sure to disconnect from database
+	defer database.DisconnectDB()
 
+	// Load .env
+	godotenv.Load()
+
+	// Check for an error in schema at runtime
 	if gql.SchemaError != nil {
-		// Check for an error in schema at runtime
 		panic(gql.SchemaError)
 	}
 
@@ -37,21 +40,7 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	// Load .env
-	godotenv.Load()
-
-	// Seed the random function
-	util.InitRandom()
-
-	// Connect to database, and seed the database
-	database.ConnectDB()
-	cdn.InitCDN()
-	database.RunDBTests()
-
-	// When returning from main(), make sure to disconnect from database
-	defer database.DisconnectDB()
-
-	// Create a new router, and add middleware
+	// Create a new router
 	router := mux.NewRouter().StrictSlash(true)
 
 	// Create a graphql query handler
@@ -71,33 +60,17 @@ func main() {
 		},
 	})
 
-	consts.SubscriptionManager = graphqlws.NewSubscriptionManager(&gql.Schema)
-
-	graphqlwsHandler := graphqlws.NewHandler(graphqlws.HandlerConfig{
-		// Wire up the GraphqL WebSocket handler with the subscription manager
-		SubscriptionManager: consts.SubscriptionManager,
-
-		// Optional: Add a hook to resolve auth tokens into users that are
-		// then stored on the GraphQL WS connections
-		Authenticate: func(authToken string) (interface{}, error) {
-			data, _, err := auth.VerifyAccessToken(authToken)
-			if err != nil {
-				return nil, err
-			}
-			return data["username"].(string), nil
-		},
-	})
-
 	// Map /graphql to the graphql handler, and attach a middleware to it
 	router.Handle("/graphql", h)
 
-	// Handle login using a non-GraphQL solution
+	// Handle some endpoints using a non-GraphQL solution
 	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	router.HandleFunc("/refresh_token", auth.RefreshHandler).Methods("POST")
 	router.HandleFunc("/media_upload", cdn.UploadMedia).Methods("POST")
-	router.HandleFunc("/pfp_upload", cdn.UploadPfp).Methods("POST")
-	router.Handle("/subscriptions", graphqlwsHandler)
+	router.HandleFunc("/pfp_upload", cdn.UploadPFP).Methods("POST")
+	router.Handle("/subscriptions", common.GraphqlwsHandler)
 
+	// Initialize middleware and use it
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny: true,
 	})
@@ -128,8 +101,6 @@ func main() {
 		}
 	}()
 
-	gql.InitSubscriptions()
-
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
 	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
@@ -139,7 +110,7 @@ func main() {
 	<-c
 
 	// Create a deadline to wait for.
-	BaseCtx, cancel := context.WithTimeout(consts.BaseCtx, wait)
+	BaseCtx, cancel := context.WithTimeout(common.BaseCtx, wait)
 	defer cancel()
 
 	// Doesn't block if no connections, but will otherwise wait

@@ -2,14 +2,14 @@ package util
 
 import (
 	crypto_rand "crypto/rand"
-	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/common"
 	"dwitter_go_graphql/prisma/db"
 	"encoding/binary"
 	math_rand "math/rand"
 	"reflect"
 )
 
-func InitRandom() {
+func init() {
 	// More secure random seeding than usual: https://stackoverflow.com/a/54491783
 	var b [8]byte
 	_, err := crypto_rand.Read(b[:])
@@ -23,7 +23,7 @@ func GenID(n int) string {
 	// Make a random string of length n
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = consts.LetterBytes[math_rand.Intn(len(consts.LetterBytes))]
+		b[i] = common.LetterBytes[math_rand.Intn(len(common.LetterBytes))]
 	}
 	return string(b)
 }

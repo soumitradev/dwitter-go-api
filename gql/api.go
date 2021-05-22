@@ -530,6 +530,11 @@ var mutationHandler = graphql.NewObject(
 						username, userPresent := params.Args["username"].(string)
 						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+
+						if username == data["username"].(string) {
+							return nil, errors.New("can't follow self")
+						}
+
 						if userPresent && dweetsPresent && offsetPresent {
 							user, err := database.AuthFollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
@@ -647,6 +652,11 @@ var mutationHandler = graphql.NewObject(
 						username, userPresent := params.Args["username"].(string)
 						dweetsToFetch, numPresent := params.Args["dweetsToFetch"].(int)
 						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+
+						if username == data["username"].(string) {
+							return nil, errors.New("can't unfollow self")
+						}
+
 						if userPresent && numPresent && offsetPresent {
 							user, err := database.AuthUnfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
@@ -753,7 +763,7 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"followingOffet": &graphql.ArgumentConfig{
+					"followingOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},

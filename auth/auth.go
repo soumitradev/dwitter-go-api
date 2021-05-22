@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/common"
 	"dwitter_go_graphql/prisma/db"
 	"encoding/json"
 	"errors"
@@ -17,16 +17,16 @@ import (
 	"github.com/golang/gddo/httputil/header"
 )
 
-type TokenType struct {
+type tokenType struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-type LoginResponse struct {
+type loginResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-type LoginType struct {
+type loginType struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -42,7 +42,7 @@ func SplitAuthToken(headerString string) string {
 }
 
 // Split "xyz=AAAAAAA" and return the AAAAAAA part
-func SplitCookie(cookieString string) string {
+func splitCookie(cookieString string) string {
 	arr := strings.Split(cookieString, "=")
 	val := ""
 	if len(arr) == 2 {
@@ -52,10 +52,10 @@ func SplitCookie(cookieString string) string {
 }
 
 // Create an Access Token
-func AccessToken(userID string) (string, error) {
-	_, err := consts.Client.User.FindUnique(
+func accessToken(userID string) (string, error) {
+	_, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(userID),
-	).Exec(consts.BaseCtx)
+	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return "", errors.New("user doesn't exist")
 	}
@@ -76,10 +76,10 @@ func AccessToken(userID string) (string, error) {
 }
 
 // Create a Refresh Token
-func RefreshToken(userID string) (string, error) {
-	userDB, err := consts.Client.User.FindUnique(
+func refreshToken(userID string) (string, error) {
+	userDB, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(userID),
-	).Exec(consts.BaseCtx)
+	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return "", errors.New("user doesn't exist")
 	}
@@ -101,25 +101,25 @@ func RefreshToken(userID string) (string, error) {
 }
 
 // Authorize users and return tokens
-func GenerateTokens(username string, password string) (TokenType, error) {
-	authenticated, authErr := consts.CheckCreds(username, password)
+func generateTokens(username string, password string) (tokenType, error) {
+	authenticated, authErr := common.CheckCreds(username, password)
 	if authenticated {
-		JWT, err := AccessToken(username)
+		JWT, err := accessToken(username)
 		if err != nil {
-			return TokenType{}, err
+			return tokenType{}, err
 		}
 
-		refTok, err := RefreshToken(username)
+		refTok, err := refreshToken(username)
 		if err != nil {
-			return TokenType{}, err
+			return tokenType{}, err
 		}
 
-		return TokenType{
+		return tokenType{
 			AccessToken:  JWT,
 			RefreshToken: refTok,
 		}, err
 	}
-	return TokenType{}, authErr
+	return tokenType{}, authErr
 }
 
 // Verify an Access Token
@@ -146,9 +146,9 @@ func VerifyAccessToken(tokenString string) (jwt.MapClaims, bool, error) {
 		if !ok {
 			return jwt.MapClaims{}, false, errors.New("field username not found in access token")
 		}
-		_, err = consts.Client.User.FindUnique(
+		_, err = common.Client.User.FindUnique(
 			db.User.Username.Equals(claims["username"].(string)),
-		).Exec(consts.BaseCtx)
+		).Exec(common.BaseCtx)
 		if err == db.ErrNotFound {
 			return jwt.MapClaims{}, false, errors.New("user doesn't exist")
 		}
@@ -159,7 +159,7 @@ func VerifyAccessToken(tokenString string) (jwt.MapClaims, bool, error) {
 }
 
 // Verify a Refresh Token
-func VerifyRefreshToken(tokenString string) (jwt.MapClaims, bool, error) {
+func verifyRefreshToken(tokenString string) (jwt.MapClaims, bool, error) {
 	// Validate token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
@@ -188,9 +188,9 @@ func VerifyRefreshToken(tokenString string) (jwt.MapClaims, bool, error) {
 			return jwt.MapClaims{}, false, errors.New("field token_version not found in refresh token")
 		}
 
-		userDB, err := consts.Client.User.FindUnique(
+		userDB, err := common.Client.User.FindUnique(
 			db.User.Username.Equals(username),
-		).Exec(consts.BaseCtx)
+		).Exec(common.BaseCtx)
 
 		if err == db.ErrNotFound {
 			return jwt.MapClaims{}, false, errors.New("user doesn't exist")
@@ -224,7 +224,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a JSON decoder and decode the request JSON
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
-	var loginData LoginType
+	var loginData loginType
 	err := dec.Decode(&loginData)
 
 	// If any error occurred during the decoding, send an appropriate response
@@ -275,7 +275,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// After checking for any errors, log the user in, and generate tokens
-	tokenData, err := GenerateTokens(loginData.Username, loginData.Password)
+	tokenData, err := generateTokens(loginData.Username, loginData.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -294,7 +294,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Set the response headers
 	w.Header().Set("Content-Type", "application/json")
 	// Send the access token in JSON
-	json.NewEncoder(w).Encode(LoginResponse{
+	json.NewEncoder(w).Encode(loginResponse{
 		AccessToken: tokenData.AccessToken,
 	})
 
@@ -317,7 +317,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a JSON decoder and decode the request JSON
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
-	var loginData LoginType
+	var loginData loginType
 	err := dec.Decode(&loginData)
 
 	// If any error occurred during the decoding, send an appropriate response
@@ -369,9 +369,9 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
-	token := SplitCookie(cookieString.String())
+	token := splitCookie(cookieString.String())
 
-	claims, verified, err := VerifyRefreshToken(token)
+	claims, verified, err := verifyRefreshToken(token)
 	if (err != nil) || (!verified) {
 		msg := fmt.Sprintf("Unauthorized: %v", err)
 		http.Error(w, msg, http.StatusUnauthorized)
@@ -385,7 +385,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	refTok, err := RefreshToken(userID)
+	refTok, err := refreshToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
 		http.Error(w, msg, http.StatusUnauthorized)
@@ -402,7 +402,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &c)
 
-	accessTok, err := AccessToken(userID)
+	accessTok, err := accessToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
 		http.Error(w, msg, http.StatusUnauthorized)
@@ -411,7 +411,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// Set the response headers
 	w.Header().Set("Content-Type", "application/json")
 	// Send the access token in JSON
-	json.NewEncoder(w).Encode(LoginResponse{
+	json.NewEncoder(w).Encode(loginResponse{
 		AccessToken: accessTok,
 	})
 }

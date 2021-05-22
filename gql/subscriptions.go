@@ -1,19 +1,36 @@
 package gql
 
 import (
-	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/auth"
+	"dwitter_go_graphql/common"
 	"time"
 
 	"github.com/functionalfoundry/graphqlws"
 	"github.com/graphql-go/graphql"
 )
 
-func InitSubscriptions() {
+func init() {
+	common.SubscriptionManager = graphqlws.NewSubscriptionManager(&Schema)
+	common.GraphqlwsHandler = graphqlws.NewHandler(graphqlws.HandlerConfig{
+		// Wire up the GraphqL WebSocket handler with the subscription manager
+		SubscriptionManager: common.SubscriptionManager,
+
+		// Optional: Add a hook to resolve auth tokens into users that are
+		// then stored on the GraphQL WS connections
+		Authenticate: func(authToken string) (interface{}, error) {
+			data, _, err := auth.VerifyAccessToken(authToken)
+			if err != nil {
+				return nil, err
+			}
+			return data["username"].(string), nil
+		},
+	})
+
 	go func() {
 		for {
 			// Every 5 mins, update the subscriptions
 			time.Sleep(5 * time.Minute)
-			subscriptions := consts.SubscriptionManager.Subscriptions()
+			subscriptions := common.SubscriptionManager.Subscriptions()
 
 			for conn := range subscriptions {
 				// Things you have access to here:
@@ -36,7 +53,7 @@ func InitSubscriptions() {
 						RequestString:  subscription.Query,
 						VariableValues: subscription.Variables,
 						OperationName:  subscription.OperationName,
-						Context:        consts.BaseCtx,
+						Context:        common.BaseCtx,
 					}
 					result := graphql.Do(params)
 

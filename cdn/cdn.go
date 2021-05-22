@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"dwitter_go_graphql/auth"
-	"dwitter_go_graphql/consts"
+	"dwitter_go_graphql/common"
 	"dwitter_go_graphql/util"
 	"encoding/json"
 	"errors"
@@ -29,28 +29,25 @@ import (
 	"google.golang.org/api/option"
 )
 
-func InitCDN() {
+func init() {
 	opt := option.WithCredentialsFile("./cdn_key.json")
-
-	consts.MediaCreatedButNotUsed = make(map[string]bool)
-
 	config := &firebase.Config{
 		StorageBucket: "dwitter-72e9d.appspot.com",
 	}
 
-	app, err := firebase.NewApp(consts.BaseCtx, config, opt)
+	app, err := firebase.NewApp(common.BaseCtx, config, opt)
 	if err != nil {
 		panic(fmt.Errorf("error initializing app: %v", err))
 	}
 
-	fireClient, err := app.Storage(consts.BaseCtx)
+	fireClient, err := app.Storage(common.BaseCtx)
 	if err != nil {
 		panic(fmt.Errorf("error initializing client: %v", err))
 	}
 
-	consts.Bucket, err = fireClient.DefaultBucket()
+	common.Bucket, err = fireClient.DefaultBucket()
 	if err != nil {
-		panic(fmt.Errorf("error initializing consts.Bucket: %v", err))
+		panic(fmt.Errorf("error initializing common.Bucket: %v", err))
 	}
 }
 
@@ -98,8 +95,8 @@ func DeleteLocation(location string, deleteThumb bool) error {
 		}
 		thumbLoc := re2.ReplaceAllString(thumbLocNoFormat, ".png")
 
-		o := consts.Bucket.Object(thumbLoc)
-		if err := o.Delete(consts.BaseCtx); err != nil {
+		o := common.Bucket.Object(thumbLoc)
+		if err := o.Delete(common.BaseCtx); err != nil {
 			if err.Error() == "storage: object doesn't exist" {
 				return errors.New("thumbnail for media not found")
 			}
@@ -107,8 +104,8 @@ func DeleteLocation(location string, deleteThumb bool) error {
 		}
 	}
 
-	o := consts.Bucket.Object(location)
-	if err := o.Delete(consts.BaseCtx); err != nil {
+	o := common.Bucket.Object(location)
+	if err := o.Delete(common.BaseCtx); err != nil {
 		if err.Error() == "storage: object doesn't exist" {
 			return errors.New("media not found")
 		}
@@ -186,7 +183,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			myCtx, cancel := context.WithTimeout(consts.BaseCtx, time.Second*50)
+			myCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
@@ -195,7 +192,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := consts.Bucket.Objects(myCtx, query)
+				it := common.Bucket.Objects(myCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -217,7 +214,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Write file to cloud
-			obj := consts.Bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
+			obj := common.Bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
 			writer := obj.NewWriter(myCtx)
 			if _, err = io.Copy(writer, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
@@ -286,7 +283,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Save thumbnail
-			thumbObj := consts.Bucket.Object("thumb/" + randID + ".png")
+			thumbObj := common.Bucket.Object("thumb/" + randID + ".png")
 			thumbWriter := thumbObj.NewWriter(myCtx)
 			if err = png.Encode(thumbWriter, thumb); err != nil {
 				panic(fmt.Errorf("png.Encode: %v", err))
@@ -296,7 +293,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 			}
 
 			mlink := writer.Attrs().MediaLink
-			consts.MediaCreatedButNotUsed[mlink] = true
+			common.MediaCreatedButNotUsed[mlink] = true
 
 			go destroyObjectAfterExpire(10, mlink)
 
@@ -309,7 +306,7 @@ func UploadMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle login requests
-func UploadPfp(w http.ResponseWriter, r *http.Request) {
+func UploadPFP(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("authorization")
 	username, err := auth.Authenticate(authHeader)
 	if err != nil {
@@ -371,7 +368,7 @@ func UploadPfp(w http.ResponseWriter, r *http.Request) {
 			}
 			defer file.Close()
 
-			myCtx, cancel := context.WithTimeout(consts.BaseCtx, time.Second*50)
+			myCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
 			defer cancel()
 
 			// Upload an object with storage.Writer.
@@ -380,7 +377,7 @@ func UploadPfp(w http.ResponseWriter, r *http.Request) {
 			found := true
 			for found {
 				query := &storage.Query{Prefix: randID}
-				it := consts.Bucket.Objects(myCtx, query)
+				it := common.Bucket.Objects(myCtx, query)
 				numObj := 0
 				for {
 					_, err := it.Next()
@@ -401,7 +398,7 @@ func UploadPfp(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			obj := consts.Bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
+			obj := common.Bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
 			wc := obj.NewWriter(myCtx)
 			if _, err = io.Copy(wc, file); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
@@ -440,7 +437,7 @@ func videoThumb(filepath string) (string, error) {
 
 func destroyObjectAfterExpire(minutes int, id string) {
 	time.Sleep(time.Minute * time.Duration(minutes))
-	if consts.MediaCreatedButNotUsed[id] {
+	if common.MediaCreatedButNotUsed[id] {
 		loc, err := LinkToLocation(id)
 		if err != nil {
 			fmt.Printf("Error finding media: %v", err)
