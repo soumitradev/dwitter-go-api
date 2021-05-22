@@ -1,3 +1,4 @@
+// Package database provides some functions to interface with the posstgresql database
 package database
 
 import (

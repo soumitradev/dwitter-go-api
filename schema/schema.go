@@ -1,3 +1,4 @@
+// Package schema provides useful custom types and functions to format database objects into these types
 package schema
 
 import (
@@ -8,25 +9,27 @@ import (
 
 // Create Go structs and GraphQL objects for types
 
+// A User object without any relation fields
 type BasicUserType struct {
 	Username       string    `json:"username"`
 	FirstName      string    `json:"firstName"`
 	LastName       string    `json:"lastName"`
 	Email          string    `json:"email"`
 	Bio            string    `json:"bio"`
-	PfpUrl         string    `json:"pfpURL"`
+	PfpURL         string    `json:"pfpURL"`
 	FollowerCount  int       `json:"followerCount"`
 	FollowingCount int       `json:"followingCount"`
 	CreatedAt      time.Time `json:"createdAt"`
 }
 
+// A User object
 type UserType struct {
 	Username       string           `json:"username"`
 	FirstName      string           `json:"firstName"`
 	LastName       string           `json:"lastName"`
 	Email          string           `json:"email"`
 	Bio            string           `json:"bio"`
-	PfpUrl         string           `json:"pfpURL"`
+	PfpURL         string           `json:"pfpURL"`
 	Dweets         []BasicDweetType `json:"dweets"`
 	LikedDweets    []BasicDweetType `json:"likedDweets"`
 	FollowerCount  int              `json:"followerCount"`
@@ -36,6 +39,7 @@ type UserType struct {
 	CreatedAt      time.Time        `json:"createdAt"`
 }
 
+// A Dweet object without any relation fields except for Author (a necessary relation field)
 type BasicDweetType struct {
 	DweetBody       string        `json:"dweetBody"`
 	ID              string        `json:"id"`
@@ -51,6 +55,7 @@ type BasicDweetType struct {
 	Media           []string      `json:"media"`
 }
 
+// A Dweet object
 type DweetType struct {
 	DweetBody       string           `json:"dweetBody"`
 	ID              string           `json:"id"`
@@ -69,6 +74,7 @@ type DweetType struct {
 	Media           []string         `json:"media"`
 }
 
+// A Redweet Object
 type RedweetType struct {
 	Author            BasicUserType  `json:"author"`
 	AuthorID          string         `json:"authorID"`
@@ -77,6 +83,7 @@ type RedweetType struct {
 	RedweetTime       time.Time      `json:"redweetTime"`
 }
 
+// GraphQL schema for basic user
 var BasicUserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "BasicUser",
@@ -112,6 +119,7 @@ var BasicUserSchema = graphql.NewObject(
 	},
 )
 
+// GraphQL schema for user
 var UserSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
@@ -159,6 +167,7 @@ var UserSchema = graphql.NewObject(
 	},
 )
 
+// GraphQL schema for basic dweet
 var BasicDweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "BasicDweet",
@@ -203,6 +212,7 @@ var BasicDweetSchema = graphql.NewObject(
 	},
 )
 
+// GraphQL schema for dweet
 var DweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Dweet",
@@ -256,6 +266,7 @@ var DweetSchema = graphql.NewObject(
 	},
 )
 
+// GraphQL schema for redweet
 var RedweetSchema = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Redweet",
@@ -279,6 +290,7 @@ var RedweetSchema = graphql.NewObject(
 	},
 )
 
+// A GraphQL union type for objects that may appear on a feed. i.e. Dweets and Redweets
 var FeedObjectSchema = graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
 	Name:        "FeedObject",
 	Types:       []*graphql.Object{DweetSchema, RedweetSchema},

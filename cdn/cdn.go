@@ -1,3 +1,4 @@
+// Package cdn provides some functions to interface with the firebase bucket
 package cdn
 
 import (
@@ -30,6 +31,7 @@ import (
 )
 
 func init() {
+	// Connect to bucket
 	opt := option.WithCredentialsFile("./cdn_key.json")
 	config := &firebase.Config{
 		StorageBucket: "dwitter-72e9d.appspot.com",
@@ -51,13 +53,16 @@ func init() {
 	}
 }
 
+// Convert a link to just it's stem, like "media/:id"
 func LinkToLocation(link string) (string, error) {
+	// Ckeck if link matches the format of a link
 	linkRegex, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/\w+\%2F\w+\.\w+\?.+$`)
 	if err != nil {
 		return "", err
 	}
 	matched := linkRegex.MatchString(link)
 	if matched {
+		// Reduce the link to its stem
 		prefixRegex, err := regexp.Compile(`^https://storage\.googleapis\.com/download/storage/v1/b/dwitter\-72e9d\.appspot\.com/o/`)
 		if err != nil {
 			return "", err
@@ -81,7 +86,9 @@ func LinkToLocation(link string) (string, error) {
 	}
 }
 
+// Delete an object given a stem, and allow deletion of its thumbnail
 func DeleteLocation(location string, deleteThumb bool) error {
+	// Delete corresponding thumbnail
 	if deleteThumb {
 		mediaCheckRegex, err := regexp.Compile(`media\/`)
 		if err != nil {
@@ -104,6 +111,7 @@ func DeleteLocation(location string, deleteThumb bool) error {
 		}
 	}
 
+	// Delete object
 	o := common.Bucket.Object(location)
 	if err := o.Delete(common.BaseCtx); err != nil {
 		if err.Error() == "storage: object doesn't exist" {
@@ -114,8 +122,9 @@ func DeleteLocation(location string, deleteThumb bool) error {
 	return nil
 }
 
-// Handle login requests
+// Handle media upload requests
 func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
+	// Check authentication
 	authHeader := r.Header.Get("authorization")
 	_, err := auth.Authenticate(authHeader)
 	if err != nil {
@@ -154,6 +163,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 		formData := r.MultipartForm
 		files := formData.File["files"]
 
+		// Enforce limits
 		if len(files) > 8 {
 			msg := "Too many files. Limit is 8 files."
 			http.Error(w, msg, http.StatusBadRequest)
@@ -176,6 +186,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 		links := []string{}
 
 		for i := range files {
+			// Open file in request
 			file, err := files[i].Open()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -188,6 +199,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Upload an object with storage.Writer.
 
+			// Get a unique name for object
 			randID := util.GenID(30)
 			found := true
 			for found {
@@ -236,6 +248,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 
 			var thumb *image.NRGBA
 
+			// Make thumbnail based on image or video
 			if isImage[files[i].Header.Get("Content-Type")] {
 				// Make thumbnail
 				image, _, err := image.Decode(bytes.NewReader(data))
@@ -305,8 +318,9 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handle login requests
+// Handle pfp upload requests
 func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
+	// Check authentication
 	authHeader := r.Header.Get("authorization")
 	username, err := auth.Authenticate(authHeader)
 	if err != nil {
@@ -340,6 +354,7 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 		formData := r.MultipartForm
 		files := formData.File["files"]
 
+		// Enforce limits
 		if len(files) > 1 {
 			msg := "Too many files. Limit is 1 file."
 			http.Error(w, msg, http.StatusBadRequest)
@@ -361,6 +376,7 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 		links := []string{}
 
 		for i := range files {
+			// Open file
 			file, err := files[i].Open()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -371,8 +387,7 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 			operationCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
 			defer cancel()
 
-			// Upload an object with storage.Writer.
-
+			// Upload to cloud
 			randID := util.GenID(30)
 			found := true
 			for found {
@@ -414,6 +429,7 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Generate a thumbnail from a video in the tmp directory
 func generateVideoThumbnail(filepath string) (string, error) {
 	// command line args, path, and command
 	command := "ffmpeg"
@@ -435,6 +451,7 @@ func generateVideoThumbnail(filepath string) (string, error) {
 	return output, err
 }
 
+// Destroy an object when it expires
 func destroyObjectAfterExpire(minutes int, id string) {
 	time.Sleep(time.Minute * time.Duration(minutes))
 	if common.MediaCreatedButNotUsed[id] {

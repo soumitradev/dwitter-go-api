@@ -1,3 +1,4 @@
+// Package gql provides useful graphql API functionality
 package gql
 
 import (
@@ -377,19 +378,17 @@ var mutationHandler = graphql.NewObject(
 					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					user, err := database.SignUpUser(
-						params.Args["username"].(string),
-						params.Args["password"].(string),
-						params.Args["firstName"].(string),
-						params.Args["lastName"].(string),
-						params.Args["bio"].(string),
-						params.Args["email"].(string),
-					)
-					if err != nil {
-						return nil, err
+					username, usernamePresent := params.Args["username"].(string)
+					password, passwordPresent := params.Args["password"].(string)
+					firstName, firstPresent := params.Args["firstName"].(string)
+					lastName, lastPresent := params.Args["lastName"].(string)
+					bio, bioPresent := params.Args["bio"].(string)
+					email, emailPresent := params.Args["email"].(string)
+					if usernamePresent && passwordPresent && firstPresent && lastPresent && bioPresent && emailPresent {
+						user, err := database.SignUpUser(username, password, firstName, lastName, bio, email)
+						return user, err
 					}
-
-					return user, nil
+					return nil, errors.New("invalid request: missing argument")
 				},
 			},
 			"createDweet": &graphql.Field{
@@ -424,7 +423,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.NewDweet(body, data["username"].(string), mediaList)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"body\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -466,7 +465,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.NewReply(originalID, body, data["username"].(string), mediaList)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"id\", or \"body\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -495,7 +494,7 @@ var mutationHandler = graphql.NewObject(
 							redweet, err := database.Redweet(originalID, data["username"].(string))
 							return redweet, err
 						}
-						return nil, errors.New("invalid request, \"id\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -539,7 +538,7 @@ var mutationHandler = graphql.NewObject(
 							user, err := database.Follow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
-						return nil, errors.New("invalid request, \"username\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -578,7 +577,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.Like(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"id\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -617,7 +616,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.Unlike(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"id\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -661,7 +660,7 @@ var mutationHandler = graphql.NewObject(
 							user, err := database.Unfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
 							return user, err
 						}
-						return nil, errors.New("invalid request, \"username\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -713,7 +712,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.UpdateDweet(id, data["username"].(string), body, mediaList, repliesToFetch, replyOffset)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -793,7 +792,7 @@ var mutationHandler = graphql.NewObject(
 							user, err := database.UpdateUser(data["username"].(string), firstName, lastName, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
 							return user, err
 						}
-						return nil, errors.New("invalid request, \"body\" or \"media\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -832,7 +831,7 @@ var mutationHandler = graphql.NewObject(
 							dweet, err := database.DeleteDweet(id, data["username"].(string), repliesToFetch, replyOffset)
 							return dweet, err
 						}
-						return nil, errors.New("invalid request, \"id\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
@@ -861,25 +860,12 @@ var mutationHandler = graphql.NewObject(
 							redweet, err := database.DeleteRedweet(id, data["username"].(string))
 							return redweet, err
 						}
-						return nil, errors.New("invalid request, \"id\" not present")
+						return nil, errors.New("invalid request: missing argument")
 					}
 
 					return nil, errors.New("Unauthorized")
 				},
 			},
-			// "authTest": &graphql.Field{
-			// 	Type:        graphql.String,
-			// 	Description: "Log into Dwitter",
-			// 	Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-			// 		// tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)
-			// 		// data, _, err := VerifyToken(tokenString)
-			// 		// if err != nil {
-			// 		// 	return nil, err
-			// 		// }
-			// 		// return fmt.Sprintf("Username: %v", data["username"]), err
-			// 		return nil, nil
-			// 	},
-			// },
 		},
 	},
 )

@@ -1,3 +1,4 @@
+// Package common stores useful common global variables and functions used across packages.
 package common
 
 import (

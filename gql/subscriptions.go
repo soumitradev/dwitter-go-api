@@ -1,3 +1,4 @@
+// Package gql provides useful graphql API functionality
 package gql
 
 import (

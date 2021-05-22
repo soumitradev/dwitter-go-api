@@ -1,9 +1,11 @@
+// Package schema provides useful custom types and functions to format database objects into these types
 package schema
 
 import (
 	"dwitter_go_graphql/prisma/db"
 )
 
+// Format as BasicDweet
 func FormatAsBasicDweetType(dweet *db.DweetModel) BasicDweetType {
 	reply_id, present := dweet.OriginalReplyID()
 	if !present {
@@ -25,6 +27,7 @@ func FormatAsBasicDweetType(dweet *db.DweetModel) BasicDweetType {
 	}
 }
 
+// Format as Dweet
 func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 	author := FormatAsBasicUserType(dweet.Author())
 
@@ -71,6 +74,7 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 	}
 }
 
+// Format as BasicUser
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 	lastName, exists := user.LastName()
 	if !exists {
@@ -81,7 +85,7 @@ func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 		FirstName:      user.FirstName,
 		Email:          user.Email,
 		Bio:            user.Bio,
-		PfpUrl:         user.ProfilePicURL,
+		PfpURL:         user.ProfilePicURL,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		CreatedAt:      user.CreatedAt,
@@ -89,6 +93,7 @@ func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 	}
 }
 
+// Format as User
 func FormatAsUserType(user *db.UserModel) UserType {
 	var dweets []BasicDweetType
 	dweets_db_schema := user.Dweets()
@@ -124,7 +129,7 @@ func FormatAsUserType(user *db.UserModel) UserType {
 		LastName:       lastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
-		PfpUrl:         user.ProfilePicURL,
+		PfpURL:         user.ProfilePicURL,
 		Dweets:         dweets,
 		LikedDweets:    liked_dweets,
 		FollowerCount:  user.FollowerCount,
@@ -135,6 +140,7 @@ func FormatAsUserType(user *db.UserModel) UserType {
 	}
 }
 
+// Format as User
 func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 	var dweets []BasicDweetType
 	dweets_db_schema := user.Dweets()
@@ -153,7 +159,7 @@ func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 		LastName:       lastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
-		PfpUrl:         user.ProfilePicURL,
+		PfpURL:         user.ProfilePicURL,
 		Dweets:         dweets,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
@@ -161,6 +167,7 @@ func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 	}
 }
 
+// Format as User with followers
 func AuthFormatAsUserType(user *db.UserModel, mutualUsers []db.UserModel) UserType {
 	var dweets []BasicDweetType
 	dweets_db_schema := user.Dweets()
@@ -184,7 +191,7 @@ func AuthFormatAsUserType(user *db.UserModel, mutualUsers []db.UserModel) UserTy
 		LastName:       lastName,
 		Email:          user.Email,
 		Bio:            user.Bio,
-		PfpUrl:         user.ProfilePicURL,
+		PfpURL:         user.ProfilePicURL,
 		Dweets:         dweets,
 		FollowerCount:  user.FollowerCount,
 		Followers:      mutuals,
@@ -193,6 +200,7 @@ func AuthFormatAsUserType(user *db.UserModel, mutualUsers []db.UserModel) UserTy
 	}
 }
 
+// Format as Dweet
 func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 	author := FormatAsBasicUserType(dweet.Author())
 
@@ -233,6 +241,7 @@ func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 	}
 }
 
+// Format as Dweet with users that liked it
 func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) DweetType {
 	author := FormatAsBasicUserType(dweet.Author())
 
@@ -278,6 +287,7 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 	}
 }
 
+// Format as Redweet
 func FormatAsRedweetType(redweet *db.RedweetModel) RedweetType {
 	return RedweetType{
 		Author:            FormatAsBasicUserType(redweet.Author()),

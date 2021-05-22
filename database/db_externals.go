@@ -1,3 +1,4 @@
+// Package database provides some functions to interface with the posstgresql database
 package database
 
 import (
@@ -239,6 +240,7 @@ func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema
 	return nuser, err
 }
 
+// Search users when not authenticated
 func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets int, dweetOffset int) ([]schema.UserType, error) {
 	var users []db.UserModel
 	var err error
@@ -288,6 +290,7 @@ func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets 
 	return formatted, err
 }
 
+// Search users when authenticated
 func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, dweetOffset int, viewerUsername string) ([]schema.UserType, error) {
 	var users []db.UserModel
 	var err error
@@ -354,7 +357,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, 
 	return formatted, err
 }
 
-// Get dweet when authenticated
+// Search dweets when authenticated
 func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int, viewerUsername string) ([]schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
@@ -467,7 +470,7 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 	return formatted, err
 }
 
-// Get dweet when not authenticated
+// Search dweets when not authenticated
 func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
 	// When viewing a Dweet (when not logged in):
 	// - I need the basic dweet info: Body, Author
@@ -971,7 +974,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 	return nuser, err
 }
 
-// Get User data with dweets that user liked
+// Get User's liked dweets
 func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
 	var user *db.UserModel
 	var err error
@@ -1295,7 +1298,6 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 	}
 
 	return schema.DweetType{}, fmt.Errorf("internal server error: %v", errors.New("Unauthorized"))
-
 }
 
 // Delete a redweet
@@ -1310,7 +1312,6 @@ func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 
 	formatted := schema.FormatAsRedweetType(redweet)
 	return formatted, err
-
 }
 
 // Create a Post
@@ -1770,7 +1771,7 @@ func Like(likedPostID, userID string, repliesToFetch int, replyOffset int) (sche
 	return formatted, err
 }
 
-// Remove a like from a post
+// Remove a like from a dweet
 func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 
 	likedPost, err := common.Client.Dweet.FindUnique(
@@ -2030,6 +2031,7 @@ func Unfollow(followedID string, followerID string, dweetsToFetch int, dweetOffs
 	return formatted, err
 }
 
+// Get feed for authenticated user
 func GetFeed(username string) ([]interface{}, error) {
 	// grab followed users by username
 	// Grab their dweets and redweets

@@ -1,3 +1,4 @@
+// Package auth provides functions useful for using authentication in this API.
 package auth
 
 import (
@@ -17,15 +18,18 @@ import (
 	"github.com/golang/gddo/httputil/header"
 )
 
+// A tokenType stores an access and refresh token
 type tokenType struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
+// A loginResponse stores the response to authentication
 type loginResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"accessToken"`
 }
 
+// A loginType stores login info
 type loginType struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -51,8 +55,9 @@ func splitCookie(cookieString string) string {
 	return val
 }
 
-// Create an Access Token
+// Generate an Access Token
 func generateAccessToken(username string) (string, error) {
+	// Check if user exists
 	_, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).Exec(common.BaseCtx)
@@ -60,6 +65,7 @@ func generateAccessToken(username string) (string, error) {
 		return "", errors.New("user doesn't exist")
 	}
 
+	// Save data in claims and generate token
 	tokenClaims := jwt.MapClaims{}
 	tokenClaims["authorized"] = true
 	tokenClaims["username"] = username
@@ -75,8 +81,9 @@ func generateAccessToken(username string) (string, error) {
 	return token, nil
 }
 
-// Create a Refresh Token
+// Generate a Refresh Token
 func generateRefreshToken(username string) (string, error) {
+	// Check if user exists
 	userDB, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).Exec(common.BaseCtx)
@@ -84,6 +91,7 @@ func generateRefreshToken(username string) (string, error) {
 		return "", errors.New("user doesn't exist")
 	}
 
+	// Save data in claims and generate token
 	tokenClaims := jwt.MapClaims{}
 	tokenClaims["authorized"] = true
 	tokenClaims["username"] = username
@@ -100,7 +108,7 @@ func generateRefreshToken(username string) (string, error) {
 	return token, nil
 }
 
-// Authorize users and return tokens
+// Authorize user and return tokens
 func generateTokens(username string, password string) (tokenType, error) {
 	authenticated, authErr := common.CheckCreds(username, password)
 	if authenticated {
@@ -206,7 +214,7 @@ func verifyRefreshToken(tokenString string) (jwt.MapClaims, bool, error) {
 	}
 }
 
-// Handle login requests
+// Handles login requests
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if content type is "application/json"
 	if r.Header.Get("Content-Type") != "" {
@@ -300,7 +308,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Handle login requests
+// Handle refresh-token requests
 func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if content type is "application/json"
 	if r.Header.Get("Content-Type") != "" {
@@ -416,6 +424,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Check header of request and authenticate
 func Authenticate(authHeader string) (string, error) {
 	tokenString := SplitAuthToken(authHeader)
 	data, isAuth, err := VerifyAccessToken(tokenString)

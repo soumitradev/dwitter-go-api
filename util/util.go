@@ -1,3 +1,5 @@
+// Package util provides useful utility functions when dealing with the API, like intersections, differences of slices,
+// cryptographically secure random integers, merging two slices in a specified order, etc.
 package util
 
 import (
@@ -9,8 +11,8 @@ import (
 	"reflect"
 )
 
+// More secure random seeding than usual: https://stackoverflow.com/a/54491783
 func init() {
-	// More secure random seeding than usual: https://stackoverflow.com/a/54491783
 	var b [8]byte
 	_, err := crypto_rand.Read(b[:])
 	if err != nil {
@@ -19,8 +21,8 @@ func init() {
 	math_rand.Seed(int64(binary.LittleEndian.Uint64(b[:])))
 }
 
+// Make a random string of length n
 func GenID(n int) string {
-	// Make a random string of length n
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = common.LetterBytes[math_rand.Intn(len(common.LetterBytes))]
@@ -28,7 +30,8 @@ func GenID(n int) string {
 	return string(b)
 }
 
-// Hash function with modifications from: https://github.com/juliangruber/go-intersect/blob/2e99d8c0a75f6975a52f7efeb81926a19b221214/intersect.go#L42-L62
+// Hash function to find intersection of two slices
+// with modifications from: https://github.com/juliangruber/go-intersect/blob/2e99d8c0a75f6975a52f7efeb81926a19b221214/intersect.go#L42-L62
 // Hash has complexity: O(n * x) where x is a factor of hash function efficiency (between 1 and 2)
 func HashIntersectUsers(a []db.UserModel, b []db.UserModel) []db.UserModel {
 	set := make([]db.UserModel, 0)
@@ -97,7 +100,8 @@ func MergeDweetRedweetList(dweets []db.DweetModel, redweets []db.RedweetModel) [
 	return result
 }
 
-// Modified Merge sort for merging dweets and redweets adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
+// Modified Merge sort for merging dweet slices
+// adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
 func MergeDweetLists(dweetsA []db.DweetModel, dweetsB []db.DweetModel) []db.DweetModel {
 	result := make([]db.DweetModel, len(dweetsA)+len(dweetsB))
 
@@ -125,7 +129,8 @@ func MergeDweetLists(dweetsA []db.DweetModel, dweetsB []db.DweetModel) []db.Dwee
 	return result
 }
 
-// Modified Merge sort for merging dweets and redweets adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
+// Modified Merge sort for merging redweet slices
+// adapted from: https://www.golangprograms.com/golang-program-for-implementation-of-mergesort.html
 func MergeRedweetLists(redweetsA []db.RedweetModel, redweetsB []db.RedweetModel) []db.RedweetModel {
 	result := make([]db.RedweetModel, len(redweetsA)+len(redweetsB))
 
