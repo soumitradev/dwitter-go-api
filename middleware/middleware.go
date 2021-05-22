@@ -2,6 +2,8 @@
 package middleware
 
 import (
+	"dwitter_go_graphql/common"
+	"encoding/json"
 	"net/http"
 	"os"
 
@@ -13,7 +15,11 @@ func SizeHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.ContentLength > (65 << 20) {
 			msg := "Request too large."
-			http.Error(w, msg, http.StatusRequestEntityTooLarge)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 			return
 		}
 		next.ServeHTTP(w, r)

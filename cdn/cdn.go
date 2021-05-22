@@ -128,7 +128,11 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("authorization")
 	_, err := auth.Authenticate(authHeader)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: err.Error(),
+		})
 	} else {
 		supportedFormats := map[string]bool{
 			"image/gif":  true, // GIF
@@ -148,7 +152,11 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 			value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
 			if value != "multipart/form-data" {
 				msg := "Content-Type header is not multipart/form-data"
-				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnsupportedMediaType)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: msg,
+				})
 				return
 			}
 		}
@@ -156,7 +164,11 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 		// Limit size to 8*8MB = 64MB
 		err := r.ParseMultipartForm(64 << 20)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: "Files exceed file size limit.",
+			})
 			return
 		}
 
@@ -166,19 +178,31 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 		// Enforce limits
 		if len(files) > 8 {
 			msg := "Too many files. Limit is 8 files."
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 			return
 		}
 
 		for _, file := range files {
 			if file.Size > (8 << 20) {
 				msg := "File too large. Limit is 8 files, 8MB each."
-				http.Error(w, msg, http.StatusRequestEntityTooLarge)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: msg,
+				})
 				return
 			}
 			if !supportedFormats[file.Header.Get("Content-Type")] {
 				msg := "Format unsupported."
-				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnsupportedMediaType)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: msg,
+				})
 				return
 			}
 		}
@@ -189,7 +213,11 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 			// Open file in request
 			file, err := files[i].Open()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
 				return
 			}
 			defer file.Close()
@@ -253,7 +281,11 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 				// Make thumbnail
 				image, _, err := image.Decode(bytes.NewReader(data))
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 				thumb = imaging.Thumbnail(image, 640, 360, imaging.Lanczos)
@@ -261,36 +293,60 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 				tempVidPath := "./tmp/" + util.GenID(40) + ".mp4"
 				tempVid, err := os.Create(tempVidPath)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 				_, err = tempVid.Write(data)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 
 				path, err := generateVideoThumbnail(tempVidPath)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 				picDat, err := imaging.Open(path)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 				thumb = imaging.Thumbnail(picDat, 640, 360, imaging.Lanczos)
 
 				err = os.Remove(path)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 
 				err = os.Remove(tempVidPath)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusInternalServerError)
+					json.NewEncoder(w).Encode(common.HTTPError{
+						Error: err.Error(),
+					})
 					return
 				}
 			}
@@ -299,9 +355,19 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 			thumbObj := common.Bucket.Object("thumb/" + randID + ".png")
 			thumbWriter := thumbObj.NewWriter(operationCtx)
 			if err = png.Encode(thumbWriter, thumb); err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
 			if err := thumbWriter.Close(); err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
 				panic(fmt.Errorf("png.Encode: %v", err))
 			}
 
@@ -324,7 +390,11 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("authorization")
 	username, err := auth.Authenticate(authHeader)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: err.Error(),
+		})
 	} else {
 		supportedFormats := map[string]bool{
 			"image/bmp":  true, // BMP
@@ -339,7 +409,11 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 			value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
 			if value != "multipart/form-data" {
 				msg := "Content-Type header is not multipart/form-data"
-				http.Error(w, msg, http.StatusUnsupportedMediaType)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnsupportedMediaType)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: msg,
+				})
 				return
 			}
 		}
@@ -347,7 +421,11 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 		// Limit size to 8MB
 		err := r.ParseMultipartForm(8 << 20)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: "File exceeds 8MB file size limit.",
+			})
 			return
 		}
 
@@ -357,19 +435,31 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 		// Enforce limits
 		if len(files) > 1 {
 			msg := "Too many files. Limit is 1 file."
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 			return
 		}
 
 		file := files[0]
 		if file.Size > (8 << 20) {
 			msg := "File too large. Limit is 8MB."
-			http.Error(w, msg, http.StatusRequestEntityTooLarge)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 			return
 		}
 		if !supportedFormats[file.Header.Get("Content-Type")] {
 			msg := "Format unsupported."
-			http.Error(w, msg, http.StatusUnsupportedMediaType)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 			return
 		}
 
@@ -379,7 +469,11 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 			// Open file
 			file, err := files[i].Open()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
 				return
 			}
 			defer file.Close()

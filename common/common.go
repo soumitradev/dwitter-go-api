@@ -22,6 +22,10 @@ var MediaCreatedButNotUsed map[string]bool
 var SubscriptionManager graphqlws.SubscriptionManager
 var GraphqlwsHandler http.Handler
 
+type HTTPError struct {
+	Error string `json:"error"`
+}
+
 func init() {
 	BaseCtx = context.Background()
 	MediaCreatedButNotUsed = make(map[string]bool)

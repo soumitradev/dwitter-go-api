@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -220,8 +219,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "" {
 		value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
 		if value != "application/json" {
-			msg := "Content-Type header is not application/json"
-			http.Error(w, msg, http.StatusUnsupportedMediaType)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: "Content-Type header is not application/json",
+			})
 			return
 		}
 	}
@@ -244,32 +246,59 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.As(err, &syntaxError):
 			msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			msg := "Request body contains badly-formed JSON"
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case errors.As(err, &unmarshalTypeError):
 			msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case errors.Is(err, io.EOF):
 			msg := "Request body must not be empty"
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case err.Error() == "http: request body too large":
 			msg := "Request body must not be larger than 1MB"
-			http.Error(w, msg, http.StatusRequestEntityTooLarge)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		default:
-			log.Println(err.Error())
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: err.Error(),
+			})
 		}
 		return
 	}
@@ -278,14 +307,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&struct{}{})
 	if err != io.EOF {
 		msg := "Request body must only contain a single JSON object"
-		http.Error(w, msg, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 
 	// After checking for any errors, log the user in, and generate tokens
 	tokenData, err := generateTokens(loginData.Username, loginData.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: err.Error(),
+		})
 		return
 	}
 
@@ -314,8 +351,11 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "" {
 		value, _ := header.ParseValueAndParams(r.Header, "Content-Type")
 		if value != "application/json" {
-			msg := "Content-Type header is not application/json"
-			http.Error(w, msg, http.StatusUnsupportedMediaType)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: "Content-Type header is not application/json",
+			})
 			return
 		}
 	}
@@ -337,28 +377,51 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.As(err, &syntaxError):
 			msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			msg := "Request body contains badly-formed JSON"
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case errors.As(err, &unmarshalTypeError):
 			msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-			http.Error(w, msg, http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		case err.Error() == "http: request body too large":
 			msg := "Request body must not be larger than 1MB"
-			http.Error(w, msg, http.StatusRequestEntityTooLarge)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: msg,
+			})
 
 		default:
-			log.Println(err.Error())
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(common.HTTPError{
+				Error: err.Error(),
+			})
 		}
 		return
 	}
@@ -367,14 +430,22 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&struct{}{})
 	if err != io.EOF {
 		msg := "Request body must only contain a single JSON object"
-		http.Error(w, msg, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 
 	cookieString, err := r.Cookie("jid")
 	if err != nil {
 		msg := "Refresh Token not present"
-		http.Error(w, msg, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 	token := splitCookie(cookieString.String())
@@ -382,21 +453,33 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	claims, verified, err := verifyRefreshToken(token)
 	if (err != nil) || (!verified) {
 		msg := fmt.Sprintf("Unauthorized: %v", err)
-		http.Error(w, msg, http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 
 	userID, ok := claims["username"].(string)
 	if !ok {
 		msg := "Invalid refresh token"
-		http.Error(w, msg, http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 
 	refTok, err := generateRefreshToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
-		http.Error(w, msg, http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 
@@ -413,7 +496,11 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	accessTok, err := generateAccessToken(userID)
 	if err != nil {
 		msg := "Invalid refresh token"
-		http.Error(w, msg, http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(common.HTTPError{
+			Error: msg,
+		})
 		return
 	}
 	// Set the response headers
