@@ -16,6 +16,9 @@ The prisma schema is [here](./prisma/schema.prisma)
 
 **NOTE:** You need `ffmpeg` added to your path to run this. It uses ffmpeg to generate thumbnails for videos uploaded.
 
+**TODO:**
+- Add a weekly vacuum cron job
+
 The entire API is now ready. I haven't tested for every scenario, because it would take too much time to do it, so I'll fix any bugs I find in the future when working on the frontend.
 
 I'm very happy with how this turned out. I learned a **lot**.
