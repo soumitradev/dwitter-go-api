@@ -589,6 +589,7 @@ func SignUpUser(username string, password string, firstName string, lastName str
 			db.User.ProfilePicURL.Set(common.DefaultPFPURL),
 			db.User.TokenVersion.Set(rand.Intn(10000)),
 			db.User.CreatedAt.Set(time.Now()),
+			db.User.OAuthProvider.Set("None"),
 			db.User.LastName.Set(lastName),
 		).With(
 			db.User.Dweets.Fetch().With(

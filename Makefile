@@ -1,7 +1,7 @@
 run:
 	go run .
 
-migrate: clean
+migrate:
 	go run github.com/prisma/prisma-client-go db push
 
 clean:

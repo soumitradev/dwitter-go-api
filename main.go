@@ -68,6 +68,7 @@ func main() {
 	router.HandleFunc("/refresh_token", auth.RefreshHandler).Methods("POST")
 	router.HandleFunc("/media_upload", cdn.UploadMediaHandler).Methods("POST")
 	router.HandleFunc("/pfp_upload", cdn.UploadPFPHandler).Methods("POST")
+	router.HandleFunc("/callback", auth.OAuth2callbackHandler)
 	router.Handle("/subscriptions", common.GraphqlwsHandler)
 
 	// Initialize middleware and use it
