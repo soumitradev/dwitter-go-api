@@ -21,13 +21,15 @@ The prisma schema is [here](./prisma/schema.prisma)
 > cdn_key.json is the key to Google Firebase
 
 **TODO:**
+
 - Add more OAuth providers
 - If username/email is already taken, allow them to set a new one
 - If user has already signed up, log them in when using OAuth flow
-- Advanced Search for Tweets
+- Advanced Search for Dweets
 - Frontend in Vue
 
 **TODO: (Advanced)**
+
 - Add support for becoming an OAuth identity provider
 
 The entire API is now ready. I haven't tested for every scenario, because it would take too much time to do it, so I'll fix any bugs I find in the future when working on the frontend.
