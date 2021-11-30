@@ -20,6 +20,7 @@ import (
 	"github.com/soumitradev/Dwitter/backend/database"
 	"github.com/soumitradev/Dwitter/backend/gql"
 	"github.com/soumitradev/Dwitter/backend/middleware"
+	"github.com/soumitradev/Dwitter/frontend"
 	"github.com/unrolled/secure"
 )
 
@@ -72,7 +73,8 @@ func main() {
 	router.Handle("/api/subscriptions", common.GraphqlwsHandler)
 
 	// Handle frontend
-	router.HandleFunc("/", homePageHandler).Methods("GET")
+	frontend := frontend.FrontendHandler{StaticPath: "frontend/dist", IndexPath: "index.html"}
+	router.PathPrefix("/").Handler(frontend)
 
 	// Initialize middleware and use it
 	secureMiddleware := secure.New(secure.Options{
@@ -124,15 +126,4 @@ func main() {
 	// to finalize based on context cancellation.
 	log.Println("Shutting down")
 	os.Exit(0)
-}
-
-func homePageHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "Hello world")
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Panic(err)
-	}
 }

@@ -18,6 +18,9 @@ import (
 	"github.com/golang/gddo/httputil/header"
 )
 
+// TODO URGENT
+// https://github.com/advisories/GHSA-w73w-5m7g-f7qc
+
 // A tokenType stores an access and refresh token
 type tokenType struct {
 	AccessToken  string `json:"accessToken"`

@@ -1,4 +1,4 @@
-run:
+run: web
 	go run .
 
 migrate:
@@ -13,3 +13,6 @@ clean:
 kill:
 	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}'
 	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}' | bash
+
+web:
+	cd frontend && npm run build
