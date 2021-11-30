@@ -7,6 +7,7 @@ require (
 	firebase.google.com/go/v4 v4.6.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/functionalfoundry/graphqlws v0.0.0-20200611113535-7bc58903ce7b
+	github.com/go-playground/validator/v10 v10.9.0
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
 	github.com/gorilla/handlers v1.5.1
@@ -14,13 +15,13 @@ require (
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/graphql-go/graphql v0.8.0
 	github.com/graphql-go/handler v0.2.3
-	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
+	github.com/iancoleman/strcase v0.2.0
 	github.com/joho/godotenv v1.4.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.17.0 // indirect
 	github.com/prisma/prisma-client-go v0.12.2
-	github.com/shopspring/decimal v1.2.0
+	github.com/shopspring/decimal v1.3.1
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/takuoki/gocase v1.0.0
 	github.com/unrolled/secure v1.0.9

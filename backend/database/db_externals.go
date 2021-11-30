@@ -18,9 +18,19 @@ import (
 
 // Get dweet when not authenticated
 func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
 	// Check params and return data accordingly
 	var post *db.DweetModel
-	var err error
 	if repliesToFetch < 0 {
 		post, err = common.Client.Dweet.FindUnique(
 			db.Dweet.ID.Equals(postID),
@@ -59,6 +69,22 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 
 // Get dweet when authenticated
 func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername string) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(viewerUsername, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(viewerUsername),
@@ -130,13 +156,22 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 }
 
 // Get user when not authenticated
-func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema.UserType, error) {
+func GetUserUnauth(username string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
 
 	var user *db.UserModel
-	var err error
 
 	// Check params and return data accordingly
-	if repliesToFetch < 0 {
+	if dweetsToFetch < 0 {
 		user, err = common.Client.User.FindUnique(
 			db.User.Username.Equals(username),
 		).With(
@@ -148,7 +183,7 @@ func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema
 		user, err = common.Client.User.FindUnique(
 			db.User.Username.Equals(username),
 		).With(
-			db.User.Dweets.Fetch().Take(repliesToFetch).Take(dweetOffset).With(
+			db.User.Dweets.Fetch().Take(dweetsToFetch).Take(dweetOffset).With(
 				db.Dweet.Author.Fetch(),
 			),
 		).Exec(common.BaseCtx)
@@ -165,21 +200,36 @@ func GetUserUnauth(username string, repliesToFetch int, dweetOffset int) (schema
 }
 
 // Search users when not authenticated
-func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets int, dweetOffset int) ([]schema.UserType, error) {
+func SearchUsersUnauth(query string, numberToFetch int, numOffset int, numDweets int, dweetOffset int) ([]schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(query, "required,gt=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
 	var users []db.UserModel
-	var err error
 
 	// Check params and return data accordingly
 	if numberToFetch < 0 {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch(),
 			).Exec(common.BaseCtx)
 		} else {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch().Take(numDweets).Skip(dweetOffset),
 			).Exec(common.BaseCtx)
@@ -187,13 +237,13 @@ func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets 
 	} else {
 		if numDweets < 0 {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch(),
 			).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 		} else {
 			users, err = common.Client.User.FindMany(
-				db.User.Username.Contains(text),
+				db.User.Username.Contains(query),
 			).With(
 				db.User.Dweets.Fetch().Take(numDweets).Skip(dweetOffset),
 			).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
@@ -218,8 +268,28 @@ func SearchUsersUnauth(text string, numberToFetch int, numOffset int, numDweets 
 
 // Search users when authenticated
 func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, dweetOffset int, viewerUsername string) ([]schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(query, "required,gt=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(viewerUsername, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
 	var users []db.UserModel
-	var err error
 
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
@@ -287,6 +357,27 @@ func SearchUsers(query string, numberToFetch int, numOffset int, numDweets int, 
 
 // Search dweets when authenticated
 func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int, viewerUsername string) ([]schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(query, "required,gt=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(viewerUsername, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
 	// Get your own following-list
 	viewUser, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(viewerUsername),
@@ -395,8 +486,23 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 
 // Search dweets when not authenticated
 func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(query, "required,gt=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
 	var posts []db.DweetModel
-	var err error
 
 	// Check params and return data accordingly
 	if numberToFetch < 0 {
@@ -471,9 +577,24 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 
 // Get user when authenticated
 func GetUser(username string, dweetsToFetch int, dweetOffset int, viewerUsername string) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(viewerUsername, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
 	var user *db.UserModel
 	var mutuals []db.UserModel
-	var err error
 
 	if viewerUsername == username {
 		// Fetch the user requested
@@ -567,6 +688,32 @@ func GetUser(username string, dweetsToFetch int, dweetOffset int, viewerUsername
 
 // Create a User
 func SignUpUser(username string, password string, name string, bio string, email string) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(password, "required,lte=128,gte=8,containsany=ABCDEFGHIJKLMNOPQRSTUVWXYZ,containsany=abcdefghijklmnopqrstuvwxyz,containsany=1234567890,containsany=!@#$%^&*`~-_=+/?.")
+	if err != nil {
+		return schema.UserType{}, fmt.Errorf("password must be minimum eight characters, maximum 128 characters, have at least one uppercase letter, one lowercase letter, one number and one special character : %v", err)
+	}
+
+	err = common.Validate.Var(name, "required,lte=80")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(bio, "lte=160")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(email, "required,email,lte=100")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
@@ -610,6 +757,32 @@ func SignUpUser(username string, password string, name string, bio string, email
 
 // Update a dweet
 func UpdateDweet(postID string, username string, body string, mediaLinks []string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(body, "lte=240")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(mediaLinks, "lte=8,dive,required,url")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
 	post, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
@@ -710,8 +883,48 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 // Update a user
 func UpdateUser(username string, name string, email string, bio string, PfpUrl string, dweetsToFetch int,
 	dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(name, "lte=80")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(email, "email,lte=100")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(bio, "lte=160")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(PfpUrl, "url")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetsOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(followersOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(followingOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
 	var user *db.UserModel
-	var err error
 
 	// Check params and return data accordingly
 	if followingToFetch < 0 {
@@ -884,8 +1097,23 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 
 // Get User's liked dweets
 func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFetch int, replyOffset int) ([]schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(userID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return []schema.DweetType{}, err
+	}
+
 	var user *db.UserModel
-	var err error
 
 	// Check params and return data accordingly
 	if numberToFetch < 0 {
@@ -982,8 +1210,23 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 
 // Get users that follow user
 func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(userID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
 	var user *db.UserModel
-	var err error
 
 	// Check params and return data accordingly
 	if numberToFetch < 0 {
@@ -1061,8 +1304,23 @@ func GetFollowers(userID string, numberToFetch int, numOffset int, dweetsToFetch
 
 // Get users that user follows
 func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch int, dweetOffset int) ([]schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(userID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(numOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return []schema.UserType{}, err
+	}
+
 	var user *db.UserModel
-	var err error
 
 	// Check params and return data accordingly
 	if numberToFetch < 0 {
@@ -1149,8 +1407,23 @@ func GetFollowing(userID string, numberToFetch int, numOffset int, dweetsToFetch
 
 // Delete a dweet
 func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
 	var deleted *db.DweetModel
-	var err error
 
 	// Check params and return data accordingly
 	if repliesToFetch < 0 {
@@ -1243,6 +1516,17 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 // 	]
 //   }
 func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.RedweetType{}, err
+	}
+
+	err = common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.RedweetType{}, err
+	}
+
 	redweet, err := deleteRedweet(postID, username)
 	if err == db.ErrNotFound {
 		return schema.RedweetType{}, fmt.Errorf("redweet not found: %v", err)
@@ -1257,9 +1541,33 @@ func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 
 // Create a Post
 func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(mediaLinks, "lte=8,dive,required,url")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(body, "required,lte=240,gt=0")
+	if err != nil {
+		if body == "" {
+			fmt.Printf("cock")
+			err = common.Validate.Var(mediaLinks, "required,gte=1,lte=8,dive,required,url,gt=1")
+			if err != nil {
+				return schema.DweetType{}, err
+			}
+		} else {
+			return schema.DweetType{}, err
+		}
+	}
+
 	// Generate a unique ID
 	randID := util.GenID(10)
-	_, err := common.Client.Dweet.FindUnique(
+	_, err = common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
 	).Exec(common.BaseCtx)
 
@@ -1304,9 +1612,38 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 
 // Create a Reply
 func NewReply(originalPostID string, body string, authorUsername string, mediaLinks []string) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(originalPostID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(authorUsername, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(mediaLinks, "lte=8,dive,required,url")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(body, "required,lte=240,gt=0")
+	if err != nil {
+		if body == "" {
+			fmt.Printf("cock")
+			err = common.Validate.Var(mediaLinks, "required,gte=1,lte=8,dive,required,url,gt=1")
+			if err != nil {
+				return schema.DweetType{}, err
+			}
+		} else {
+			return schema.DweetType{}, err
+		}
+	}
+
 	// Generate unique ID
 	randID := util.GenID(10)
-	_, err := common.Client.Dweet.FindUnique(
+	_, err = common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(randID),
 	).Exec(common.BaseCtx)
 
@@ -1369,6 +1706,17 @@ func NewReply(originalPostID string, body string, authorUsername string, mediaLi
 
 // Create a new Redweet of a Dweet
 func Redweet(originalPostID, username string) (schema.RedweetType, error) {
+	// Validate params
+	err := common.Validate.Var(originalPostID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.RedweetType{}, err
+	}
+
+	err = common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.RedweetType{}, err
+	}
+
 	// Create a Redweet
 	user, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
@@ -1437,6 +1785,22 @@ func Redweet(originalPostID, username string) (schema.RedweetType, error) {
 
 // Create a follower relation
 func Follow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(followedID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(followerID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(followerID, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
 	// Check if user already followed this user
 	personBeingFollowed, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -1558,7 +1922,23 @@ func Follow(followedID string, followerID string, dweetsToFetch int, dweetOffset
 }
 
 // Add a like to a dweet
-func Like(likedPostID, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(likedPostID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(userID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
 	// Check if user already liked this dweet
 	likedPost, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(likedPostID),
@@ -1719,6 +2099,21 @@ func Like(likedPostID, userID string, repliesToFetch int, replyOffset int) (sche
 
 // Remove a like from a dweet
 func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
+	// Validate params
+	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(userID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
+
+	err = common.Validate.Var(replyOffset, "gte=0")
+	if err != nil {
+		return schema.DweetType{}, err
+	}
 
 	likedPost, err := common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
@@ -1867,6 +2262,22 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 
 // Create a follower relation
 func Unfollow(followedID string, followerID string, dweetsToFetch int, dweetOffset int) (schema.UserType, error) {
+	// Validate params
+	err := common.Validate.Var(followedID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(followerID, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	err = common.Validate.Var(dweetOffset, "gte=0")
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
 	// Check if user already unfollowed this user
 	personBeingFollowed, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(followedID),
@@ -1979,6 +2390,12 @@ func Unfollow(followedID string, followerID string, dweetsToFetch int, dweetOffs
 
 // Get feed for authenticated user
 func GetFeed(username string) ([]interface{}, error) {
+	// Validate params
+	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
+	if err != nil {
+		return []interface{}{}, err
+	}
+
 	// grab followed users by username
 	// Grab their dweets and redweets
 	user, err := common.Client.User.FindUnique(

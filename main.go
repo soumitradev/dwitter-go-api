@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
@@ -43,6 +44,9 @@ func main() {
 
 	// Create a new router
 	router := mux.NewRouter().StrictSlash(true)
+
+	// Create a validator for data validation
+	common.Validate = validator.New()
 
 	// Create a graphql query handler
 	h := handler.New(&handler.Config{

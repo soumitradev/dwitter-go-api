@@ -10,6 +10,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/functionalfoundry/graphqlws"
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,6 +23,7 @@ var Bucket *storage.BucketHandle
 var MediaCreatedButNotUsed map[string]bool
 var SubscriptionManager graphqlws.SubscriptionManager
 var GraphqlwsHandler http.Handler
+var Validate *validator.Validate
 
 type HTTPError struct {
 	Error string `json:"error"`
