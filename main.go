@@ -100,10 +100,12 @@ func main() {
 	fmt.Println("Server now running on port 5000, access /graphql")
 
 	// Run our server in a goroutine so that it doesn't block.
-	if err := srv.ListenAndServe(); err != nil {
-		log.Println()
-		log.Println(err)
-	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println()
+			log.Println(err)
+		}
+	}()
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)

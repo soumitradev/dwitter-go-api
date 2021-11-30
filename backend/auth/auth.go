@@ -14,12 +14,9 @@ import (
 	"github.com/soumitradev/Dwitter/backend/common"
 	"github.com/soumitradev/Dwitter/backend/prisma/db"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/gddo/httputil/header"
 )
-
-// TODO URGENT
-// https://github.com/advisories/GHSA-w73w-5m7g-f7qc
 
 // A tokenType stores an access and refresh token
 type tokenType struct {
