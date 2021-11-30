@@ -1,77 +1,77 @@
 fragment UserFrag on User {
   username
-  first_name
-  last_name
+  name
   email
   bio
+  pfpURL
   dweets {
     ...BasicDweetFrag
   }
-  liked_dweets {
+  likedDweets {
     ...BasicDweetFrag
   }
-  follower_count
+  followerCount
   followers {
     ...BasicUserFrag
   }
-  following_count
+  followingCount
   following {
     ...BasicUserFrag
   }
-  created_at
+  createdAt
 }
 
 fragment BasicUserFrag on BasicUser {
   username
-  first_name
-  last_name
+  name
   email
   bio
-  follower_count
-  following_count
-  created_at
+  pfpURL
+  followerCount
+  followingCount
+  createdAt
 }
 
 fragment DweetFrag on Dweet {
-  dweet_body
+  dweetBody
   id
   author {
     ...BasicUserFrag
   }
-  author_id
-  posted_at
-  last_updated_at
-  like_count
-  like_users {
+  authorID
+  postedAt
+  lastUpdatedAt
+  likeCount
+  likeUsers {
     ...BasicUserFrag
   }
-  is_reply
-  original_reply_id
-  reply_to {
+  isReply
+  originalReplyID
+  replyTo {
     ...BasicDweetFrag
   }
-  reply_count
-  reply_dweets {
+  replyCount
+  replyDweets {
     ...BasicDweetFrag
   }
-  redweet_count
+  redweetCount
   media
 }
 
 fragment BasicDweetFrag on BasicDweet {
-  dweet_body
+  dweetBody
   id
   author {
     ...BasicUserFrag
   }
-  author_id
-  posted_at
-  last_updated_at
-  like_count
-  is_reply
-  original_reply_id
-  reply_count
-  redweet_count
+  authorID
+  postedAt
+  lastUpdatedAt
+  likeCount
+  isReply
+  originalReplyID
+  replyCount
+  redweetCount
   media
 }
 
@@ -79,9 +79,10 @@ fragment RedweetFrag on Redweet {
   author {
     ...BasicUserFrag
   }
-  author_id
-  redweet_of {
+  authorID
+  redweetOf {
     ...BasicDweetFrag
   }
-  original_redweet_id
+  originalRedweetID
+  redweetTime
 }

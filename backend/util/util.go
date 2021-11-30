@@ -4,11 +4,12 @@ package util
 
 import (
 	crypto_rand "crypto/rand"
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/prisma/db"
 	"encoding/binary"
 	math_rand "math/rand"
 	"reflect"
+
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 )
 
 // More secure random seeding than usual: https://stackoverflow.com/a/54491783

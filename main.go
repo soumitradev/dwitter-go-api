@@ -2,12 +2,6 @@ package main
 
 import (
 	"context"
-	"dwitter_go_graphql/auth"
-	"dwitter_go_graphql/cdn"
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/database"
-	"dwitter_go_graphql/gql"
-	"dwitter_go_graphql/middleware"
 	"flag"
 	"fmt"
 	"log"
@@ -20,6 +14,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/handler"
 	"github.com/joho/godotenv"
+	"github.com/soumitradev/Dwitter/backend/auth"
+	"github.com/soumitradev/Dwitter/backend/cdn"
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/database"
+	"github.com/soumitradev/Dwitter/backend/gql"
+	"github.com/soumitradev/Dwitter/backend/middleware"
 	"github.com/unrolled/secure"
 )
 
@@ -61,15 +61,18 @@ func main() {
 	})
 
 	// Map /graphql to the graphql handler, and attach a middleware to it
-	router.Handle("/graphql", h)
+	router.Handle("/api/graphql", h)
 
-	// Handle some endpoints using a non-GraphQL solution
-	router.HandleFunc("/login", auth.LoginHandler).Methods("POST")
-	router.HandleFunc("/refresh_token", auth.RefreshHandler).Methods("POST")
-	router.HandleFunc("/media_upload", cdn.UploadMediaHandler).Methods("POST")
-	router.HandleFunc("/pfp_upload", cdn.UploadPFPHandler).Methods("POST")
-	router.HandleFunc("/callback", auth.OAuth2callbackHandler)
-	router.Handle("/subscriptions", common.GraphqlwsHandler)
+	// Handle some API endpoints using a non-GraphQL solution
+	router.HandleFunc("/api/login", auth.LoginHandler).Methods("POST")
+	router.HandleFunc("/api/refresh_token", auth.RefreshHandler).Methods("POST")
+	router.HandleFunc("/api/media_upload", cdn.UploadMediaHandler).Methods("POST")
+	router.HandleFunc("/api/pfp_upload", cdn.UploadPFPHandler).Methods("POST")
+	router.HandleFunc("/api/callback", auth.OAuth2callbackHandler)
+	router.Handle("/api/subscriptions", common.GraphqlwsHandler)
+
+	// Handle frontend
+	router.HandleFunc("/", homePageHandler).Methods("GET")
 
 	// Initialize middleware and use it
 	secureMiddleware := secure.New(secure.Options{
@@ -95,12 +98,10 @@ func main() {
 	fmt.Println("Server now running on port 5000, access /graphql")
 
 	// Run our server in a goroutine so that it doesn't block.
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			log.Println()
-			log.Println(err)
-		}
-	}()
+	if err := srv.ListenAndServe(); err != nil {
+		log.Println()
+		log.Println(err)
+	}
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
@@ -123,4 +124,15 @@ func main() {
 	// to finalize based on context cancellation.
 	log.Println("Shutting down")
 	os.Exit(0)
+}
+
+func homePageHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := fmt.Fprintf(w, "Hello world")
+	checkError(err)
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
 }

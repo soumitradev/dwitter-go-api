@@ -4,9 +4,9 @@ package gql
 import (
 	"errors"
 
-	"dwitter_go_graphql/auth"
-	"dwitter_go_graphql/database"
-	"dwitter_go_graphql/schema"
+	"github.com/soumitradev/Dwitter/backend/auth"
+	"github.com/soumitradev/Dwitter/backend/database"
+	"github.com/soumitradev/Dwitter/backend/schema"
 
 	"github.com/graphql-go/graphql"
 )
@@ -362,12 +362,8 @@ var mutationHandler = graphql.NewObject(
 					"password": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					"firstName": &graphql.ArgumentConfig{
+					"name": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
-					},
-					"lastName": &graphql.ArgumentConfig{
-						Type:         graphql.String,
-						DefaultValue: "",
 					},
 					"bio": &graphql.ArgumentConfig{
 						Type:         graphql.String,
@@ -380,12 +376,11 @@ var mutationHandler = graphql.NewObject(
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					username, usernamePresent := params.Args["username"].(string)
 					password, passwordPresent := params.Args["password"].(string)
-					firstName, firstPresent := params.Args["firstName"].(string)
-					lastName, lastPresent := params.Args["lastName"].(string)
+					name, namePresent := params.Args["name"].(string)
 					bio, bioPresent := params.Args["bio"].(string)
 					email, emailPresent := params.Args["email"].(string)
-					if usernamePresent && passwordPresent && firstPresent && lastPresent && bioPresent && emailPresent {
-						user, err := database.SignUpUser(username, password, firstName, lastName, bio, email)
+					if usernamePresent && passwordPresent && namePresent && bioPresent && emailPresent {
+						user, err := database.SignUpUser(username, password, name, bio, email)
 						return user, err
 					}
 					return nil, errors.New("invalid request: missing argument")
@@ -722,11 +717,7 @@ var mutationHandler = graphql.NewObject(
 				Type:        schema.UserSchema,
 				Description: "Edit authenticated user",
 				Args: graphql.FieldConfigArgument{
-					"firstName": &graphql.ArgumentConfig{
-						Type:         graphql.String,
-						DefaultValue: "",
-					},
-					"lastName": &graphql.ArgumentConfig{
+					"name": &graphql.ArgumentConfig{
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
@@ -777,8 +768,7 @@ var mutationHandler = graphql.NewObject(
 
 					if isAuth {
 						// Edit user, and return formatted
-						firstName, firstPresent := params.Args["firstName"].(string)
-						lastName, lastPresent := params.Args["lastName"].(string)
+						name, namePresent := params.Args["name"].(string)
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
 						PfpUrl, pfpPresent := params.Args["pfpURL"].(string)
@@ -788,8 +778,8 @@ var mutationHandler = graphql.NewObject(
 						followersOffset, followersOffsetPresent := params.Args["followersOffset"].(int)
 						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
 						followingOffset, followingOffsetPresent := params.Args["followingOffset"].(int)
-						if firstPresent && lastPresent && emailPresent && bioPresent && pfpPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
-							user, err := database.UpdateUser(data["username"].(string), firstName, lastName, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
+						if namePresent && emailPresent && bioPresent && pfpPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
+							user, err := database.UpdateUser(data["username"].(string), name, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request: missing argument")

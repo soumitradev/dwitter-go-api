@@ -2,8 +2,6 @@
 package auth
 
 import (
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/prisma/db"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +10,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/gddo/httputil/header"
@@ -332,7 +333,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    tokenData.RefreshToken,
 		HttpOnly: true,
 		Secure:   true,
-		Path:     "/refresh_token",
+		Path:     "/api/refresh_token",
 	}
 	http.SetCookie(w, &c)
 
@@ -489,7 +490,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    refTok,
 		HttpOnly: true,
 		Secure:   true,
-		Path:     "/refresh_token",
+		Path:     "/api/refresh_token",
 	}
 	http.SetCookie(w, &c)
 

@@ -2,7 +2,7 @@
 package schema
 
 import (
-	"dwitter_go_graphql/prisma/db"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 )
 
 // Format as BasicDweet
@@ -76,20 +76,15 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 
 // Format as BasicUser
 func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
-	lastName, exists := user.LastName()
-	if !exists {
-		lastName = ""
-	}
 	return BasicUserType{
 		Username:       user.Username,
-		FirstName:      user.FirstName,
+		Name:           user.Name,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		PfpURL:         user.ProfilePicURL,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		CreatedAt:      user.CreatedAt,
-		LastName:       lastName,
 	}
 }
 
@@ -118,15 +113,10 @@ func FormatAsUserType(user *db.UserModel) UserType {
 	for i := 0; i < len(following_db_schema); i++ {
 		following = append(following, FormatAsBasicUserType(&following_db_schema[i]))
 	}
-	lastName, exists := user.LastName()
-	if !exists {
-		lastName = ""
-	}
 
 	return UserType{
 		Username:       user.Username,
-		FirstName:      user.FirstName,
-		LastName:       lastName,
+		Name:           user.Name,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		PfpURL:         user.ProfilePicURL,
@@ -148,15 +138,9 @@ func NoAuthFormatAsUserType(user *db.UserModel) UserType {
 		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
 	}
 
-	lastName, exists := user.LastName()
-	if !exists {
-		lastName = ""
-	}
-
 	return UserType{
 		Username:       user.Username,
-		FirstName:      user.FirstName,
-		LastName:       lastName,
+		Name:           user.Name,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		PfpURL:         user.ProfilePicURL,
@@ -180,15 +164,9 @@ func AuthFormatAsUserType(user *db.UserModel, mutualUsers []db.UserModel) UserTy
 		mutuals = append(mutuals, FormatAsBasicUserType((&mutualUsers[i])))
 	}
 
-	lastName, exists := user.LastName()
-	if !exists {
-		lastName = ""
-	}
-
 	return UserType{
 		Username:       user.Username,
-		FirstName:      user.FirstName,
-		LastName:       lastName,
+		Name:           user.Name,
 		Email:          user.Email,
 		Bio:            user.Bio,
 		PfpURL:         user.ProfilePicURL,

@@ -2,9 +2,10 @@
 package gql
 
 import (
-	"dwitter_go_graphql/auth"
-	"dwitter_go_graphql/common"
 	"time"
+
+	"github.com/soumitradev/Dwitter/backend/auth"
+	"github.com/soumitradev/Dwitter/backend/common"
 
 	"github.com/functionalfoundry/graphqlws"
 	"github.com/graphql-go/graphql"

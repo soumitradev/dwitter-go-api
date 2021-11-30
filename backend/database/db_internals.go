@@ -4,8 +4,8 @@ package database
 import (
 	"errors"
 
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/prisma/db"
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 )
 
 func init() {

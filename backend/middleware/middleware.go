@@ -2,10 +2,11 @@
 package middleware
 
 import (
-	"dwitter_go_graphql/common"
 	"encoding/json"
 	"net/http"
 	"os"
+
+	"github.com/soumitradev/Dwitter/backend/common"
 
 	"github.com/gorilla/handlers"
 )

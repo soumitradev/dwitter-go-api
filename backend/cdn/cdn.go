@@ -4,9 +4,6 @@ package cdn
 import (
 	"bytes"
 	"context"
-	"dwitter_go_graphql/auth"
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/util"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,6 +19,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/soumitradev/Dwitter/backend/auth"
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/util"
+
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/disintegration/imaging"
@@ -32,7 +33,7 @@ import (
 
 func init() {
 	// Connect to bucket
-	opt := option.WithCredentialsFile("./cdn_key.json")
+	opt := option.WithCredentialsFile("backend/cdn_key.json")
 	config := &firebase.Config{
 		StorageBucket: "dwitter-72e9d.appspot.com",
 	}

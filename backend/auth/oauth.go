@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/prisma/db"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +10,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 
 	"github.com/golang/gddo/httputil/header"
 	"golang.org/x/crypto/bcrypt"
@@ -156,14 +157,13 @@ func OAuth2callbackHandler(w http.ResponseWriter, r *http.Request) {
 				_, err := common.Client.User.CreateOne(
 					db.User.Username.Set(userData.Username),
 					db.User.PasswordHash.Set(string(passwordHash)),
-					db.User.FirstName.Set(userData.Username),
+					db.User.Name.Set(userData.Username),
 					db.User.Email.Set(userData.Email),
 					db.User.Bio.Set(""),
 					db.User.ProfilePicURL.Set("https://cdn.discordapp.com/avatars/"+userData.ID+"/"+userData.AvatarHash+".png"),
 					db.User.TokenVersion.Set(rand.Intn(10000)),
 					db.User.CreatedAt.Set(time.Now()),
 					db.User.OAuthProvider.Set("Discord"),
-					db.User.LastName.Set(""),
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
@@ -196,7 +196,7 @@ func OAuth2callbackHandler(w http.ResponseWriter, r *http.Request) {
 					Value:    tokenData.RefreshToken,
 					HttpOnly: true,
 					Secure:   true,
-					Path:     "/refresh_token",
+					Path:     "/api/refresh_token",
 				}
 				http.SetCookie(w, &c)
 

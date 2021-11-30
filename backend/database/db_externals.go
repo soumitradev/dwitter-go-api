@@ -2,15 +2,16 @@
 package database
 
 import (
-	"dwitter_go_graphql/cdn"
-	"dwitter_go_graphql/common"
-	"dwitter_go_graphql/prisma/db"
-	"dwitter_go_graphql/schema"
-	"dwitter_go_graphql/util"
 	"errors"
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/soumitradev/Dwitter/backend/cdn"
+	"github.com/soumitradev/Dwitter/backend/common"
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
+	"github.com/soumitradev/Dwitter/backend/schema"
+	"github.com/soumitradev/Dwitter/backend/util"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -565,7 +566,7 @@ func GetUser(username string, dweetsToFetch int, dweetOffset int, viewerUsername
 }
 
 // Create a User
-func SignUpUser(username string, password string, firstName string, lastName string, bio string, email string) (schema.UserType, error) {
+func SignUpUser(username string, password string, name string, bio string, email string) (schema.UserType, error) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
@@ -583,14 +584,13 @@ func SignUpUser(username string, password string, firstName string, lastName str
 		createdUser, err := common.Client.User.CreateOne(
 			db.User.Username.Set(username),
 			db.User.PasswordHash.Set(string(passwordHash)),
-			db.User.FirstName.Set(firstName),
+			db.User.Name.Set(name),
 			db.User.Email.Set(email),
 			db.User.Bio.Set(bio),
 			db.User.ProfilePicURL.Set(common.DefaultPFPURL),
 			db.User.TokenVersion.Set(rand.Intn(10000)),
 			db.User.CreatedAt.Set(time.Now()),
 			db.User.OAuthProvider.Set("None"),
-			db.User.LastName.Set(lastName),
 		).With(
 			db.User.Dweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -708,7 +708,7 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 }
 
 // Update a user
-func UpdateUser(username string, firstName string, lastName string, email string, bio string, PfpUrl string, dweetsToFetch int,
+func UpdateUser(username string, name string, email string, bio string, PfpUrl string, dweetsToFetch int,
 	dweetsOffset int, followersToFetch int, followersOffset int, followingToFetch int, followingOffset int) (schema.UserType, error) {
 	var user *db.UserModel
 	var err error
@@ -729,8 +729,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -748,8 +747,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -769,8 +767,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
 					db.User.Following.Fetch(),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -788,8 +785,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
 					db.User.Following.Fetch(),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -811,8 +807,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -830,8 +825,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -851,8 +845,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
 					db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -870,8 +863,7 @@ func UpdateUser(username string, firstName string, lastName string, email string
 					db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
 					db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
 				).Update(
-					db.User.FirstName.Set(firstName),
-					db.User.LastName.Set(lastName),
+					db.User.Name.Set(name),
 					db.User.Email.Set(email),
 					db.User.Bio.Set(bio),
 					db.User.ProfilePicURL.Set(PfpUrl),
@@ -1230,6 +1222,26 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 }
 
 // Delete a redweet
+// TODO: Fix this shit:
+// {
+// 	"data": {
+// 	  "unredweet": null
+// 	},
+// 	"errors": [
+// 	  {
+// 		"message": "runtime error: invalid memory address or nil pointer dereference",
+// 		"locations": [
+// 		  {
+// 			"line": 42,
+// 			"column": 3
+// 		  }
+// 		],
+// 		"path": [
+// 		  "unredweet"
+// 		]
+// 	  }
+// 	]
+//   }
 func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 	redweet, err := deleteRedweet(postID, username)
 	if err == db.ErrNotFound {

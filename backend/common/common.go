@@ -3,9 +3,10 @@ package common
 
 import (
 	"context"
-	"dwitter_go_graphql/prisma/db"
 	"errors"
 	"net/http"
+
+	"github.com/soumitradev/Dwitter/backend/prisma/db"
 
 	"cloud.google.com/go/storage"
 	"github.com/functionalfoundry/graphqlws"

@@ -12,8 +12,7 @@ import (
 // A User object without any relation fields
 type BasicUserType struct {
 	Username       string    `json:"username"`
-	FirstName      string    `json:"firstName"`
-	LastName       string    `json:"lastName"`
+	Name           string    `json:"name"`
 	Email          string    `json:"email"`
 	Bio            string    `json:"bio"`
 	PfpURL         string    `json:"pfpURL"`
@@ -25,8 +24,7 @@ type BasicUserType struct {
 // A User object
 type UserType struct {
 	Username       string           `json:"username"`
-	FirstName      string           `json:"firstName"`
-	LastName       string           `json:"lastName"`
+	Name           string           `json:"name"`
 	Email          string           `json:"email"`
 	Bio            string           `json:"bio"`
 	PfpURL         string           `json:"pfpURL"`
@@ -91,10 +89,7 @@ var BasicUserSchema = graphql.NewObject(
 			"username": &graphql.Field{
 				Type: graphql.String,
 			},
-			"firstName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"lastName": &graphql.Field{
+			"name": &graphql.Field{
 				Type: graphql.String,
 			},
 			"email": &graphql.Field{
@@ -127,10 +122,7 @@ var UserSchema = graphql.NewObject(
 			"username": &graphql.Field{
 				Type: graphql.String,
 			},
-			"firstName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"lastName": &graphql.Field{
+			"name": &graphql.Field{
 				Type: graphql.String,
 			},
 			"email": &graphql.Field{
