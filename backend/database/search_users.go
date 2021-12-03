@@ -86,7 +86,7 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 				).Exec(common.BaseCtx)
@@ -153,7 +153,7 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
@@ -228,7 +228,7 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
@@ -295,7 +295,7 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
@@ -433,7 +433,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 					db.User.Followers.Fetch(),
@@ -508,7 +508,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
@@ -591,7 +591,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 					db.User.Followers.Fetch(),
@@ -666,7 +666,7 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				users, err = common.Client.User.FindMany(
 					db.User.Username.Contains(query),
 				).With(

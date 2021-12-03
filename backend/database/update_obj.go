@@ -277,7 +277,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
 
-					redweetedDweets := user.Redweets()
+					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
@@ -372,7 +372,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					for i := 0; i < feedObjectsToFetch; i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
-				case "redweetedDweets":
+				case "redweetedDweet":
 					user, err = common.Client.User.FindUnique(
 						db.User.Username.Equals(username),
 					).With(
@@ -499,7 +499,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
 
-					redweetedDweets := user.Redweets()
+					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
@@ -594,7 +594,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					for i := 0; i < feedObjectsToFetch; i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
-				case "redweetedDweets":
+				case "redweetedDweet":
 					user, err = common.Client.User.FindUnique(
 						db.User.Username.Equals(username),
 					).With(
@@ -724,7 +724,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
 
-					redweetedDweets := user.Redweets()
+					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
@@ -819,7 +819,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					for i := 0; i < feedObjectsToFetch; i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
-				case "redweetedDweets":
+				case "redweetedDweet":
 					user, err = common.Client.User.FindUnique(
 						db.User.Username.Equals(username),
 					).With(
@@ -946,7 +946,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
 
-					redweetedDweets := user.Redweets()
+					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
@@ -1041,7 +1041,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					for i := 0; i < feedObjectsToFetch; i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
-				case "redweetedDweets":
+				case "redweetedDweet":
 					user, err = common.Client.User.FindUnique(
 						db.User.Username.Equals(username),
 					).With(

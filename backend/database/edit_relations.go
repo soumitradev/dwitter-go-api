@@ -108,14 +108,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(followedID),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
 				).Exec(common.BaseCtx)
 
-				redweetedDweets := user.Redweets()
+				redweetedDweets := user.RedweetedDweets()
 				for i := 0; i < len(redweetedDweets); i++ {
 					feedObjectList = append(feedObjectList, redweetedDweets[i])
 				}
@@ -175,7 +175,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				for i := 0; i < feedObjectsToFetch; i++ {
 					feedObjectList = append(feedObjectList, redweets[i])
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(followedID),
 				).With(
@@ -304,7 +304,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(
-				db.User.Dweets.Fetch().With(
+				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.User.Followers.Fetch(),
@@ -316,7 +316,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				),
 			).Exec(common.BaseCtx)
 
-			redweetedDweets := user.Redweets()
+			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
@@ -395,7 +395,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			for i := 0; i < feedObjectsToFetch; i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
-		case "redweetedDweets":
+		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(
@@ -940,14 +940,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(followedID),
 				).With(
-					db.User.Dweets.Fetch().With(
+					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
 				).Exec(common.BaseCtx)
 
-				redweetedDweets := user.Redweets()
+				redweetedDweets := user.RedweetedDweets()
 				for i := 0; i < len(redweetedDweets); i++ {
 					feedObjectList = append(feedObjectList, redweetedDweets[i])
 				}
@@ -1007,7 +1007,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				for i := 0; i < feedObjectsToFetch; i++ {
 					feedObjectList = append(feedObjectList, redweets[i])
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(followedID),
 				).With(
@@ -1132,7 +1132,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(
-				db.User.Dweets.Fetch().With(
+				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.User.Followers.Fetch(),
@@ -1144,7 +1144,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				),
 			).Exec(common.BaseCtx)
 
-			redweetedDweets := user.Redweets()
+			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
@@ -1223,7 +1223,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			for i := 0; i < feedObjectsToFetch; i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
-		case "redweetedDweets":
+		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(followedID),
 			).With(

@@ -90,14 +90,14 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(username),
 			).With(
-				db.User.Dweets.Fetch().With(
+				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
 
-			redweetedDweets := user.Redweets()
+			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets)
 			}
@@ -159,7 +159,7 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 			for i := 0; i < feedObjectsToFetch; i++ {
 				feedObjectList = append(feedObjectList, redweets)
 			}
-		case "redweetedDweets":
+		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(username),
 			).With(
@@ -290,14 +290,14 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(username),
 			).With(
-				db.User.Dweets.Fetch().With(
+				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
 
-			redweetedDweets := user.Redweets()
+			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
@@ -380,7 +380,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			for i := 0; i < feedObjectsToFetch; i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
-		case "redweetedDweets":
+		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(username),
 			).With(

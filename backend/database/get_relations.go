@@ -201,7 +201,7 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(username),
 				).With(
@@ -391,7 +391,7 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(username),
 				).With(
@@ -631,7 +631,7 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(username),
 				).With(
@@ -813,7 +813,7 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						feedObjectList[index] = append(feedObjectList[index], redweet)
 					}
 				}
-			case "redweetedDweets":
+			case "redweetedDweet":
 				user, err = common.Client.User.FindUnique(
 					db.User.Username.Equals(username),
 				).With(
