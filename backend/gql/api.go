@@ -284,11 +284,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -327,11 +331,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -516,11 +524,15 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -639,11 +651,15 @@ var mutationHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -749,11 +765,15 @@ var mutationHandler = graphql.NewObject(
 						Type:         graphql.String,
 						DefaultValue: "",
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -883,7 +903,7 @@ var subscriptionHandler = graphql.NewObject(
 		Name: "Subscription",
 		Fields: graphql.Fields{
 			"feed": &graphql.Field{
-				Type: schema.FeedObjectSchema,
+				Type: graphql.NewList(schema.FeedObjectSchema),
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					// Check authentication
 					tokenString := params.Info.RootValue.(map[string]interface{})["token"].(string)

@@ -248,7 +248,7 @@ func NewReply(originalPostID string, body string, authorUsername string, mediaLi
 // Create a new Redweet of a Dweet
 func Redweet(originalPostID, username string) (schema.RedweetType, error) {
 	// Validate params
-	err := common.Validate.Var(originalPostID, "required,alphanum,eq=10")
+	err := common.Validate.Var(originalPostID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.RedweetType{}, err
 	}

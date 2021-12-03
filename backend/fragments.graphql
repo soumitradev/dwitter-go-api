@@ -1,3 +1,14 @@
+fragment BasicFeedObjectFrag on BasicFeedObject {
+  ...BasicDweetFrag
+  ...RedweetFrag
+}
+
+fragment FeedObjectFrag on BasicFeedObject {
+  __typename
+  ...DweetFrag
+  ...RedweetFrag
+}
+
 fragment UserFrag on User {
   username
   name
@@ -5,6 +16,15 @@ fragment UserFrag on User {
   bio
   pfpURL
   dweets {
+    ...BasicDweetFrag
+  }
+  redweets {
+    ...RedweetFrag
+  }
+  feedObjects {
+    ...BasicFeedObjectFrag
+  }
+  redweetedDweets {
     ...BasicDweetFrag
   }
   likedDweets {

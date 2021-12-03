@@ -241,7 +241,9 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -281,7 +283,9 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -330,7 +334,9 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -372,7 +378,9 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -1061,7 +1069,9 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -1101,7 +1111,9 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -1150,7 +1162,9 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
@@ -1192,7 +1206,9 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
-					db.Redweet.RedweetOf.Fetch(),
+					db.Redweet.RedweetOf.Fetch().With(
+						db.Dweet.Author.Fetch(),
+					),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),

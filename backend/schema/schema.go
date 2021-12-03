@@ -148,7 +148,7 @@ var UserSchema = graphql.NewObject(
 				Type: graphql.NewList(BasicDweetSchema),
 			},
 			"feedObjects": &graphql.Field{
-				Type: FeedObjectSchema,
+				Type: graphql.NewList(BasicFeedObjectSchema),
 			},
 			"likedDweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
@@ -299,7 +299,7 @@ var RedweetSchema = graphql.NewObject(
 )
 
 // A GraphQL union type for objects that may appear on a feed. i.e. Dweets and Redweets
-var FeedObjectSchema = graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
+var FeedObjectSchema = graphql.NewUnion(graphql.UnionConfig{
 	Name:        "FeedObject",
 	Types:       []*graphql.Object{DweetSchema, RedweetSchema},
 	Description: "An object representing either a dweet or a redweet object.",
@@ -310,4 +310,18 @@ var FeedObjectSchema = graphql.NewList(graphql.NewUnion(graphql.UnionConfig{
 			return RedweetSchema
 		}
 	},
-}))
+})
+
+// A GraphQL union type for objects that may appear on a feed. i.e. BasicDweets and Redweets
+var BasicFeedObjectSchema = graphql.NewUnion(graphql.UnionConfig{
+	Name:        "BasicFeedObject",
+	Types:       []*graphql.Object{BasicDweetSchema, RedweetSchema},
+	Description: "An object representing either a basic dweet or a redweet object.",
+	ResolveType: func(params graphql.ResolveTypeParams) *graphql.Object {
+		if _, ok := params.Value.(BasicDweetType); ok {
+			return BasicDweetSchema
+		} else {
+			return RedweetSchema
+		}
+	},
+})
