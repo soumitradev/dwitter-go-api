@@ -23,18 +23,21 @@ type BasicUserType struct {
 
 // A User object
 type UserType struct {
-	Username       string           `json:"username"`
-	Name           string           `json:"name"`
-	Email          string           `json:"email"`
-	Bio            string           `json:"bio"`
-	PfpURL         string           `json:"pfpURL"`
-	Dweets         []BasicDweetType `json:"dweets"`
-	LikedDweets    []BasicDweetType `json:"likedDweets"`
-	FollowerCount  int              `json:"followerCount"`
-	Followers      []BasicUserType  `json:"followers"`
-	FollowingCount int              `json:"followingCount"`
-	Following      []BasicUserType  `json:"following"`
-	CreatedAt      time.Time        `json:"createdAt"`
+	Username        string           `json:"username"`
+	Name            string           `json:"name"`
+	Email           string           `json:"email"`
+	Bio             string           `json:"bio"`
+	PfpURL          string           `json:"pfpURL"`
+	Dweets          []BasicDweetType `json:"dweets"`
+	Redweets        []RedweetType    `json:"redweets"`
+	FeedObjects     []interface{}    `json:"feedObjects"`
+	RedweetedDweets []BasicDweetType `json:"redweetedDweets"`
+	LikedDweets     []BasicDweetType `json:"likedDweets"`
+	FollowerCount   int              `json:"followerCount"`
+	Followers       []BasicUserType  `json:"followers"`
+	FollowingCount  int              `json:"followingCount"`
+	Following       []BasicUserType  `json:"following"`
+	CreatedAt       time.Time        `json:"createdAt"`
 }
 
 // A Dweet object without any relation fields except for Author (a necessary relation field)
@@ -69,6 +72,7 @@ type DweetType struct {
 	ReplyCount      int              `json:"replyCount"`
 	ReplyDweets     []BasicDweetType `json:"replyDweets"`
 	RedweetCount    int              `json:"redweetCount"`
+	RedweetUsers    []BasicUserType  `json:"redweetUsers"`
 	Media           []string         `json:"media"`
 }
 
@@ -136,6 +140,15 @@ var UserSchema = graphql.NewObject(
 			},
 			"dweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
+			},
+			"redweets": &graphql.Field{
+				Type: graphql.NewList(RedweetSchema),
+			},
+			"redweetedDweets": &graphql.Field{
+				Type: graphql.NewList(BasicDweetSchema),
+			},
+			"feedObjects": &graphql.Field{
+				Type: FeedObjectSchema,
 			},
 			"likedDweets": &graphql.Field{
 				Type: graphql.NewList(BasicDweetSchema),
@@ -250,6 +263,9 @@ var DweetSchema = graphql.NewObject(
 			},
 			"redweetCount": &graphql.Field{
 				Type: graphql.Int,
+			},
+			"redweetUsers": &graphql.Field{
+				Type: graphql.NewList(BasicUserSchema),
 			},
 			"media": &graphql.Field{
 				Type: graphql.NewList(graphql.String),

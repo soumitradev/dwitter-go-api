@@ -26,6 +26,8 @@ The prisma schema is [here](./prisma/schema.prisma)
 - If username/email is already taken, allow them to set a new one
 - If user has already signed up, log them in when using OAuth flow
 - Advanced Search for Dweets
+- Infinite recursion: https://pkg.go.dev/github.com/graphql-go/graphql#Field I'm starting to think this is possible, and I'll have to rewrite half of my backend code if I manage to do it, but maybe that's just me going insane as I work on this project more.
+- 10000000x better decision logic in db_externals.go, where I collapse parameters into a single variable and make decisions based on info I extract from that single variable, kind of like an opcode.
 - Frontend in Vue
 
 **TODO: (Advanced)**

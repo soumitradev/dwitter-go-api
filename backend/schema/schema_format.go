@@ -2,6 +2,8 @@
 package schema
 
 import (
+	"errors"
+
 	"github.com/soumitradev/Dwitter/backend/prisma/db"
 )
 
@@ -55,6 +57,12 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		reply_dweets = append(reply_dweets, FormatAsBasicDweetType(&reply_dweets_db_schema[i]))
 	}
 
+	var redweet_users []BasicUserType
+	redweet_users_db_schema := dweet.RedweetUsers()
+	for i := 0; i < len(like_users_db_schema); i++ {
+		redweet_users = append(redweet_users, FormatAsBasicUserType(&redweet_users_db_schema[i]))
+	}
+
 	return DweetType{
 		DweetBody:       dweet.DweetBody,
 		ID:              dweet.ID,
@@ -70,6 +78,7 @@ func FormatAsDweetType(dweet *db.DweetModel) DweetType {
 		ReplyCount:      dweet.ReplyCount,
 		ReplyDweets:     reply_dweets,
 		RedweetCount:    dweet.RedweetCount,
+		RedweetUsers:    redweet_users,
 		Media:           dweet.Media,
 	}
 }
@@ -88,94 +97,258 @@ func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 	}
 }
 
-// Format as User
-func FormatAsUserType(user *db.UserModel) UserType {
-	var dweets []BasicDweetType
-	dweets_db_schema := user.Dweets()
-	for i := 0; i < len(dweets_db_schema); i++ {
-		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
-	}
+// // Format as User
+// func FormatAsUserType(user *db.UserModel, objectsToFetch string, objectList []interface{}) (UserType, error) {
+// 	feedObjects := make([]interface{}, len(objectList))
+// 	dweets := make([]BasicDweetType, len(objectList))
+// 	redweets := make([]RedweetType, len(objectList))
+// 	liked_dweets := make([]BasicDweetType, len(objectList))
+// 	redweeted_dweets := make([]BasicDweetType, len(objectList))
 
-	var liked_dweets []BasicDweetType
-	liked_dweets_db_schema := user.LikedDweets()
-	for i := 0; i < len(liked_dweets_db_schema); i++ {
-		liked_dweets = append(liked_dweets, FormatAsBasicDweetType(&liked_dweets_db_schema[i]))
+// 	switch objectsToFetch {
+// 	case "feed":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else if redweet, ok := obj.(db.RedweetModel); ok {
+// 				feedObjects[index] = FormatAsRedweetType(&redweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "dweet":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "redweet":
+// 		for index, obj := range objectList {
+// 			if redweet, ok := obj.(db.RedweetModel); ok {
+// 				feedObjects[index] = FormatAsRedweetType(&redweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "redweetedDweet":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "liked":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	default:
+// 		break
+// 	}
+
+// 	var followers []BasicUserType
+// 	followers_db_schema := user.Followers()
+// 	for i := 0; i < len(followers_db_schema); i++ {
+// 		followers = append(followers, FormatAsBasicUserType(&followers_db_schema[i]))
+// 	}
+
+// 	var following []BasicUserType
+// 	following_db_schema := user.Following()
+// 	for i := 0; i < len(following_db_schema); i++ {
+// 		following = append(following, FormatAsBasicUserType(&following_db_schema[i]))
+// 	}
+
+// 	return UserType{
+// 		Username:        user.Username,
+// 		Name:            user.Name,
+// 		Email:           user.Email,
+// 		Bio:             user.Bio,
+// 		PfpURL:          user.ProfilePicURL,
+// 		Dweets:          dweets,
+// 		Redweets:        redweets,
+// 		RedweetedDweets: redweeted_dweets,
+// 		FeedObjects:     feedObjects,
+// 		LikedDweets:     liked_dweets,
+// 		FollowerCount:   user.FollowerCount,
+// 		Followers:       followers,
+// 		FollowingCount:  user.FollowingCount,
+// 		Following:       following,
+// 		CreatedAt:       user.CreatedAt,
+// 	}, nil
+// }
+
+// Format as User
+// func NoAuthFormatAsUserType(user *db.UserModel, objectsToFetch string, objectList []interface{}) (UserType, error) {
+// 	feedObjects := make([]interface{}, len(objectList))
+// 	dweets := make([]BasicDweetType, len(objectList))
+// 	redweets := make([]RedweetType, len(objectList))
+// 	liked_dweets := make([]BasicDweetType, len(objectList))
+// 	redweeted_dweets := make([]BasicDweetType, len(objectList))
+
+// 	switch objectsToFetch {
+// 	case "feed":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else if redweet, ok := obj.(db.RedweetModel); ok {
+// 				feedObjects[index] = FormatAsRedweetType(&redweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "dweet":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "redweet":
+// 		for index, obj := range objectList {
+// 			if redweet, ok := obj.(db.RedweetModel); ok {
+// 				feedObjects[index] = FormatAsRedweetType(&redweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "redweetedDweet":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	case "liked":
+// 		for index, obj := range objectList {
+// 			if dweet, ok := obj.(db.DweetModel); ok {
+// 				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+// 			} else {
+// 				return UserType{}, errors.New("internal server error")
+// 			}
+// 		}
+// 	default:
+// 		break
+// 	}
+
+// 	var followers []BasicUserType
+// 	for i := 0; i < len(alsoFollowedBy); i++ {
+// 		followers = append(followers, FormatAsBasicUserType(&alsoFollowedBy[i]))
+// 	}
+
+// 	var following []BasicUserType
+// 	for i := 0; i < len(alsoFollowing); i++ {
+// 		following = append(following, FormatAsBasicUserType(&alsoFollowing[i]))
+// 	}
+
+// 	return UserType{
+// 		Username:        user.Username,
+// 		Name:            user.Name,
+// 		Email:           user.Email,
+// 		Bio:             user.Bio,
+// 		PfpURL:          user.ProfilePicURL,
+// 		Dweets:          dweets,
+// 		Redweets:        redweets,
+// 		RedweetedDweets: redweeted_dweets,
+// 		FeedObjects:     feedObjects,
+// 		LikedDweets:     liked_dweets,
+// 		FollowerCount:   user.FollowerCount,
+// 		Followers:       followers,
+// 		FollowingCount:  user.FollowingCount,
+// 		Following:       following,
+// 		CreatedAt:       user.CreatedAt,
+// 	}, nil
+// }
+
+// Format as User
+func FormatAsUserType(user *db.UserModel, alsoFollowedBy []db.UserModel, alsoFollowing []db.UserModel, objectsToFetch string, objectList []interface{}) (UserType, error) {
+	feedObjects := make([]interface{}, len(objectList))
+	dweets := make([]BasicDweetType, len(objectList))
+	redweets := make([]RedweetType, len(objectList))
+	liked_dweets := make([]BasicDweetType, len(objectList))
+	redweeted_dweets := make([]BasicDweetType, len(objectList))
+
+	switch objectsToFetch {
+	case "feed":
+		for index, obj := range objectList {
+			if dweet, ok := obj.(db.DweetModel); ok {
+				feedObjects[index] = FormatAsBasicDweetType(&dweet)
+			} else if redweet, ok := obj.(db.RedweetModel); ok {
+				feedObjects[index] = FormatAsRedweetType(&redweet)
+			} else {
+				return UserType{}, errors.New("internal server error")
+			}
+		}
+	case "dweet":
+		for index, obj := range objectList {
+			if dweet, ok := obj.(db.DweetModel); ok {
+				dweets[index] = FormatAsBasicDweetType(&dweet)
+			} else {
+				return UserType{}, errors.New("internal server error")
+			}
+		}
+	case "redweet":
+		for index, obj := range objectList {
+			if redweet, ok := obj.(db.RedweetModel); ok {
+				redweets[index] = FormatAsRedweetType(&redweet)
+			} else {
+				return UserType{}, errors.New("internal server error")
+			}
+		}
+	case "redweetedDweet":
+		for index, obj := range objectList {
+			if dweet, ok := obj.(db.DweetModel); ok {
+				redweeted_dweets[index] = FormatAsBasicDweetType(&dweet)
+			} else {
+				return UserType{}, errors.New("internal server error")
+			}
+		}
+	case "liked":
+		for index, obj := range objectList {
+			if dweet, ok := obj.(db.DweetModel); ok {
+				liked_dweets[index] = FormatAsBasicDweetType(&dweet)
+			} else {
+				return UserType{}, errors.New("internal server error")
+			}
+		}
+	default:
+		break
 	}
 
 	var followers []BasicUserType
-	followers_db_schema := user.Followers()
-	for i := 0; i < len(followers_db_schema); i++ {
-		followers = append(followers, FormatAsBasicUserType(&followers_db_schema[i]))
+	for i := 0; i < len(alsoFollowedBy); i++ {
+		followers = append(followers, FormatAsBasicUserType(&alsoFollowedBy[i]))
 	}
 
 	var following []BasicUserType
-	following_db_schema := user.Following()
-	for i := 0; i < len(following_db_schema); i++ {
-		following = append(following, FormatAsBasicUserType(&following_db_schema[i]))
+	for i := 0; i < len(alsoFollowing); i++ {
+		following = append(following, FormatAsBasicUserType(&alsoFollowing[i]))
 	}
 
 	return UserType{
-		Username:       user.Username,
-		Name:           user.Name,
-		Email:          user.Email,
-		Bio:            user.Bio,
-		PfpURL:         user.ProfilePicURL,
-		Dweets:         dweets,
-		LikedDweets:    liked_dweets,
-		FollowerCount:  user.FollowerCount,
-		Followers:      followers,
-		FollowingCount: user.FollowingCount,
-		Following:      following,
-		CreatedAt:      user.CreatedAt,
-	}
-}
-
-// Format as User
-func NoAuthFormatAsUserType(user *db.UserModel) UserType {
-	var dweets []BasicDweetType
-	dweets_db_schema := user.Dweets()
-	for i := 0; i < len(dweets_db_schema); i++ {
-		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
-	}
-
-	return UserType{
-		Username:       user.Username,
-		Name:           user.Name,
-		Email:          user.Email,
-		Bio:            user.Bio,
-		PfpURL:         user.ProfilePicURL,
-		Dweets:         dweets,
-		FollowerCount:  user.FollowerCount,
-		FollowingCount: user.FollowingCount,
-		CreatedAt:      user.CreatedAt,
-	}
-}
-
-// Format as User with followers
-func AuthFormatAsUserType(user *db.UserModel, mutualUsers []db.UserModel) UserType {
-	var dweets []BasicDweetType
-	dweets_db_schema := user.Dweets()
-	for i := 0; i < len(dweets_db_schema); i++ {
-		dweets = append(dweets, FormatAsBasicDweetType(&dweets_db_schema[i]))
-	}
-
-	var mutuals []BasicUserType
-	for i := 0; i < len(mutualUsers); i++ {
-		mutuals = append(mutuals, FormatAsBasicUserType((&mutualUsers[i])))
-	}
-
-	return UserType{
-		Username:       user.Username,
-		Name:           user.Name,
-		Email:          user.Email,
-		Bio:            user.Bio,
-		PfpURL:         user.ProfilePicURL,
-		Dweets:         dweets,
-		FollowerCount:  user.FollowerCount,
-		Followers:      mutuals,
-		FollowingCount: user.FollowingCount,
-		CreatedAt:      user.CreatedAt,
-	}
+		Username:        user.Username,
+		Name:            user.Name,
+		Email:           user.Email,
+		Bio:             user.Bio,
+		PfpURL:          user.ProfilePicURL,
+		Dweets:          dweets,
+		Redweets:        redweets,
+		RedweetedDweets: redweeted_dweets,
+		FeedObjects:     feedObjects,
+		LikedDweets:     liked_dweets,
+		FollowerCount:   user.FollowerCount,
+		Followers:       followers,
+		FollowingCount:  user.FollowingCount,
+		Following:       following,
+		CreatedAt:       user.CreatedAt,
+	}, nil
 }
 
 // Format as Dweet
@@ -215,12 +388,13 @@ func NoAuthFormatAsDweetType(dweet *db.DweetModel) DweetType {
 		ReplyCount:      dweet.ReplyCount,
 		ReplyDweets:     reply_dweets,
 		RedweetCount:    dweet.RedweetCount,
+		RedweetUsers:    []BasicUserType{},
 		Media:           dweet.Media,
 	}
 }
 
 // Format as Dweet with users that liked it
-func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) DweetType {
+func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel, redweetUsers []db.UserModel) DweetType {
 	author := FormatAsBasicUserType(dweet.Author())
 
 	reply_id, present := dweet.OriginalReplyID()
@@ -246,6 +420,11 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 		likes = append(likes, FormatAsBasicUserType((&likeUsers[i])))
 	}
 
+	var redweet_users []BasicUserType
+	for i := 0; i < len(redweetUsers); i++ {
+		redweet_users = append(redweet_users, FormatAsBasicUserType((&redweetUsers[i])))
+	}
+
 	return DweetType{
 		DweetBody:       dweet.DweetBody,
 		ID:              dweet.ID,
@@ -261,6 +440,7 @@ func AuthFormatAsDweetType(dweet *db.DweetModel, likeUsers []db.UserModel) Dweet
 		ReplyCount:      dweet.ReplyCount,
 		ReplyDweets:     reply_dweets,
 		RedweetCount:    dweet.RedweetCount,
+		RedweetUsers:    redweet_users,
 		Media:           dweet.Media,
 	}
 }

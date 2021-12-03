@@ -124,11 +124,15 @@ var queryHandler = graphql.NewObject(
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -142,18 +146,20 @@ var queryHandler = graphql.NewObject(
 
 					if isAuth {
 						username, userPresent := params.Args["username"].(string)
-						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
-						if userPresent && numPresent && dweetOffsetPresent {
-							user, err := database.GetUser(username, numDweets, dweetOffset, data["username"].(string))
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if userPresent && objectsToFetchPresent && numPresent && feedObjectsOffsetPresent {
+							user, err := database.GetUser(username, objectsToFetch, numFeedObjects, feedObjectsOffset, data["username"].(string))
 							return user, err
 						}
 					} else {
 						username, userPresent := params.Args["username"].(string)
-						numDweets, numPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
-						if userPresent && numPresent && dweetOffsetPresent {
-							user, err := database.GetUserUnauth(username, numDweets, dweetOffset)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if userPresent && objectsToFetchPresent && numPresent && feedObjectsOffsetPresent {
+							user, err := database.GetUserUnauth(username, objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return user, err
 						}
 					}
@@ -177,11 +183,15 @@ var queryHandler = graphql.NewObject(
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsToFetch": &graphql.ArgumentConfig{
+					"objectsToFetch": &graphql.ArgumentConfig{
+						Type:         graphql.String,
+						DefaultValue: "feed",
+					},
+					"feedObjectsToFetch": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
-					"dweetsOffset": &graphql.ArgumentConfig{
+					"feedObjectsOffset": &graphql.ArgumentConfig{
 						Type:         graphql.Int,
 						DefaultValue: 0,
 					},
@@ -197,20 +207,22 @@ var queryHandler = graphql.NewObject(
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["numberToFetch"].(int)
 						numOffset, numOffsetPresent := params.Args["numberOffset"].(int)
-						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
-						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
-							posts, err := database.SearchUsers(txt, num, numOffset, numDweets, dweetOffset, data["username"].(string))
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							posts, err := database.SearchUsers(txt, num, numOffset, objectsToFetch, numFeedObjects, feedObjectsOffset, data["username"].(string))
 							return posts, err
 						}
 					} else {
 						txt, txtPresent := params.Args["text"].(string)
 						num, numPresent := params.Args["numberToFetch"].(int)
 						numOffset, numOffsetPresent := params.Args["numberOffset"].(int)
-						numDweets, numDweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
-						if txtPresent && numPresent && numOffsetPresent && numDweetsPresent && dweetOffsetPresent {
-							posts, err := database.SearchUsersUnauth(txt, num, numOffset, numDweets, dweetOffset)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if txtPresent && numPresent && numOffsetPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							posts, err := database.SearchUsersUnauth(txt, num, numOffset, objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return posts, err
 						}
 					}
@@ -291,10 +303,11 @@ var queryHandler = graphql.NewObject(
 					if isAuth {
 						numUsers, usersPresent := params.Args["numberToFetch"].(int)
 						numOffset, usersOffsetPresent := params.Args["numberOffset"].(int)
-						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
-						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
-							post, err := database.GetFollowers(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if usersPresent && usersOffsetPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							post, err := database.GetFollowers(data["username"].(string), numUsers, numOffset, objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return post, err
 						}
 					}
@@ -332,10 +345,11 @@ var queryHandler = graphql.NewObject(
 					if isAuth {
 						numUsers, usersPresent := params.Args["numberToFetch"].(int)
 						numOffset, usersOffsetPresent := params.Args["numberOffset"].(int)
-						numDweets, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetsOffset, dweetsOffsetPresent := params.Args["dweetsOffset"].(int)
-						if usersPresent && dweetsPresent && usersOffsetPresent && dweetsOffsetPresent {
-							post, err := database.GetFollowing(data["username"].(string), numUsers, numOffset, numDweets, dweetsOffset)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
+						if usersPresent && usersOffsetPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							post, err := database.GetFollowing(data["username"].(string), numUsers, numOffset, objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return post, err
 						}
 					}
@@ -522,15 +536,16 @@ var mutationHandler = graphql.NewObject(
 					if isAuth {
 						// Make user follow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
-						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
 
 						if username == data["username"].(string) {
 							return nil, errors.New("can't follow self")
 						}
 
-						if userPresent && dweetsPresent && offsetPresent {
-							user, err := database.Follow(username, data["username"].(string), dweetsToFetch, dweetOffset)
+						if userPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							user, err := database.Follow(username, data["username"].(string), objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request: missing argument")
@@ -644,15 +659,16 @@ var mutationHandler = graphql.NewObject(
 					if isAuth {
 						// Make user unfollow the other user, and return formatted
 						username, userPresent := params.Args["username"].(string)
-						dweetsToFetch, numPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, offsetPresent := params.Args["dweetsOffset"].(int)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
 
 						if username == data["username"].(string) {
 							return nil, errors.New("can't unfollow self")
 						}
 
-						if userPresent && numPresent && offsetPresent {
-							user, err := database.Unfollow(username, data["username"].(string), dweetsToFetch, dweetOffset)
+						if userPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent {
+							user, err := database.Unfollow(username, data["username"].(string), objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request: missing argument")
@@ -772,14 +788,15 @@ var mutationHandler = graphql.NewObject(
 						email, emailPresent := params.Args["email"].(string)
 						bio, bioPresent := params.Args["email"].(string)
 						PfpUrl, pfpPresent := params.Args["pfpURL"].(string)
-						dweetsToFetch, dweetsPresent := params.Args["dweetsToFetch"].(int)
-						dweetOffset, dweetOffsetPresent := params.Args["dweetsOffset"].(int)
+						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
+						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
+						feedObjectsOffset, feedObjectsOffsetPresent := params.Args["feedObjectsOffset"].(int)
 						followersToFetch, followersPresent := params.Args["followersToFetch"].(int)
 						followersOffset, followersOffsetPresent := params.Args["followersOffset"].(int)
 						followingToFetch, followingPresent := params.Args["followingToFetch"].(int)
 						followingOffset, followingOffsetPresent := params.Args["followingOffset"].(int)
-						if namePresent && emailPresent && bioPresent && pfpPresent && dweetsPresent && dweetOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
-							user, err := database.UpdateUser(data["username"].(string), name, email, bio, PfpUrl, dweetsToFetch, dweetOffset, followersToFetch, followersOffset, followingToFetch, followingOffset)
+						if namePresent && emailPresent && bioPresent && pfpPresent && objectsToFetchPresent && numFeedObjectsPresent && feedObjectsOffsetPresent && followersPresent && followersOffsetPresent && followingPresent && followingOffsetPresent {
+							user, err := database.UpdateUser(data["username"].(string), name, email, bio, PfpUrl, followersToFetch, followersOffset, followingToFetch, followingOffset, objectsToFetch, numFeedObjects, feedObjectsOffset)
 							return user, err
 						}
 						return nil, errors.New("invalid request: missing argument")

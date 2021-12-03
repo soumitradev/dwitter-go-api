@@ -10,34 +10,35 @@ generator db {
 }
 
 model User {
-    dbID           String    @default(uuid()) @id
+    dbID            String    @default(uuid()) @id
 
-    username       String    @unique @db.VarChar(20)
-    passwordHash   String
+    username        String    @unique @db.VarChar(20)
+    passwordHash    String
 
-    OAuthProvider  String    @default("None")
+    OAuthProvider   String    @default("None")
 
-    name           String    @db.VarChar(80)
+    name            String    @db.VarChar(40)
 
-    email          String    @db.VarChar(100) @unique
+    email           String    @db.VarChar(100) @unique
 
-    bio            String    @db.VarChar(160)
+    bio             String    @db.VarChar(160)
 
-    profilePicURL  String
+    profilePicURL   String
 
-    dweets         Dweet[]   @relation("Dweets")
-    redweets       Redweet[] @relation("Redweeted")
+    dweets          Dweet[]   @relation("Dweets")
+    redweets        Redweet[] @relation("Redweeted")
+    redweetedDweets Dweet[]   @relation("RedweetedDweets")
 
-    likedDweets    Dweet[]   @relation("Likes")
+    likedDweets     Dweet[]   @relation("Likes")
     
-    followerCount  Int       @default(0)
-    followers      User[]    @relation("Follow")
+    followerCount   Int       @default(0)
+    followers       User[]    @relation("Follow")
 
-    followingCount Int       @default(0)
-    following      User[]    @relation("Follow")
+    followingCount  Int       @default(0)
+    following       User[]    @relation("Follow")
 
-    createdAt      DateTime  @default(now())
-    tokenVersion   Int
+    createdAt       DateTime  @default(now())
+    tokenVersion    Int
 }
 
 model Dweet {
@@ -63,6 +64,7 @@ model Dweet {
     
     redweetCount      Int       @default(0)
     redweetDweets     Redweet[] @relation("Redweets")
+    redweetUsers      User[]    @relation("RedweetedDweets")
 
     media             String[]
 }
