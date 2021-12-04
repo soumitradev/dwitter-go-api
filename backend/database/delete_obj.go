@@ -14,7 +14,7 @@ import (
 // Delete a dweet
 func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	err := common.Validate.Var(postID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}
@@ -130,7 +130,7 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 //   }
 func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 	// Validate params
-	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	err := common.Validate.Var(postID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.RedweetType{}, err
 	}

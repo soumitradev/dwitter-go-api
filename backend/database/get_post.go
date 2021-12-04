@@ -12,7 +12,7 @@ import (
 // Get dweet when not authenticated
 func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	err := common.Validate.Var(postID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}
@@ -63,7 +63,7 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 // Get dweet when authenticated
 func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername string) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	err := common.Validate.Var(postID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}

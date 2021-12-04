@@ -474,7 +474,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 // Add a like to a dweet
 func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(likedPostID, "required,alphanum,eq=10")
+	err := common.Validate.Var(likedPostID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}
@@ -664,7 +664,7 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 // Remove a like from a dweet
 func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(postID, "required,alphanum,eq=10")
+	err := common.Validate.Var(postID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}

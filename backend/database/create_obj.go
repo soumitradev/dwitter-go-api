@@ -155,7 +155,7 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 // Create a Reply
 func NewReply(originalPostID string, body string, authorUsername string, mediaLinks []string) (schema.DweetType, error) {
 	// Validate params
-	err := common.Validate.Var(originalPostID, "required,alphanum,eq=10")
+	err := common.Validate.Var(originalPostID, "required,alphanum,len=10")
 	if err != nil {
 		return schema.DweetType{}, err
 	}
