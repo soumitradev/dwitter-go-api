@@ -37,17 +37,23 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch().With(
-				db.User.Following.Fetch(),
+				db.User.Following.Fetch().OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
+				),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			),
 		).Exec(common.BaseCtx)
 	} else {
@@ -55,17 +61,23 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 			db.Dweet.ID.Equals(postID),
 		).With(
 			db.Dweet.Author.Fetch().With(
-				db.User.Following.Fetch(),
+				db.User.Following.Fetch().OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
+				),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 		).Exec(common.BaseCtx)
 	}

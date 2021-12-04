@@ -55,10 +55,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -77,10 +85,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -101,10 +117,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -124,10 +148,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -158,10 +190,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -182,10 +222,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -206,10 +254,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -229,10 +285,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -265,10 +329,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -287,10 +359,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -311,10 +391,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -334,10 +422,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -368,10 +464,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -392,10 +496,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -416,10 +528,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -439,10 +559,18 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+					).OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
 					).Take(numberToFetch).Skip(numOffset),
-					db.User.Following.Fetch(),
+					db.User.Following.Fetch().OrderBy(
+						db.User.FollowerCount.Order(db.DESC),
+					),
 				).Exec(common.BaseCtx)
 
 				users := user.Followers()
@@ -532,8 +660,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -553,8 +685,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -576,8 +712,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -598,8 +738,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -631,8 +775,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -654,8 +802,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -677,8 +829,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -699,8 +855,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					),
 				).Exec(common.BaseCtx)
 
@@ -734,8 +894,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -755,8 +919,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -778,8 +946,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -800,8 +972,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -833,8 +1009,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -856,8 +1036,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -879,8 +1063,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -901,8 +1089,12 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Take(numberToFetch).Skip(numOffset),
 				).Exec(common.BaseCtx)
 
@@ -929,7 +1121,9 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 	userFullFollowing, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).With(
-		db.User.Following.Fetch(),
+		db.User.Following.Fetch().OrderBy(
+			db.User.FollowerCount.Order(db.DESC),
+		),
 	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return []schema.UserType{}, fmt.Errorf("user not found: %v", err)

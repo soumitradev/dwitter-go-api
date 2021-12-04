@@ -80,7 +80,7 @@ func deleteDweet(postID string) (*db.DweetModel, error) {
 		db.Dweet.ID.Equals(postID),
 	).With(
 		db.Dweet.ReplyDweets.Fetch().OrderBy(
-			db.Dweet.PostedAt.Order(db.DESC),
+			db.Dweet.LikeCount.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {

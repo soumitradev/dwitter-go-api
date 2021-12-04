@@ -139,7 +139,7 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 		db.Dweet.ReplyDweets.Fetch().With(
 			db.Dweet.Author.Fetch(),
 		).OrderBy(
-			db.Dweet.PostedAt.Order(db.DESC),
+			db.Dweet.LikeCount.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {
@@ -221,7 +221,7 @@ func NewReply(originalPostID string, body string, authorUsername string, mediaLi
 		db.Dweet.ReplyDweets.Fetch().With(
 			db.Dweet.Author.Fetch(),
 		).OrderBy(
-			db.Dweet.PostedAt.Order(db.DESC),
+			db.Dweet.LikeCount.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {

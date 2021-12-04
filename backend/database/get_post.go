@@ -32,7 +32,7 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -46,7 +46,7 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -86,7 +86,9 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 	viewUser, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(viewerUsername),
 	).With(
-		db.User.Following.Fetch(),
+		db.User.Following.Fetch().OrderBy(
+			db.User.FollowerCount.Order(db.DESC),
+		),
 	).Exec(common.BaseCtx)
 	if err != nil {
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
@@ -105,13 +107,17 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 		).Exec(common.BaseCtx)
 	} else {
 		post, err = common.Client.Dweet.FindUnique(
@@ -121,13 +127,17 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 		).Exec(common.BaseCtx)
 	}
 	if err == db.ErrNotFound {

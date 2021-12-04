@@ -83,10 +83,14 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 		).Update(
 			db.Dweet.DweetBody.Set(body),
 			db.Dweet.Media.Set(mediaLinks),
@@ -103,10 +107,14 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
 			).OrderBy(
-				db.Dweet.PostedAt.Order(db.DESC),
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
-			db.Dweet.LikeUsers.Fetch(),
-			db.Dweet.RedweetUsers.Fetch(),
+			db.Dweet.LikeUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
+			db.Dweet.RedweetUsers.Fetch().OrderBy(
+				db.User.FollowerCount.Order(db.DESC),
+			),
 		).Update(
 			db.Dweet.DweetBody.Set(body),
 			db.Dweet.Media.Set(mediaLinks),
@@ -129,7 +137,9 @@ func UpdateDweet(postID string, username string, body string, mediaLinks []strin
 	user, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).With(
-		db.User.Following.Fetch(),
+		db.User.Following.Fetch().OrderBy(
+			db.User.FollowerCount.Order(db.DESC),
+		),
 	).Exec(common.BaseCtx)
 	if err == db.ErrNotFound {
 		return schema.DweetType{}, fmt.Errorf("user not found: %v", err)
@@ -216,8 +226,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -237,8 +251,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -260,8 +278,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -282,8 +304,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -304,8 +330,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -337,8 +367,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsOffset+feedObjectsToFetch),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -360,8 +394,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -383,8 +421,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -405,8 +447,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -427,8 +473,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -462,8 +512,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -483,8 +537,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -506,8 +564,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -528,8 +590,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -550,8 +616,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -583,8 +653,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -606,8 +680,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -629,8 +707,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -651,8 +733,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -673,8 +759,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch(),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -711,8 +801,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -732,8 +826,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -755,8 +853,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -777,8 +879,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -799,8 +905,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -832,8 +942,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -855,8 +969,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -878,8 +996,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -900,8 +1022,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -922,8 +1048,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch(),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -957,8 +1087,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -978,8 +1112,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1001,8 +1139,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1023,8 +1165,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1045,8 +1191,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1078,8 +1228,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1101,8 +1255,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1124,8 +1282,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1146,8 +1308,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
@@ -1168,8 +1334,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						).OrderBy(
 							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
-						db.User.Followers.Fetch().Take(followersToFetch).Skip(followersOffset),
-						db.User.Following.Fetch().Take(followingToFetch).Skip(followingOffset),
+						db.User.Followers.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followersToFetch).Skip(followersOffset),
+						db.User.Following.Fetch().OrderBy(
+							db.User.FollowerCount.Order(db.DESC),
+						).Take(followingToFetch).Skip(followingOffset),
 					).Update(
 						db.User.Name.Set(name),
 						db.User.Email.Set(email),
