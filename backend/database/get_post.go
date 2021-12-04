@@ -31,6 +31,8 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -43,6 +45,8 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -56,7 +60,7 @@ func GetPostUnauth(postID string, repliesToFetch int, replyOffset int) (schema.D
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	npost := schema.NoAuthFormatAsDweetType(post)
+	npost := schema.FormatAsDweetType(post, []db.UserModel{}, []db.UserModel{})
 	return npost, err
 }
 
@@ -100,6 +104,8 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -114,6 +120,8 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 			db.Dweet.Author.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 			db.Dweet.ReplyTo.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -162,6 +170,6 @@ func GetPost(postID string, repliesToFetch int, replyOffset int, viewerUsername 
 	}
 
 	// Send back the dweet requested, along with like_users
-	npost := schema.AuthFormatAsDweetType(post, mutualLikes, mutualRedweets)
+	npost := schema.FormatAsDweetType(post, mutualLikes, mutualRedweets)
 	return npost, err
 }

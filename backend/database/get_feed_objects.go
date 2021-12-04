@@ -42,9 +42,13 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.Dweet.LikeUsers.Fetch(),
 					db.Dweet.RedweetUsers.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
@@ -59,9 +63,13 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(repliesToFetch).Skip(replyOffset),
 					db.Dweet.LikeUsers.Fetch(),
 					db.Dweet.RedweetUsers.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
@@ -78,9 +86,13 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.Dweet.LikeUsers.Fetch(),
 					db.Dweet.RedweetUsers.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
@@ -95,9 +107,13 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 					),
 					db.Dweet.ReplyDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(repliesToFetch).Skip(replyOffset),
 					db.Dweet.LikeUsers.Fetch(),
 					db.Dweet.RedweetUsers.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset),
 				db.User.Following.Fetch(),
 			).Exec(common.BaseCtx)
@@ -123,7 +139,7 @@ func GetLikedDweets(userID string, numberToFetch int, numOffset int, repliesToFe
 		mutualLikes := util.HashIntersectUsers(likes, knownUsers)
 		mutualRedweets := util.HashIntersectUsers(redweetUsers, knownUsers)
 
-		liked = append(liked, schema.AuthFormatAsDweetType(&dweet, mutualLikes, mutualRedweets))
+		liked = append(liked, schema.FormatAsDweetType(&dweet, mutualLikes, mutualRedweets))
 	}
 	return liked, err
 }
@@ -148,6 +164,8 @@ func GetFeed(username string) ([]interface{}, error) {
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
@@ -203,7 +221,7 @@ func GetFeed(username string) ([]interface{}, error) {
 		if dweet, ok := post.(db.DweetModel); ok {
 			likes := util.HashIntersectUsers(dweet.LikeUsers(), knownUsers)
 			redweets := util.HashIntersectUsers(dweet.RedweetUsers(), knownUsers)
-			npost = schema.AuthFormatAsDweetType(&dweet, likes, redweets)
+			npost = schema.FormatAsDweetType(&dweet, likes, redweets)
 		}
 		if redweet, ok := post.(db.RedweetModel); ok {
 			npost = schema.FormatAsRedweetType(&redweet)

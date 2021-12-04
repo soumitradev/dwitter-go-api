@@ -39,11 +39,17 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -57,7 +63,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -73,7 +83,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -88,7 +102,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -108,11 +126,17 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -128,7 +152,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -144,7 +172,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -159,7 +191,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -181,11 +217,17 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -199,7 +241,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -215,7 +261,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -230,7 +280,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -250,11 +304,17 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -270,7 +330,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -286,7 +350,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -301,7 +369,11 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -380,13 +452,19 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -400,9 +478,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -418,9 +500,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -435,9 +521,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -457,13 +547,19 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -479,9 +575,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -497,9 +597,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -514,9 +618,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -538,13 +646,19 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -558,9 +672,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -576,9 +694,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -593,9 +715,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -615,13 +741,19 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -637,9 +769,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -655,9 +791,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {
@@ -672,9 +812,13 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
+				).OrderBy(
+					db.User.FollowerCount.Order(db.DESC),
 				).Take(numberToFetch).Skip(numOffset).Exec(common.BaseCtx)
 
 				for index, user := range users {

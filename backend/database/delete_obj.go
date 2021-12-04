@@ -46,6 +46,8 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 			db.Dweet.RedweetUsers.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 		).Exec(common.BaseCtx)
 	} else {
@@ -62,6 +64,8 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 			db.Dweet.RedweetUsers.Fetch(),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			).Take(repliesToFetch).Skip(replyOffset),
 		).Exec(common.BaseCtx)
 	}
@@ -100,7 +104,7 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 		mutualLikes := util.HashIntersectUsers(deleted.LikeUsers(), knownUsers)
 		mutualRedweets := util.HashIntersectUsers(deleted.RedweetUsers(), knownUsers)
 
-		formatted := schema.AuthFormatAsDweetType(deleted, mutualLikes, mutualRedweets)
+		formatted := schema.FormatAsDweetType(deleted, mutualLikes, mutualRedweets)
 		return formatted, err
 	}
 

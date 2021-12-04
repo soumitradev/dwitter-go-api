@@ -53,7 +53,7 @@ func SignUpUser(username string, password string, name string, bio string, email
 	_, err2 := common.Client.User.FindUnique(
 		db.User.Email.Equals(email),
 	).Exec(common.BaseCtx)
-	if (err1 == db.ErrNotFound) || (err2 == db.ErrNotFound) {
+	if (err1 == db.ErrNotFound) && (err2 == db.ErrNotFound) {
 		// Create user if no such user exists
 		createdUser, err := common.Client.User.CreateOne(
 			db.User.Username.Set(username),
@@ -68,6 +68,8 @@ func SignUpUser(username string, password string, name string, bio string, email
 		).With(
 			db.User.Dweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 		).Exec(common.BaseCtx)
 
@@ -136,6 +138,8 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 		),
 		db.Dweet.ReplyDweets.Fetch().With(
 			db.Dweet.Author.Fetch(),
+		).OrderBy(
+			db.Dweet.PostedAt.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {
@@ -148,7 +152,7 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 	}
 
 	// Format and return
-	post := schema.AuthFormatAsDweetType(createdPost, []db.UserModel{}, []db.UserModel{})
+	post := schema.FormatAsDweetType(createdPost, []db.UserModel{}, []db.UserModel{})
 	return post, err
 }
 
@@ -216,6 +220,8 @@ func NewReply(originalPostID string, body string, authorUsername string, mediaLi
 		),
 		db.Dweet.ReplyDweets.Fetch().With(
 			db.Dweet.Author.Fetch(),
+		).OrderBy(
+			db.Dweet.PostedAt.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {
@@ -241,7 +247,7 @@ func NewReply(originalPostID string, body string, authorUsername string, mediaLi
 		return schema.DweetType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	post := schema.AuthFormatAsDweetType(createdReply, []db.UserModel{}, []db.UserModel{})
+	post := schema.FormatAsDweetType(createdReply, []db.UserModel{}, []db.UserModel{})
 	return post, err
 }
 

@@ -64,6 +64,8 @@ func deleteDweet(postID string) (*db.DweetModel, error) {
 	).With(
 		db.Dweet.RedweetDweets.Fetch().With(
 			db.Redweet.Author.Fetch(),
+		).OrderBy(
+			db.Redweet.RedweetTime.Order(db.DESC),
 		),
 	).Exec(common.BaseCtx)
 	if err != nil {
@@ -77,7 +79,9 @@ func deleteDweet(postID string) (*db.DweetModel, error) {
 	dweet, err = common.Client.Dweet.FindUnique(
 		db.Dweet.ID.Equals(postID),
 	).With(
-		db.Dweet.ReplyDweets.Fetch(),
+		db.Dweet.ReplyDweets.Fetch().OrderBy(
+			db.Dweet.PostedAt.Order(db.DESC),
+		),
 	).Exec(common.BaseCtx)
 	if err != nil {
 		return nil, err

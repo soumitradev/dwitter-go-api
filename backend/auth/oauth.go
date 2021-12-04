@@ -167,6 +167,8 @@ func OAuth2callbackHandler(w http.ResponseWriter, r *http.Request) {
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 				).Exec(common.BaseCtx)
 

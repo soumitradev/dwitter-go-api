@@ -46,10 +46,14 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -70,6 +74,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -92,6 +98,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -113,6 +121,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -139,10 +149,14 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -165,6 +179,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -187,6 +203,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -208,6 +226,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -236,10 +256,14 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -260,6 +284,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -282,6 +308,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -303,6 +331,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -329,10 +359,14 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -355,6 +389,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -377,6 +413,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -398,6 +436,8 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Followers.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -483,10 +523,14 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -506,6 +550,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -527,6 +573,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -547,6 +595,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -572,10 +622,14 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -597,6 +651,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -618,6 +674,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -638,6 +696,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -665,10 +725,14 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -688,6 +752,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -709,6 +775,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -729,6 +797,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -754,10 +824,14 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch+feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -779,6 +853,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.Dweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -800,6 +876,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 						db.User.Redweets.Fetch().With(
 							db.Redweet.Author.Fetch(),
 							db.Redweet.RedweetOf.Fetch(),
+						).OrderBy(
+							db.Redweet.RedweetTime.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),
@@ -820,6 +898,8 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 					db.User.Following.Fetch().With(
 						db.User.RedweetedDweets.Fetch().With(
 							db.Dweet.Author.Fetch(),
+						).OrderBy(
+							db.Dweet.PostedAt.Order(db.DESC),
 						).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 						db.User.Followers.Fetch(),
 						db.User.Following.Fetch(),

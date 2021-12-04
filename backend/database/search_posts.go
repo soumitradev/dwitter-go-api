@@ -38,10 +38,14 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
@@ -50,10 +54,14 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		}
 	} else {
@@ -64,10 +72,14 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
@@ -76,10 +88,14 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		}
 	}
@@ -94,7 +110,7 @@ func SearchPostsUnauth(query string, numberToFetch int, numOffset int, repliesTo
 	// Format
 	var formatted []schema.DweetType
 	for _, post := range posts {
-		npost := schema.NoAuthFormatAsDweetType(&post)
+		npost := schema.FormatAsDweetType(&post, []db.UserModel{}, []db.UserModel{})
 		formatted = append(formatted, npost)
 	}
 	return formatted, err
@@ -146,12 +162,16 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
@@ -160,12 +180,16 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(repliesToFetch),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		}
 	} else {
@@ -176,12 +200,16 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		} else {
 			posts, err = common.Client.Dweet.FindMany(
@@ -190,12 +218,16 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 				db.Dweet.Author.Fetch(),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(repliesToFetch),
 				db.Dweet.ReplyTo.Fetch().With(
 					db.Dweet.Author.Fetch(),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
+			).OrderBy(
+				db.Dweet.LikeCount.Order(db.DESC),
 			).Exec(common.BaseCtx)
 		}
 	}
@@ -242,7 +274,7 @@ func SearchPosts(query string, numberToFetch int, numOffset int, repliesToFetch 
 		}
 
 		// Send back the dweet requested, along with like_users
-		npost := schema.AuthFormatAsDweetType(&post, mutualLikes, mutualRedweets)
+		npost := schema.FormatAsDweetType(&post, mutualLikes, mutualRedweets)
 		formatted = append(formatted, npost)
 	}
 

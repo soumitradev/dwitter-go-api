@@ -60,10 +60,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -79,6 +83,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -95,6 +101,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -110,6 +118,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -130,10 +140,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -150,6 +164,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -166,6 +182,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -181,6 +199,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -217,13 +237,13 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 		knownUsers := authenticatedUser.Following()
 		knownUsers = append(knownUsers, *authenticatedUser)
 
-		followers := personBeingFollowed.Followers()
-		following := personBeingFollowed.Following()
+		followers := user.Followers()
+		following := user.Following()
 
 		knownFollowers := util.HashIntersectUsers(followers, knownUsers)
 		knownFollowing := util.HashIntersectUsers(following, knownUsers)
 
-		formatted, err := schema.FormatAsUserType(personBeingFollowed, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
 		return formatted, err
 	}
 
@@ -238,18 +258,22 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -263,12 +287,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -286,12 +312,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -306,12 +334,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -331,18 +361,22 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -358,12 +392,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -381,12 +417,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -401,12 +439,14 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).With(
 				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Increment(1),
-				db.User.Following.Link(
+				db.User.Followers.Link(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -447,8 +487,8 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 	knownUsers := authenticatedUser.Following()
 	knownUsers = append(knownUsers, *authenticatedUser)
 
-	followers := personBeingFollowed.Followers()
-	following := personBeingFollowed.Following()
+	followers := user.Followers()
+	following := user.Following()
 
 	// Check if user iss in followers list
 	found := false
@@ -467,7 +507,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 	knownFollowers := util.HashIntersectUsers(followers, knownUsers)
 	knownFollowing := util.HashIntersectUsers(following, knownUsers)
 
-	formatted, err := schema.FormatAsUserType(personBeingFollowed, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+	formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
 	return formatted, err
 }
 
@@ -516,6 +556,8 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 				),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
@@ -536,6 +578,8 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 				),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
@@ -567,7 +611,7 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 		mutualLikes := util.HashIntersectUsers(likedPost.LikeUsers(), knownUsers)
 		mutualRedweets := util.HashIntersectUsers(likedPost.RedweetUsers(), knownUsers)
 
-		formatted := schema.AuthFormatAsDweetType(likedPost, mutualLikes, mutualRedweets)
+		formatted := schema.FormatAsDweetType(likedPost, mutualLikes, mutualRedweets)
 		return formatted, err
 	}
 
@@ -584,6 +628,8 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.RedweetUsers.Fetch(),
@@ -609,6 +655,8 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			).Take(repliesToFetch),
 			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.RedweetUsers.Fetch(),
@@ -656,7 +704,7 @@ func Like(likedPostID string, userID string, repliesToFetch int, replyOffset int
 	mutualLikes := util.HashIntersectUsers(likes, knownUsers)
 	mutualRedweets := util.HashIntersectUsers(redweets, knownUsers)
 
-	formatted := schema.AuthFormatAsDweetType(like, mutualLikes, mutualRedweets)
+	formatted := schema.FormatAsDweetType(like, mutualLikes, mutualRedweets)
 
 	return formatted, err
 }
@@ -706,6 +754,8 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 				),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
@@ -726,6 +776,8 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 				),
 				db.Dweet.ReplyDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(repliesToFetch).Skip(replyOffset),
 				db.Dweet.LikeUsers.Fetch(),
 				db.Dweet.RedweetUsers.Fetch(),
@@ -757,7 +809,7 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 		mutualLikes := util.HashIntersectUsers(post.LikeUsers(), knownUsers)
 		mutualRedweets := util.HashIntersectUsers(post.RedweetUsers(), knownUsers)
 
-		formatted := schema.AuthFormatAsDweetType(post, mutualLikes, mutualRedweets)
+		formatted := schema.FormatAsDweetType(post, mutualLikes, mutualRedweets)
 
 		return formatted, err
 	}
@@ -774,6 +826,8 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			),
 			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.RedweetUsers.Fetch(),
@@ -793,6 +847,8 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 			),
 			db.Dweet.ReplyDweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
+			).OrderBy(
+				db.Dweet.PostedAt.Order(db.DESC),
 			).Take(repliesToFetch),
 			db.Dweet.LikeUsers.Fetch(),
 			db.Dweet.RedweetUsers.Fetch(),
@@ -837,7 +893,7 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 		}
 	}
 
-	formatted := schema.AuthFormatAsDweetType(post, mutualLikesRemoved, mutualRedweets)
+	formatted := schema.FormatAsDweetType(post, mutualLikesRemoved, mutualRedweets)
 
 	return formatted, err
 }
@@ -866,7 +922,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 	}
 
 	// Check if user doesn't follow this user in the first place
-	personBeingFollowed, err := common.Client.User.FindUnique(
+	personBeingUnfollowed, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(followedID),
 	).With(
 		db.User.Followers.Fetch(
@@ -884,7 +940,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 	var feedObjectList []interface{}
 
 	// If yes, then skip unfollowing the user
-	if len(personBeingFollowed.Followers()) == 0 {
+	if len(personBeingUnfollowed.Followers()) == 0 {
 		if feedObjectsToFetch < 0 {
 			switch objectsToFetch {
 			case "feed":
@@ -893,10 +949,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -911,6 +971,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -927,6 +989,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -942,6 +1006,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -962,10 +1028,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch+feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -982,6 +1052,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.Dweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -998,6 +1070,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 					db.User.Redweets.Fetch().With(
 						db.Redweet.Author.Fetch(),
 						db.Redweet.RedweetOf.Fetch(),
+					).OrderBy(
+						db.Redweet.RedweetTime.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -1013,6 +1087,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).With(
 					db.User.RedweetedDweets.Fetch().With(
 						db.Dweet.Author.Fetch(),
+					).OrderBy(
+						db.Dweet.PostedAt.Order(db.DESC),
 					).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 					db.User.Followers.Fetch(),
 					db.User.Following.Fetch(),
@@ -1049,10 +1125,10 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 		knownUsers = append(knownUsers, *authenticatedUser)
 
 		// Find known people that liked the dweet
-		knownFollowers := util.HashIntersectUsers(personBeingFollowed.Followers(), knownUsers)
-		knownFollowing := util.HashIntersectUsers(personBeingFollowed.Following(), knownUsers)
+		knownFollowers := util.HashIntersectUsers(user.Followers(), knownUsers)
+		knownFollowing := util.HashIntersectUsers(user.Following(), knownUsers)
 
-		formatted, err := schema.FormatAsUserType(personBeingFollowed, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
 		return formatted, err
 	}
 
@@ -1066,18 +1142,22 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1091,12 +1171,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1114,12 +1196,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1134,12 +1218,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1159,18 +1245,22 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Redweets.Fetch().With(
 					db.Redweet.Author.Fetch(),
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				).Take(feedObjectsToFetch+feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1186,12 +1276,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.Dweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1209,12 +1301,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 					db.Redweet.RedweetOf.Fetch().With(
 						db.Dweet.Author.Fetch(),
 					),
+				).OrderBy(
+					db.Redweet.RedweetTime.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1229,12 +1323,14 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).With(
 				db.User.RedweetedDweets.Fetch().With(
 					db.Dweet.Author.Fetch(),
+				).OrderBy(
+					db.Dweet.PostedAt.Order(db.DESC),
 				).Take(feedObjectsToFetch).Skip(feedObjectsOffset),
 				db.User.Followers.Fetch(),
 				db.User.Following.Fetch(),
 			).Update(
 				db.User.FollowerCount.Decrement(1),
-				db.User.Following.Unlink(
+				db.User.Followers.Unlink(
 					db.User.Username.Equals(followerID),
 				),
 			).Exec(common.BaseCtx)
@@ -1276,8 +1372,8 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 	knownUsers = append(knownUsers, *authenticatedUser)
 
 	// Find known people that liked the dweet
-	knownFollowers := util.HashIntersectUsers(personBeingFollowed.Followers(), knownUsers)
-	knownFollowing := util.HashIntersectUsers(personBeingFollowed.Following(), knownUsers)
+	knownFollowers := util.HashIntersectUsers(user.Followers(), knownUsers)
+	knownFollowing := util.HashIntersectUsers(user.Following(), knownUsers)
 
 	var knownFollowersRemoved []db.UserModel
 
@@ -1287,6 +1383,6 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 		}
 	}
 
-	formatted, err := schema.FormatAsUserType(personBeingFollowed, knownFollowersRemoved, knownFollowing, objectsToFetch, feedObjectList)
+	formatted, err := schema.FormatAsUserType(user, knownFollowersRemoved, knownFollowing, objectsToFetch, feedObjectList)
 	return formatted, err
 }
