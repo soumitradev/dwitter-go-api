@@ -3,8 +3,7 @@ fragment BasicFeedObjectFrag on BasicFeedObject {
   ...RedweetFrag
 }
 
-fragment FeedObjectFrag on BasicFeedObject {
-  __typename
+fragment FeedObjectFrag on FeedObject {
   ...DweetFrag
   ...RedweetFrag
 }
@@ -21,11 +20,11 @@ fragment UserFrag on User {
   redweets {
     ...RedweetFrag
   }
-  feedObjects {
-    ...BasicFeedObjectFrag
-  }
   redweetedDweets {
     ...BasicDweetFrag
+  }
+  feedObjects {
+    ...BasicFeedObjectFrag
   }
   likedDweets {
     ...BasicDweetFrag
@@ -75,6 +74,9 @@ fragment DweetFrag on Dweet {
     ...BasicDweetFrag
   }
   redweetCount
+  redweetUsers {
+    ...BasicUserFrag
+  }
   media
 }
 

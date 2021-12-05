@@ -1,3 +1,5 @@
+import basicUserModel from './basicUserModel';
+
 const Joi = require('joi');
 
 const basicDweetSchema = Joi.object({
@@ -10,7 +12,7 @@ const basicDweetSchema = Joi.object({
     .length(10)
     .required(),
 
-  // author: Joi.ref('password'),
+  author: basicUserModel,
 
   authorID: Joi.string()
     .alphanum()
@@ -45,6 +47,28 @@ const basicDweetSchema = Joi.object({
   media: Joi.array()
     .required()
     .items(Joi.string()),
-});
+}).required();
 
-export default basicDweetSchema
+class basicDweetModel {
+  constructor(dweetBody, id, author, authorID, postedAt, lastUpdatedAt, likeCount, isReply, originalReplyID, replyCount, redweetCount, media) {
+    this.dweetBody = dweetBody;
+    this.id = id;
+    this.author = author;
+    this.authorID = authorID;
+    this.postedAt = postedAt;
+    this.lastUpdatedAt = lastUpdatedAt;
+    this.likeCount = likeCount;
+    this.isReply = isReply;
+    this.originalReplyID = originalReplyID;
+    this.replyCount = replyCount;
+    this.redweetCount = redweetCount;
+    this.media = media;
+
+    var res = basicDweetSchema.validate(this);
+    if (res.error) {
+      throw Error(`basicDweetModel schema validation failed: ${res.error}`);
+    }
+  }
+}
+
+export default { basicDweetModel, basicDweetSchema }

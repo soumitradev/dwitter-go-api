@@ -18,3 +18,6 @@ kill:
 
 frontend:
 	cd frontend && npm run build
+
+serve:
+	cd frontend && npm run serve

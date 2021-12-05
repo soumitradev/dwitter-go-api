@@ -55,13 +55,39 @@ const dweetSchema = Joi.object({
     .integer()
     .required(),
 
-  redweetDweets: Joi.array()
+  redweetUsers: Joi.array()
     .required()
-    .items(basicDweetSchema),
+    .items(basicUserSchema),
 
   media: Joi.array()
     .required()
     .items(Joi.string()),
 });
 
-export default dweetSchema
+class dweetModel {
+  constructor(dweetBody, id, author, authorID, postedAt, lastUpdatedAt, likeCount, likeUsers, isReply, originalReplyID, replyTo, replyCount, replyDweets, redweetCount, redweetUsers, media) {
+    this.dweetBody = dweetBody;
+    this.id = id;
+    this.author = author;
+    this.authorID = authorID;
+    this.postedAt = postedAt;
+    this.lastUpdatedAt = lastUpdatedAt;
+    this.likeCount = likeCount;
+    this.likeUsers = likeUsers;
+    this.isReply = isReply;
+    this.originalReplyID = originalReplyID;
+    this.replyTo = replyTo;
+    this.replyCount = replyCount;
+    this.replyDweets = replyDweets;
+    this.redweetCount = redweetCount;
+    this.redweetUsers = redweetUsers;
+    this.media = media;
+
+    var res = dweetSchema.validate(this);
+    if (res.error) {
+      throw Error(`dweetModel schema validation failed: ${res.error}`);
+    }
+  }
+}
+
+export default { dweetModel, dweetSchema }

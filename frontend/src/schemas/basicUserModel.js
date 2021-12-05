@@ -17,10 +17,10 @@ const basicUserSchema = Joi.object({
   bio: Joi.string()
     .max(160)
     .required(),
-  
+
   pfpURL: Joi.string()
     .required(),
-  
+
   followerCount: Joi.number()
     .integer()
     .required(),
@@ -31,6 +31,24 @@ const basicUserSchema = Joi.object({
 
   createdAt: Joi.date()
     .required(),
-});
+}).required();
 
-export default basicUserSchema
+class basicUserModel {
+  constructor(username, name, email, bio, pfpURL, followerCount, followingCount, createdAt) {
+    this.username = username;
+    this.name = name;
+    this.email = email;
+    this.bio = bio;
+    this.pfpURL = pfpURL;
+    this.followerCount = followerCount;
+    this.followingCount = followingCount;
+    this.createdAt = createdAt;
+
+    var res = basicUserSchema.validate(this);
+    if (res.error) {
+      throw Error(`basicUserModel schema validation failed: ${res.error}`);
+    }
+  }
+}
+
+export default { basicUserModel, basicUserSchema }
