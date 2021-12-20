@@ -391,7 +391,7 @@ func SearchUsersUnauth(query string, numberToFetch int, numOffset int, objectsTo
 	var formatted []schema.UserType
 
 	for userIndex, user := range users {
-		nuser, err := schema.FormatAsUserType(&user, []db.UserModel{}, []db.UserModel{}, objectsToFetch, feedObjectList[userIndex])
+		nuser, err := schema.FormatAsUserType(&user, []db.UserModel{}, []db.UserModel{}, objectsToFetch, feedObjectList[userIndex], false)
 		if err != nil {
 			return []schema.UserType{}, nil
 		}
@@ -902,22 +902,25 @@ func SearchUsers(query string, numberToFetch int, numOffset int, objectsToFetch 
 	}
 
 	var formatted []schema.UserType
+	var showEmail bool
 
 	for userIndex, user := range users {
 		if viewerUsername == user.Username {
 			alsoFollowedBy[userIndex] = append(alsoFollowedBy[userIndex], user.Followers()...)
 			alsoFollowing[userIndex] = append(alsoFollowing[userIndex], user.Following()...)
+			showEmail = true
 		} else {
 			usersFollowed := append(viewUser.Following(), *viewUser)
 
 			// Get mutuals
 			followers := user.Followers()
 			following := user.Following()
+			showEmail = false
 
 			alsoFollowedBy[userIndex] = append(alsoFollowedBy[userIndex], util.HashIntersectUsers(followers, usersFollowed)...)
 			alsoFollowing[userIndex] = append(alsoFollowedBy[userIndex], util.HashIntersectUsers(following, usersFollowed)...)
 		}
-		nuser, err := schema.FormatAsUserType(&user, alsoFollowedBy[userIndex], alsoFollowing[userIndex], objectsToFetch, feedObjectList[userIndex])
+		nuser, err := schema.FormatAsUserType(&user, alsoFollowedBy[userIndex], alsoFollowing[userIndex], objectsToFetch, feedObjectList[userIndex], showEmail)
 		if err != nil {
 			return []schema.UserType{}, nil
 		}

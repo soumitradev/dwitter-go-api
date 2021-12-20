@@ -96,7 +96,8 @@ func FormatAsBasicUserType(user *db.UserModel) BasicUserType {
 }
 
 // Format as User
-func FormatAsUserType(user *db.UserModel, alsoFollowedBy []db.UserModel, alsoFollowing []db.UserModel, objectsToFetch string, objectList []interface{}) (UserType, error) {
+func FormatAsUserType(user *db.UserModel, alsoFollowedBy []db.UserModel, alsoFollowing []db.UserModel, objectsToFetch string, objectList []interface{}, showEmail bool) (UserType, error) {
+	var email string
 	var feedObjects []interface{}
 	var dweets []BasicDweetType
 	var redweets []RedweetType
@@ -165,10 +166,16 @@ func FormatAsUserType(user *db.UserModel, alsoFollowedBy []db.UserModel, alsoFol
 		following = append(following, FormatAsBasicUserType(&alsoFollowing[i]))
 	}
 
+	if showEmail {
+		email = user.Email
+	} else {
+		email = ""
+	}
+
 	return UserType{
 		Username:        user.Username,
 		Name:            user.Name,
-		Email:           user.Email,
+		Email:           email,
 		Bio:             user.Bio,
 		PfpURL:          user.ProfilePicURL,
 		Dweets:          dweets,

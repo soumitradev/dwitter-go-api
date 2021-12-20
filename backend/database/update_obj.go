@@ -1365,6 +1365,6 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
-	nuser, err := schema.FormatAsUserType(user, user.Followers(), user.Following(), objectsToFetch, feedObjectList)
+	nuser, err := schema.FormatAsUserType(user, user.Followers(), user.Following(), objectsToFetch, feedObjectList, true)
 	return nuser, err
 }

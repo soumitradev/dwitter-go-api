@@ -77,7 +77,7 @@ func SignUpUser(username string, password string, name string, bio string, email
 			return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
 
-		nuser, err := schema.FormatAsUserType(createdUser, []db.UserModel{}, []db.UserModel{}, "", []interface{}{})
+		nuser, err := schema.FormatAsUserType(createdUser, []db.UserModel{}, []db.UserModel{}, "", []interface{}{}, true)
 		return nuser, err
 	} else {
 		return schema.UserType{}, errors.New("username/email already taken")

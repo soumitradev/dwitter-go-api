@@ -277,7 +277,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 		knownFollowers := util.HashIntersectUsers(followers, knownUsers)
 		knownFollowing := util.HashIntersectUsers(following, knownUsers)
 
-		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList, false)
 		return formatted, err
 	}
 
@@ -575,7 +575,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 	knownFollowers := util.HashIntersectUsers(followers, knownUsers)
 	knownFollowing := util.HashIntersectUsers(following, knownUsers)
 
-	formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+	formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList, false)
 	return formatted, err
 }
 
@@ -1270,7 +1270,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 		knownFollowers := util.HashIntersectUsers(user.Followers(), knownUsers)
 		knownFollowing := util.HashIntersectUsers(user.Following(), knownUsers)
 
-		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList)
+		formatted, err := schema.FormatAsUserType(user, knownFollowers, knownFollowing, objectsToFetch, feedObjectList, false)
 		return formatted, err
 	}
 
@@ -1559,6 +1559,6 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 		}
 	}
 
-	formatted, err := schema.FormatAsUserType(user, knownFollowersRemoved, knownFollowing, objectsToFetch, feedObjectList)
+	formatted, err := schema.FormatAsUserType(user, knownFollowersRemoved, knownFollowing, objectsToFetch, feedObjectList, false)
 	return formatted, err
 }

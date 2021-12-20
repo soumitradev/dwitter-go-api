@@ -10,7 +10,7 @@ import (
 	"github.com/soumitradev/Dwitter/backend/util"
 )
 
-// Get user when authenticated
+// Get user when not authenticated
 func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch int, feedObjectsOffset int) (schema.UserType, error) {
 	// Validate params
 	err := common.Validate.Var(username, "required,alphanum,lte=20,gt=0")
@@ -238,7 +238,7 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 	}
 
 	// Send back the user requested, along with mutuals in the followers field
-	nuser, err := schema.FormatAsUserType(user, []db.UserModel{}, []db.UserModel{}, objectsToFetch, feedObjectList)
+	nuser, err := schema.FormatAsUserType(user, []db.UserModel{}, []db.UserModel{}, objectsToFetch, feedObjectList, false)
 	return nuser, err
 }
 
@@ -543,21 +543,25 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
+	var showEmail bool
+
 	if viewerUsername == username {
 		alsoFollowedBy = user.Followers()
 		alsoFollowing = user.Following()
+		showEmail = true
 	} else {
 		usersFollowed := append(viewUser.Following(), *viewUser)
 
 		// Get mutuals
 		followers := user.Followers()
 		following := user.Following()
+		showEmail = false
 
 		alsoFollowedBy = util.HashIntersectUsers(followers, usersFollowed)
 		alsoFollowing = util.HashIntersectUsers(following, usersFollowed)
 	}
 
 	// Send back the user requested, along with mutuals in the followers field
-	nuser, err := schema.FormatAsUserType(user, alsoFollowedBy, alsoFollowing, objectsToFetch, feedObjectList)
+	nuser, err := schema.FormatAsUserType(user, alsoFollowedBy, alsoFollowing, objectsToFetch, feedObjectList, showEmail)
 	return nuser, err
 }

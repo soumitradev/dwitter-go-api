@@ -605,7 +605,7 @@ func GetFollowers(username string, numberToFetch int, numOffset int, objectsToFe
 		mutualFollowers := util.HashIntersectUsers(followerFollowers, knownUsers)
 		mutualFollowing := util.HashIntersectUsers(followerFollowing, knownUsers)
 
-		formatted, err := schema.FormatAsUserType(&follower, mutualFollowing, mutualFollowers, objectsToFetch, feedObjectList[followerIndex])
+		formatted, err := schema.FormatAsUserType(&follower, mutualFollowing, mutualFollowers, objectsToFetch, feedObjectList[followerIndex], false)
 		if err != nil {
 			return []schema.UserType{}, err
 		}
@@ -1144,7 +1144,7 @@ func GetFollowing(username string, numberToFetch int, numOffset int, objectsToFe
 		mutualFollowers := util.HashIntersectUsers(followerFollowers, knownUsers)
 		mutualFollowing := util.HashIntersectUsers(followerFollowing, knownUsers)
 
-		formatted, err := schema.FormatAsUserType(&followed, mutualFollowers, mutualFollowing, objectsToFetch, feedObjectList[followedIndex])
+		formatted, err := schema.FormatAsUserType(&followed, mutualFollowers, mutualFollowing, objectsToFetch, feedObjectList[followedIndex], false)
 		if err != nil {
 			return []schema.UserType{}, err
 		}
