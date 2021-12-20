@@ -1,4 +1,9 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode",
-    "editor.tabSize": 2
+  "makefile.extensionOutputFolder": "./.vscode",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "[vue]": {
+    "editor.defaultFormatter": "johnsoncodehk.volar"
+  }
 }

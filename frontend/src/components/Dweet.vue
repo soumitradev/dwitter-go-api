@@ -5,7 +5,7 @@
     <div>
       <div
         v-if="likeUsers.length > 0"
-        class="text-left text-sm flex flex-col mb-1"
+        class="text-left text-sm flex flex-col mb-1 text-neutralVariant-50"
       >
         <div class="flex flex-row mb-1">
           <svg
@@ -23,19 +23,39 @@
           <span>{{ overflowNames(likeUsers) }} liked</span>
         </div>
       </div>
+      <div
+        v-if="redweetUsers.length > 0"
+        class="text-left text-sm flex flex-col mb-2 text-neutralVariant-50"
+      >
+        <div class="flex flex-row mb-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-2"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ overflowNames(redweetUsers) }} redweeted</span>
+        </div>
+      </div>
       <div class="flex justify-between">
         <div class="flex flex-row">
           <img :src="author.pfpURL" class="w-12 h-12 rounded-full" />
           <div class="flex flex-col ml-4 hover:underline">
-            <span class="text-left font-bold">{{ author.name }}</span>
-            <span class="text-left">@{{ author.username }}</span>
+            <span class="text-left font-bold text-neutral-10">{{ author.name }}</span>
+            <span class="text-left text-neutralVariant-50">@{{ author.username }}</span>
           </div>
         </div>
         <div>
           <Menu as="div" class="relative inline-block text-left">
             <div>
               <MenuButton
-                class="h-10 w-10 inline-flex justify-center content-center text-sm rounded-full font-medium text-neutral-10 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-neutralVariant-50 focus-visible:ring-opacity-75"
+                class="h-10 w-10 inline-flex justify-center content-center text-sm rounded-full font-medium text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-neutralVariant-50 focus-visible:ring-opacity-75"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -62,10 +82,7 @@
                 class="absolute right-0 w-56 mt-2 origin-top-right bg-neutral-99 divide-y divide-neutralVariant-50 rounded-md shadow-lg ring-1 ring-neutralVariant-50 ring-opacity-5 focus:outline-none"
               >
                 <div class="px-1 py-1">
-                  <MenuItem
-                    v-slot="{ active }"
-                    class="transition duration-200 ease-in-out"
-                  >
+                  <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
                     <button
                       :class="[
                         active
@@ -87,10 +104,7 @@
                       Unfollow {{ author.name }}
                     </button>
                   </MenuItem>
-                  <MenuItem
-                    v-slot="{ active }"
-                    class="transition duration-200 ease-in-out"
-                  >
+                  <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
                     <button
                       :class="[
                         active
@@ -112,10 +126,7 @@
                       Edit Dweet
                     </button>
                   </MenuItem>
-                  <MenuItem
-                    v-slot="{ active }"
-                    class="transition duration-200 ease-in-out"
-                  >
+                  <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
                     <button
                       :class="[
                         active
@@ -147,34 +158,34 @@
         <!-- <button class="p-4">...</button> -->
       </div>
       <div class="text-left my-4">
-        <span class="text-2xl lea">{{ dweetBody }}</span>
+        <span class="text-2xl lea text-neutral-10">{{ dweetBody }}</span>
       </div>
-      <div class="flex flex-col text-left my-4 mt-auto">
-        <span class="text-sm"><b>Posted:</b> {{ formatDate(postedAt) }} </span>
-        <span class="text-sm"
-          ><b>Last Updated:</b> {{ formatDate(lastUpdatedAt) }}</span
-        >
+      <div class="flex flex-col text-left my-4 mt-auto text-neutralVariant-50">
+        <span class="text-sm">
+          <b>Posted:</b>
+          {{ formatDate(postedAt) }}
+          <b class="mx-1">·</b>
+          <b>Last Updated:</b>
+          {{ formatDate(lastUpdatedAt) }}
+        </span>
+        <span class="text-sm"></span>
       </div>
     </div>
-    <div class="flex flex-row text-left py-3">
+    <div class="flex flex-row text-left py-3 text-neutralVariant-50">
       <div class="hover:underline">
-        <span class="font-bold px-1"> {{ likeCount }} </span>
-        <span>
-          {{ redweetCount == 1 ? "Redweet" : "Redweets" }}
-        </span>
+        <span class="font-bold px-1 text-neutral-40">{{ redweetCount }}</span>
+        <span>{{ redweetCount == 1 ? "Redweet" : "Redweets" }}</span>
       </div>
       <div class="hover:underline">
-        <span class="ml-4 font-bold px-1"> {{ likeCount }} </span>
-        <span>
-          {{ likeCount == 1 ? "Like" : "Likes" }}
-        </span>
+        <span class="ml-4 font-bold px-1 text-neutral-40">{{ likeCount }}</span>
+        <span>{{ likeCount == 1 ? "Like" : "Likes" }}</span>
       </div>
     </div>
     <div>
       <div class="flex flex-row justify-between pt-1">
-        <div class="flex-grow">
+        <div class="grow">
           <button
-            class="p-2 rounded-full text-neutral-10 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
+            class="p-2 rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -192,9 +203,9 @@
             </svg>
           </button>
         </div>
-        <div class="flex-grow">
+        <div class="grow">
           <button
-            class="p-2 rounded-full text-neutral-10 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-tertiary-90 hover:text-tertiary-40 transition duration-200 ease-in-out"
+            class="p-2 rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-tertiary-90 hover:text-tertiary-40 transition duration-200 ease-in-out"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -207,14 +218,14 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
               />
             </svg>
           </button>
         </div>
-        <div class="flex-grow">
+        <div class="grow">
           <button
-            class="p-2 rounded-full text-neutral-10 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-secondary-90 hover:text-secondary-40 transition duration-200 ease-in-out"
+            class="p-2 rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-secondary-90 hover:text-secondary-40 transition duration-200 ease-in-out"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -232,9 +243,9 @@
             </svg>
           </button>
         </div>
-        <div class="flex-grow">
+        <div class="grow">
           <button
-            class="p-2 rounded-full text-neutral-10 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
+            class="p-2 rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -44,7 +44,7 @@
             email: 'ok@ok.com',
             followerCount: 1,
             followingCount: 0,
-            name: 'OOOOK',
+            name: 'RedweetManPagMan',
             pfpURL:
               'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
             username: 'OkayMan',
