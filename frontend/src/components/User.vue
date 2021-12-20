@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col bg-neutral-99 max-w-xl p-4">
+  <div class="flex flex-col bg-neutral-99 max-w-xl px-4">
     <div class="flex flex-row justify-between">
       <div class="flex flex-row">
         <img :src="pfpURL" class="w-32 h-32 rounded-full" />
@@ -8,7 +8,7 @@
           <span class="text-left text-neutralVariant-50">@{{ username }}</span>
         </div>
       </div>
-      <div class="flex flex-row self-start" v-if="isInUserArray(username, followers)">
+      <div class="flex flex-row self-start" v-if="isInUserArray(viewUser, followers)">
         <button
           class="p-2 rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-secondary-90 hover:text-secondary-40 transition duration-200 ease-in-out"
         >
@@ -196,6 +196,9 @@ export default {
     createdAt: {
       type: String,
     },
+    viewUser: {
+      type: String,
+    }
   },
   components: {
     Menu,

@@ -1,6 +1,8 @@
 <template>
+  <ReplyParentDweet v-if="isReply" v-bind="replyTo" :viewUser="viewUser" />
   <div
-    class="flex flex-col bg-neutral-99 max-w-xl divide-y divide-neutralVariant-60 p-4 divide-opacity-20"
+    class="flex flex-col bg-neutral-99 max-w-xl divide-y divide-neutralVariant-60 divide-opacity-20"
+    :class="{ 'px-4 pb-4': isReply, 'p-4': !isReply }"
   >
     <div>
       <div
@@ -104,7 +106,11 @@
                       Unfollow {{ author.name }}
                     </button>
                   </MenuItem>
-                  <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
+                  <MenuItem
+                    v-if="author.username == viewUser"
+                    v-slot="{ active }"
+                    class="transition duration-200 ease-in-out"
+                  >
                     <button
                       :class="[
                         active
@@ -126,7 +132,11 @@
                       Edit Dweet
                     </button>
                   </MenuItem>
-                  <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
+                  <MenuItem
+                    v-if="author.username == viewUser"
+                    v-slot="{ active }"
+                    class="transition duration-200 ease-in-out"
+                  >
                     <button
                       :class="[
                         active
@@ -270,6 +280,7 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
+import ReplyParentDweet from "../components/ReplyParentDweet.vue";
 
 export default {
   name: "Dweet",
@@ -377,12 +388,16 @@ export default {
     media: {
       type: Array,
     },
+    viewUser: {
+      type: String,
+    },
   },
   components: {
     Menu,
     MenuButton,
     MenuItems,
     MenuItem,
+    ReplyParentDweet,
   },
 };
 </script>
