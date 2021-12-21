@@ -103,7 +103,6 @@
 </template>
 
 <script>
-import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 
 export default {
   name: "User",
@@ -199,12 +198,6 @@ export default {
     viewUser: {
       type: String,
     }
-  },
-  components: {
-    Menu,
-    MenuButton,
-    MenuItems,
-    MenuItem,
   },
 };
 </script>

@@ -33,7 +33,7 @@
               <Menu as="div" class="relative inline-block text-left">
                 <div>
                   <MenuButton
-                    class="h-10 w-10 inline-flex justify-center content-center text-sm rounded-full font-medium text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-neutralVariant-50 focus-visible:ring-opacity-75"
+                    class="h-10 w-10 inline-flex justify-center content-center text-sm rounded-full font-medium text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-neutralVariant-50 focus-visible:ring-opacity-75"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +57,7 @@
                   leave-to-class="transform scale-95 opacity-0"
                 >
                   <MenuItems
-                    class="absolute right-0 w-56 mt-2 origin-top-right bg-neutral-99 divide-y divide-neutralVariant-50 rounded-md shadow-lg ring-1 ring-neutralVariant-50 ring-opacity-5 focus:outline-none"
+                    class="absolute right-0 w-56 mt-2 origin-top-right bg-neutral-99 divide-y divide-neutralVariant-50 rounded-md shadow-lg ring-1 ring-neutralVariant-50 ring-opacity-5"
                   >
                     <div class="px-1 py-1">
                       <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
