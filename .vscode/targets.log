@@ -1,0 +1,263 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+ 
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Tue Dec 21 14:50:45 2021
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# environment
+WSLENV = ELECTRON_RUN_AS_NODE/w:
+# default
+.SHELLFLAGS := -c
+# environment
+VSCODE_AGENT_FOLDER = /home/soumitradev/.vscode-server
+# environment
+VSCODE_LOG_NATIVE = false
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# makefile
+CURDIR := /home/soumitradev/Code/Dwitter
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/server/remoteExtensionHostProcess
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+VSCODE_CWD = /mnt/c/Users/Soumi/AppData/Local/Programs/Microsoft VS Code
+# environment
+GOPROXY = https://proxy.golang.org,direct
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+PATH = /home/soumitradev/.vscode-server/bin/899d46d82c4c95423fb7e10e68eba52050e30ba3/bin:/home/soumitradev/gems/bin:/usr/local/go/bin/:/home/soumitradev/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/ImageMagick-7.1.0-Q16-HDRI:/mnt/c/Python39/Scripts/:/mnt/c/Python39/:/mnt/c/ProgramData/Anaconda3:/mnt/c/ProgramData/Anaconda3/Scripts:/mnt/c/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64/compiler:/mnt/c/Python38/Scripts/:/mnt/c/Python38/:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Git/cmd:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files (x86)/Streamlink/bin:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/cygwin64/bin:/mnt/c/Program Files/Go/bin:/mnt/c/Users/Soumi/.windows-build-tools/python27/:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Soumi/spicetify-cli:/mnt/c/Program Files/NASM:/mnt/c/Program Files/Bochs-2.6.11:/mnt/c/Program Files/heroku/bin:/mnt/c/Program Files/qemu:/mnt/c/Program Files/vips-dev-8.10/bin:/mnt/c/Users/Soumi/bin:/mnt/c/Users/Soumi/AppData/Roaming/npm:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Hyper/app-3.0.2/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Programs/Hyper/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Keybase/:/mnt/c/msys64/usr/bin:/mnt/c/Users/Soumi/go/bin:/home/soumitradev/.npm-packages/bin
+# environment
+XDG_RUNTIME_DIR = /mnt/wslg/runtime-dir
+# environment
+GOPATH = /home/soumitradev/go
+# environment
+VSCODE_LOG_STACK = false
+# environment
+VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-30f507e9-46ef-43ca-86ce-ca40185213f6.sock
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = :0
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /home/soumitradev/Code/Dwitter
+# default
+.LOADED := 
+# environment
+GEM_HOME = /home/soumitradev/gems
+# environment
+WSL_INTEROP = /run/WSL/8_interop
+# environment
+PULSE_SERVER = /mnt/wslg/PulseServer
+# environment
+GOMODCACHE = /home/soumitradev/go/pkg/mod
+# environment
+HOME = /home/soumitradev
+# environment
+LOGNAME = soumitradev
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# default
+MAKE_VERSION := 4.2.1
+# environment
+USER = soumitradev
+# makefile
+.DEFAULT_GOAL := run
+# environment
+NAME = Code
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+VSCODE_WSL_EXT_LOCATION = /mnt/c/Users/Soumi/.vscode/extensions/ms-vscode-remote.remote-wsl-0.63.13
+# default
+MAKE_COMMAND := make
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# makefile
+MAKEFLAGS = pqrR
+# environment
+MFLAGS = -pqrR
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# automatic
++F = $(notdir $+)
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# environment
+LC_ALL = C
+# environment
+HOSTTYPE = x86_64
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# environment
+WAYLAND_DISPLAY = wayland-0
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH = /home/soumitradev/.vscode-server/bin/899d46d82c4c95423fb7e10e68eba52050e30ba3/remote/node_modules
+# default
+.RECIPEPREFIX := 
+# environment
+LANG = C
+# environment
+TERM = xterm-256color
+# environment
+VSCODE_EXTHOST_WILL_SEND_SOCKET = true
+# environment
+WSL_DISTRO_NAME = Ubuntu-20.04
+# variable set hash-table stats:
+# Load=71/1024=7%, Rehash=0, Collisions=5/96=5%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 2080, inode 257252): 15 files, no impossibilities.
+
+# 15 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+api:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 4):
+	go run .
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2021-12-05 23:02:41.9478478
+#  File has been updated.
+#  Successfully updated.
+
+migrate:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 7):
+	go run github.com/prisma/prisma-client-go db push
+
+frontend:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 20):
+	cd frontend && npm run build
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+kill:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 16):
+	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}'
+	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}' | bash
+
+run: frontend api
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 10):
+	# Delete DB if exists
+	@(sudo -H -u postgres bash -c 'psql -lqt | cut -d \| -f 1 | grep -qw dev') && (sudo -H -u postgres bash -c 'psql -U postgres -c "DROP DATABASE dev;"')
+	# Create DB for testing
+	-@(sudo -H -u postgres bash -c 'createdb dev')
+
+serve:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 23):
+	cd frontend && npm run serve
+
+# files hash-table stats:
+# Load=11/1024=1%, Rehash=0, Collisions=0/25=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 26 / storage = 220 B / avg = 8 B
+# current buf: size = 8162 B / used = 220 B / count = 26 / avg = 8 B
+
+# strcache performance: lookups = 40 / hit rate = 35%
+# hash-table stats:
+# Load=26/8192=0%, Rehash=0, Collisions=1/40=2%
+# Finished Make data base on Tue Dec 21 14:50:45 2021
+
+ 

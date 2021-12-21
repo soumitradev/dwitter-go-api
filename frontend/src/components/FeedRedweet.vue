@@ -3,17 +3,31 @@
     class="flex flex-col bg-neutral-99 max-w-xl divide-y divide-neutralVariant-60 p-4 divide-opacity-20"
   >
     <div>
+      <div class="text-left text-sm flex flex-col mb-2 ml-6 text-neutralVariant-50">
+        <div class="flex flex-row mb-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-2"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ author.name }} redweeted</span>
+        </div>
+      </div>
       <div class="flex justify-between">
         <div class="flex flex-row w-full">
-          <div class="flex flex-col">
-            <img :src="author.pfpURL" class="w-12 h-12 rounded-full" />
-            <div class="w-0.5 bg-neutralVariant-50 mx-2 mt-2 self-center h-full opacity-50"></div>
-          </div>
+          <img :src="redweetOf.author.pfpURL" class="w-12 h-12 rounded-full" />
           <div class="flex flex-col ml-4 w-full">
             <div class="flex flex-row justify-between">
               <div class="flex flex-col hover:underline">
-                <span class="text-left font-bold text-neutral-10">{{ author.name }}</span>
-                <span class="text-left text-neutralVariant-50">@{{ author.username }}</span>
+                <span class="text-left font-bold text-neutral-10">{{ redweetOf.author.name }}</span>
+                <span class="text-left text-neutralVariant-50">@{{ redweetOf.author.username }}</span>
               </div>
 
               <Menu as="div" class="relative inline-block text-left">
@@ -65,11 +79,11 @@
                               d="M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12zM13 8a1 1 0 100 2h4a1 1 0 100-2h-4z"
                             />
                           </svg>
-                          Unfollow {{ author.name }}
+                          Unfollow {{ redweetOf.author.name }}
                         </button>
                       </MenuItem>
                       <MenuItem
-                        v-if="author.username == viewUser"
+                        v-if="redweetOf.author.username == viewUser"
                         v-slot="{ active }"
                         class="transition duration-200 ease-in-out"
                       >
@@ -95,7 +109,7 @@
                         </button>
                       </MenuItem>
                       <MenuItem
-                        v-if="author.username == viewUser"
+                        v-if="redweetOf.author.username == viewUser"
                         v-slot="{ active }"
                         class="transition duration-200 ease-in-out"
                       >
@@ -129,14 +143,14 @@
             </div>
 
             <div class="text-left my-2">
-              <span class="text-2xl lea text-neutral-10">{{ dweetBody }}</span>
+              <span class="text-2xl lea text-neutral-10">{{ redweetOf.dweetBody }}</span>
             </div>
             <div class="flex flex-col text-left mt-4 mb-2 text-neutralVariant-50">
-              <span class="text-sm">{{ formatDate(postedAt) }}</span>
+              <span class="text-sm">{{ formatDate(redweetOf.postedAt) }}</span>
               <span class="text-sm"></span>
             </div>
 
-            <div class="flex flex-row justify-between max-w-md">
+            <div class="flex flex-row justify-between pt-1 max-w-md">
               <div>
                 <button
                   class="p-2 flex flex-row rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
@@ -155,7 +169,7 @@
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                  <span class="px-3">{{ replyCount }}</span>
+                  <span class="px-3">{{ redweetOf.replyCount }}</span>
                 </button>
               </div>
               <div>
@@ -176,7 +190,7 @@
                       d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
                     />
                   </svg>
-                  <span class="px-3">{{ redweetCount }}</span>
+                  <span class="px-3">{{ redweetOf.redweetCount }}</span>
                 </button>
               </div>
               <div>
@@ -197,7 +211,7 @@
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
-                  <span class="px-3">{{ likeCount }}</span>
+                  <span class="px-3">{{ redweetOf.likeCount }}</span>
                 </button>
               </div>
               <div>
@@ -232,9 +246,11 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
+import ReplyParentDweet from "../components/ReplyParentDweet.vue";
+
 
 export default {
-  name: "Dweet",
+  name: "FeedDweet",
   methods: {
     formatDate: function (date) {
       var dateObj = new Date(date);
@@ -291,41 +307,20 @@ export default {
     },
   },
   props: {
-    dweetBody: {
-      type: String,
-    },
-    id: {
-      type: String,
-    },
     author: {
       type: Object,
     },
     authorID: {
       type: String,
     },
-    postedAt: {
+    redweetOf: {
+      type: Object,
+    },
+    originalRedweetID: {
       type: String,
     },
-    lastUpdatedAt: {
+    redweetTime: {
       type: String,
-    },
-    likeCount: {
-      type: Number,
-    },
-    isReply: {
-      type: Boolean,
-    },
-    originalReplyID: {
-      type: String,
-    },
-    replyCount: {
-      type: Number,
-    },
-    redweetCount: {
-      type: Number,
-    },
-    media: {
-      type: Array,
     },
     viewUser: {
       type: String,
@@ -336,6 +331,7 @@ export default {
     MenuButton,
     MenuItems,
     MenuItem,
+    ReplyParentDweet,
   },
 };
 </script>

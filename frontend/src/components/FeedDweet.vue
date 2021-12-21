@@ -1,14 +1,12 @@
 <template>
+  <ReplyParentDweet v-if="isReply" v-bind="replyTo" :viewUser="viewUser" />
   <div
     class="flex flex-col bg-neutral-99 max-w-xl divide-y divide-neutralVariant-60 p-4 divide-opacity-20"
   >
     <div>
       <div class="flex justify-between">
         <div class="flex flex-row w-full">
-          <div class="flex flex-col">
-            <img :src="author.pfpURL" class="w-12 h-12 rounded-full" />
-            <div class="w-0.5 bg-neutralVariant-50 mx-2 mt-2 self-center h-full opacity-50"></div>
-          </div>
+          <img :src="author.pfpURL" class="w-12 h-12 rounded-full" />
           <div class="flex flex-col ml-4 w-full">
             <div class="flex flex-row justify-between">
               <div class="flex flex-col hover:underline">
@@ -136,7 +134,7 @@
               <span class="text-sm"></span>
             </div>
 
-            <div class="flex flex-row justify-between max-w-md">
+            <div class="flex flex-row justify-between pt-1 max-w-md">
               <div>
                 <button
                   class="p-2 flex flex-row rounded-full text-neutralVariant-50 bg-neutral-99 bg-opacity-20 hover:bg-opacity-30 hover:bg-primary-90 hover:text-primary-40 transition duration-200 ease-in-out"
@@ -232,9 +230,11 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
+import ReplyParentDweet from "../components/ReplyParentDweet.vue";
+
 
 export default {
-  name: "Dweet",
+  name: "FeedDweet",
   methods: {
     formatDate: function (date) {
       var dateObj = new Date(date);
@@ -312,17 +312,29 @@ export default {
     likeCount: {
       type: Number,
     },
+    likeUsers: {
+      type: Array,
+    },
     isReply: {
       type: Boolean,
     },
     originalReplyID: {
       type: String,
     },
+    replyTo: {
+      type: Object,
+    },
     replyCount: {
       type: Number,
     },
+    replyDweets: {
+      type: Array,
+    },
     redweetCount: {
       type: Number,
+    },
+    redweetUsers: {
+      type: Array,
     },
     media: {
       type: Array,
@@ -336,6 +348,7 @@ export default {
     MenuButton,
     MenuItems,
     MenuItem,
+    ReplyParentDweet,
   },
 };
 </script>

@@ -1,1 +1,6 @@
-make.exe --dry-run --always-make --keep-going --print-directory
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/soumitradev/Code/Dwitter'
+cd frontend && npm run build
+go run .
+make: Leaving directory '/home/soumitradev/Code/Dwitter'
+ 
