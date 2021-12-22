@@ -253,7 +253,7 @@ export default {
   name: "FeedDweet",
   methods: {
     formatDate: function (date) {
-      var dateObj = new Date(date);
+      let dateObj = new Date(date);
       return (
         dateObj.toLocaleString("en-US", {
           hour12: true,
@@ -268,16 +268,16 @@ export default {
     overflowNames: function (list) {
       // TODO: Remove viewer's name from list
       if (list.length > 0) {
-        var text = "";
-        var i = 0;
-        var curLen = 0;
+        let text = "";
+        let i = 0;
+        let curLen = 0;
         while (curLen <= 42 && i < list.length) {
           curLen += list[i].name.length + 2;
           i++;
         }
 
-        var j = 0;
-        var numberOfNames = list.length - i;
+        let j = 0;
+        let numberOfNames = list.length - i;
 
         while (i > 0) {
           if (i == 1) {

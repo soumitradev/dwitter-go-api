@@ -10,7 +10,8 @@
           rows="1"
           placeholder="What's happening?"
         ></textarea>
-        <div class="flex flex-row justify-between grow mt-6 items-end">
+        <ImageViewer class="m-4" :editEnabled="true" :mediaList="fileList" />
+        <div class="flex flex-row justify-between grow mt-2 items-end">
           <div class="relative overflow-hidden inline-block self-end ml-2 group rounded-full">
             <button
               type="button"
@@ -37,8 +38,10 @@
             </button>
             <input
               type="file"
-              name="myfile"
               class="opacity-0 absolute left-0 top-0 text-9xl cursor-pointer"
+              @change="updateFiles"
+              accept="image/png, image/jpeg, image/gif, video/mp4"
+              multiple
             />
           </div>
           <div class="relative overflow-hidden inline-block self-end ml-2">
@@ -66,17 +69,122 @@
       </div>
     </div>
   </div>
+
+  <TransitionRoot appear :show="isOpen" as="template">
+    <Dialog as="div" @close="closeModal">
+      <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="min-h-screen px-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-200 ease-out"
+            enter-from="opacity-0"
+            enter-to="opacity-100"
+            leave="duration-100 ease-in"
+            leave-from="opacity-100"
+            leave-to="opacity-0"
+          >
+            <DialogOverlay class="fixed inset-0 bg-neutral-30/s5" />
+          </TransitionChild>
+
+          <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
+
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <div
+              class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-neutral-100 shadow-xl rounded-2xl"
+            >
+              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Error</DialogTitle>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500">File too large (Limit is 8MB per file)</p>
+              </div>
+
+              <div class="mt-4">
+                <button
+                  type="button"
+                  class="inline-flex justify-center text-sm font-medium text-error-10 bg-error-90 border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-error-40"
+                  @click="closeModal"
+                >
+                  <div
+                    class="rounded-full py-2 px-4 group-hover:bg-error-10/s2 focus:bg-error-10/s2 transition duration-200 ease-in-out"
+                  >OK</div>
+                </button>
+              </div>
+            </div>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script>
+import { ref } from 'vue'
+import {
+  TransitionRoot,
+  TransitionChild,
+  Dialog,
+  DialogOverlay,
+  DialogTitle,
+} from '@headlessui/vue'
+import ImageViewer from "../components/ImageViewer.vue";
+
 export default {
   name: "NewDweet",
+  methods: {
+    updateFiles: function (event) {
+      console.log("files updated");
+      let valid = this.validateFiles(event.target.files);
+      if (valid) {
+        this.fileList.push(...event.target.files);
+      } else {
+        this.openModal();
+      }
+    },
+    validateFiles: function (fileList) {
+      for (let fileIndex = 0; fileIndex < fileList.length; fileIndex++) {
+        let sizeValid = (fileList[fileIndex].size <= (8 << 20));
+
+        if (!sizeValid) {
+          return false;
+        }
+      }
+      return true;
+    },
+  },
   props: {
     viewUser: {
       type: Object,
     },
   },
   components: {
+    TransitionRoot,
+    TransitionChild,
+    Dialog,
+    DialogOverlay,
+    DialogTitle,
+    ImageViewer,
+  },
+  setup() {
+    const isOpen = ref(false);
+    const fileList = ref([]);
+
+    return {
+      isOpen,
+      fileList,
+      closeModal() {
+        isOpen.value = false;
+      },
+      openModal() {
+        isOpen.value = true;
+      },
+    }
   },
 }
 </script>
@@ -84,11 +192,4 @@ export default {
 
 
 <style scoped>
-.upload-btn-wrapper input[type="file"] {
-  font-size: 100px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-}
 </style>
