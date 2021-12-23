@@ -21,12 +21,12 @@
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 place-self-center"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                      class="h-6 w-6 place-self-center fill-current"
+                      viewBox="0 0 24 24"
                     >
+                      <path d="M0 0h24v24H0V0z" fill="none" />
                       <path
-                        d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+                        d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
                       />
                     </svg>
                   </MenuButton>
@@ -41,7 +41,7 @@
                   leave-to-class="transform scale-95 opacity-0"
                 >
                   <MenuItems
-                    class="absolute right-0 w-56 mt-2 origin-top-right bg-neutral-99 divide-y divide-neutralVariant-50 rounded-md shadow-lg ring-1 ring-neutralVariant-50 ring-opacity-5"
+                    class="z-10 absolute right-0 w-56 mt-2 origin-top-right bg-neutral-99 divide-y divide-neutralVariant-50 rounded-md shadow-lg ring-1 ring-neutralVariant-50 ring-opacity-5"
                   >
                     <div class="px-1 py-1">
                       <MenuItem v-slot="{ active }" class="transition duration-200 ease-in-out">
@@ -55,13 +55,18 @@
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 mr-2"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            class="h-5 w-5 mr-2 fill-current"
+                            viewBox="0 0 24 24"
                           >
-                            <path
-                              d="M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12zM13 8a1 1 0 100 2h4a1 1 0 100-2h-4z"
-                            />
+                            <g>
+                              <rect fill="none" height="24" width="24" />
+                              <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
+                              <path
+                                d="M14,8c0-2.21-1.79-4-4-4S6,5.79,6,8s1.79,4,4,4S14,10.21,14,8z M2,18v1c0,0.55,0.45,1,1,1h14c0.55,0,1-0.45,1-1v-1 c0-2.66-5.33-4-8-4S2,15.34,2,18z M18,10h4c0.55,0,1,0.45,1,1v0c0,0.55-0.45,1-1,1h-4c-0.55,0-1-0.45-1-1v0 C17,10.45,17.45,10,18,10z"
+                              />
+                            </g>
                           </svg>
                           Unfollow {{ author.name }}
                         </button>
@@ -81,12 +86,12 @@
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 mr-2"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            class="h-5 w-5 mr-2 fill-current"
+                            viewBox="0 0 24 24"
                           >
+                            <path d="M0 0h24v24H0V0z" fill="none" />
                             <path
-                              d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                              d="M3 17.46v3.04c0 .28.22.5.5.5h3.04c.13 0 .26-.05.35-.15L17.81 9.94l-3.75-3.75L3.15 17.1c-.1.1-.15.22-.15.36zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
                             />
                           </svg>
                           Edit Dweet
@@ -107,14 +112,12 @@
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 mr-2"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                            class="h-5 w-5 mr-2 fill-current"
+                            viewBox="0 0 24 24"
                           >
+                            <path d="M0 0h24v24H0V0z" fill="none" />
                             <path
-                              fill-rule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clip-rule="evenodd"
+                              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v10zM18 4h-2.5l-.71-.71c-.18-.18-.44-.29-.7-.29H9.91c-.26 0-.52.11-.7.29L8.5 4H6c-.55 0-1 .45-1 1s.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1z"
                             />
                           </svg>
                           Delete Dweet
@@ -129,7 +132,15 @@
             <div class="text-left my-2">
               <span class="text-2xl lea text-neutral-10">{{ dweetBody }}</span>
             </div>
-            <div class="flex flex-col text-left mt-4 mb-2 text-neutralVariant-50">
+
+            <ImageViewer
+              class="m-4"
+              :editEnabled="false"
+              :mediaList="fileList"
+              :thumbList="thumbList"
+            />
+
+            <div class="flex flex-col text-left my-2 text-neutralVariant-50">
               <span class="text-sm">{{ formatDate(postedAt) }}</span>
               <span class="text-sm"></span>
             </div>
@@ -141,16 +152,12 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
+                    class="2-6 h-6 fill-current"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
                   >
+                    <path d="M0 0h24v24H0V0z" fill="none" />
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      d="M10 9V7.41c0-.89-1.08-1.34-1.71-.71L3.7 11.29c-.39.39-.39 1.02 0 1.41l4.59 4.59c.63.63 1.71.19 1.71-.7V14.9c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"
                     />
                   </svg>
                   <span class="px-3">{{ replyCount }}</span>
@@ -162,16 +169,22 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
+                    class="w-6 h-6 fill-tertiary-60"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
+                    v-if="redweetUsers.map(x => x.username).includes(viewUser)"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                      d="M7 7h10v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.2.2-.51 0-.71l-2.79-2.79c-.31-.31-.85-.09-.85.36V5H6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1V7zm10 10H7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79c.31.31.85.09.85-.36V19h11c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1s-1 .45-1 1v3z"
+                    />
+                  </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-6 h-6 fill-current"
+                    viewBox="0 0 24 24"
+                    v-else
+                  >
+                    <path
+                      d="M7 7h10v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.2.2-.51 0-.71l-2.79-2.79c-.31-.31-.85-.09-.85.36V5H6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1V7zm10 10H7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79c.31.31.85.09.85-.36V19h11c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1s-1 .45-1 1v3z"
                     />
                   </svg>
                   <span class="px-3">{{ redweetCount }}</span>
@@ -183,16 +196,22 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
+                    class="2-6 h-6 fill-secondary-50"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
+                    v-if="likeUsers.map(x => x.username).includes(viewUser)"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76l-.1.09z"
+                    />
+                  </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="2-6 h-6 fill-current"
+                    viewBox="0 0 24 24"
+                    v-else
+                  >
+                    <path
+                      d="M19.66 3.99c-2.64-1.8-5.9-.96-7.66 1.1-1.76-2.06-5.02-2.91-7.66-1.1-1.4.96-2.28 2.58-2.34 4.29-.14 3.88 3.3 6.99 8.55 11.76l.1.09c.76.69 1.93.69 2.69-.01l.11-.1c5.25-4.76 8.68-7.87 8.55-11.75-.06-1.7-.94-3.32-2.34-4.28zM12.1 18.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"
                     />
                   </svg>
                   <span class="px-3">{{ likeCount }}</span>
@@ -204,16 +223,12 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
+                    class="2-6 h-6 fill-current"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
                   >
+                    <path d="M0 0h24v24H0V0z" fill="none" />
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"
                     />
                   </svg>
                 </button>
@@ -231,6 +246,8 @@
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import ReplyParentDweet from "../components/ReplyParentDweet.vue";
+import { ref } from 'vue'
+import ImageViewer from "../components/ImageViewer.vue";
 
 
 export default {
@@ -349,7 +366,48 @@ export default {
     MenuItems,
     MenuItem,
     ReplyParentDweet,
+    ImageViewer,
   },
+  setup() {
+    const fileList = ref([]);
+    const thumbList = ref([]);
+
+
+    return {
+      fileList,
+      thumbList,
+    }
+  },
+  created() {
+    for (let i = 0; i < this.media.length; i++) {
+      let type = "";
+      switch (this.media[i].replace(/\?.+/gi, "").split(".").pop().toLowerCase()) {
+        case "jpg":
+          type = "image/jpeg"
+          break;
+        case "jpeg":
+          type = "image/jpeg"
+          break;
+        case "gif":
+          type = "image/gif"
+          break;
+        case "png":
+          type = "image/png"
+          break;
+        case "mp4":
+          type = "video/mp4"
+          break;
+      }
+      let thumbnailUrl = this.media[i].replace("/o/media", "/o/thumb").replace(/\.(mp4|jpeg|jpg|gif)/gi, ".png").replace(/\?.+/gi, "?alt=media");
+
+      this.thumbList.push({
+        url: thumbnailUrl,
+        type: type,
+        original: this.media[i].replace('storage.googleapis.com/download/storage/v1/', 'firebasestorage.googleapis.com/v0/'),
+      });
+
+    }
+  }
 };
 </script>
 

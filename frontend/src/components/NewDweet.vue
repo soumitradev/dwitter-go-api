@@ -10,7 +10,7 @@
           rows="1"
           placeholder="What's happening?"
         ></textarea>
-        <ImageViewer class="m-4" :editEnabled="false" :mediaList="fileList" />
+        <ImageViewer class="m-4" :editEnabled="true" :mediaList="fileList" />
         <div class="flex flex-row justify-between grow mt-2 items-end">
           <div class="relative overflow-hidden inline-block self-end ml-2 group rounded-full">
             <button
@@ -18,20 +18,16 @@
               class="text-primary-10 bg-primary-90 border-none rounded-full transition duration-200 ease-in-out"
             >
               <div
-                class="rounded-full py-2 px-4 group-hover:bg-primary-10/s2 focus:bg-primary-10/s2 transition duration-200 ease-in-out"
+                class="rounded-full p-2 group-hover:bg-primary-10/s2 focus:bg-primary-10/s2 transition duration-200 ease-in-out"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-6 w-6"
-                  fill="none"
+                  class="h-6 w-6 fill-current"
                   viewBox="0 0 24 24"
-                  stroke="currentColor"
                 >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68c.25.33.01.8-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z"
                   />
                 </svg>
               </div>
@@ -54,12 +50,12 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-6 w-6"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                  class="h-6 w-6 fill-current"
+                  viewBox="0 0 24 24"
                 >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
                   <path
-                    d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
+                    d="M3.4 20.4l17.45-7.48c.81-.35.81-1.49 0-1.84L3.4 3.6c-.66-.29-1.39.2-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"
                   />
                 </svg>
               </div>
