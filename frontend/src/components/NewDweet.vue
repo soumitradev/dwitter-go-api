@@ -135,7 +135,6 @@ export default {
   name: "NewDweet",
   methods: {
     updateFiles: function (event) {
-      console.log("files updated");
       let valid = this.validateFiles(event.target.files);
       if (valid) {
         this.fileList.push(...event.target.files);

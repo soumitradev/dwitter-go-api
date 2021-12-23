@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <!-- Nested objects are a bit weird rn, but we'll see -->
-    <User
+    <!-- <User
       v-bind="{
         bio: 'OH MY GOD I LOVE COCK OH GOD OH FUCK AAAAAAAAAAA AAAAAAA',
         createdAt: '2021-12-04T10:46:11.265Z',
@@ -531,6 +531,97 @@
       }"
       viewUser="OkayManALT"
     />
+
+    <div class="h-5"></div>
+
+    <EditDweet
+      v-bind="{
+        author: {
+          bio: '',
+          createdAt: '2021-12-04T10:46:11.265Z',
+          email: 'ok@ok.com',
+          followerCount: 1,
+          followingCount: 0,
+          name: 'OOOOK',
+          pfpURL:
+            'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+          username: 'OkayMan',
+        },
+        authorID: 'OkayMan',
+        dweetBody: 'duderinos',
+        id: 'sREiME3iw6',
+        isReply: true,
+        lastUpdatedAt: '2021-12-04T10:46:47.393Z',
+        likeCount: 0,
+        likeUsers: [
+          {
+            bio: '',
+            createdAt: '2021-12-04T10:46:11.265Z',
+            email: 'ok@ok.com',
+            followerCount: 1,
+            followingCount: 0,
+            name: 'OOOOK',
+            pfpURL:
+              'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+            username: 'OkayMan',
+          },
+        ],
+        media: [
+          'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2FgO25ZZgYrftxcwbNpydD5AdDkjijSW.mp4?generation=1640258723535975&alt=media',
+          'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2FBmq2bpVF50I25GeJcZ8cLdio4KTnn8.png?generation=1640258942272122&alt=media',
+          'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2Fl4kV5WBkWsXI7AbRlkxjj0uiuHNZ3G.gif?generation=1640247339114616&alt=media',
+          'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2Fefy7lIUbTUwCPNUjICnaxsmpdYqmb1.jpg?generation=1640259076665041&alt=media'
+        ],
+        originalReplyID: '',
+        postedAt: '2021-12-04T10:46:47.393Z',
+        redweetCount: 1,
+        redweetUsers: [
+          {
+            bio: '',
+            createdAt: '2021-12-04T10:46:11.265Z',
+            email: 'ok@ok.com',
+            followerCount: 1,
+            followingCount: 0,
+            name: 'RedweetManPagMan',
+            pfpURL:
+              'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+            username: 'OkayMan',
+          },
+        ],
+        replyCount: 0,
+        replyDweets: [],
+        replyTo: {
+          author: {
+            bio: '',
+            createdAt: '2021-12-04T10:46:11.265Z',
+            email: 'ok@ok.com',
+            followerCount: 1,
+            followingCount: 0,
+            name: 'OOOOK',
+            pfpURL:
+              'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+            username: 'OkayMan',
+          },
+          authorID: 'OkayMan',
+          dweetBody: 'my',
+          id: 'sREiME3iw6',
+          isReply: false,
+          lastUpdatedAt: '2021-12-04T10:46:47.393Z',
+          likeCount: 0,
+          media: [
+            'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2FgO25ZZgYrftxcwbNpydD5AdDkjijSW.mp4?generation=1640258723535975&alt=media',
+            'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2FBmq2bpVF50I25GeJcZ8cLdio4KTnn8.png?generation=1640258942272122&alt=media',
+            'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2Fl4kV5WBkWsXI7AbRlkxjj0uiuHNZ3G.gif?generation=1640247339114616&alt=media',
+            'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/media%2Fefy7lIUbTUwCPNUjICnaxsmpdYqmb1.jpg?generation=1640259076665041&alt=media'
+          ],
+          originalReplyID: '',
+          postedAt: '2021-12-04T10:46:47.393Z',
+          redweetCount: 1,
+          replyCount: 0,
+        },
+      }"
+      viewUser="OkayMan"
+    />-->
   </div>
 </template>
 
@@ -541,6 +632,7 @@ import Dweet from "../components/Dweet.vue";
 import FeedDweet from "../components/FeedDweet.vue";
 import FeedRedweet from "../components/FeedRedweet.vue";
 import UserListObject from "../components/UserListObject.vue";
+import EditDweet from "../components/EditDweet.vue";
 
 export default {
   name: "Home",
@@ -550,6 +642,7 @@ export default {
     FeedDweet,
     FeedRedweet,
     UserListObject,
+    EditDweet,
   },
 };
 </script>
