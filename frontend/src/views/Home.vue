@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <!-- Nested objects are a bit weird rn, but we'll see -->
-    <!-- <User
+    <User
       v-bind="{
         bio: 'OH MY GOD I LOVE COCK OH GOD OH FUCK AAAAAAAAAAA AAAAAAA',
         createdAt: '2021-12-04T10:46:11.265Z',
@@ -150,7 +150,7 @@
       viewUser="OkayManALT"
     />
 
-    <div class="h-5"></div>
+    <!-- <div class="h-5"></div>
 
     <Dweet
       v-bind="{
