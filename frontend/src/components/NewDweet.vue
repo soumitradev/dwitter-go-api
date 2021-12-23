@@ -10,7 +10,7 @@
           rows="1"
           placeholder="What's happening?"
         ></textarea>
-        <ImageViewer class="m-4" :editEnabled="true" :mediaList="fileList" />
+        <ImageViewer class="m-4" :editEnabled="false" :mediaList="fileList" />
         <div class="flex flex-row justify-between grow mt-2 items-end">
           <div class="relative overflow-hidden inline-block self-end ml-2 group rounded-full">
             <button
