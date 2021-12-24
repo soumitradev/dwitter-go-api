@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Dec 23 09:04:44 2021
+# Make data base, printed on Fri Dec 24 08:41:14 2021
 
 # Variables
 
@@ -17,7 +17,7 @@ make: *** No rule to make target 'all'.  Stop.
 # automatic
 ?F = $(notdir $?)
 # environment
-WSLENV = ELECTRON_RUN_AS_NODE/w:
+WSLENV = VSCODE_WSL_EXT_LOCATION/up
 # default
 .SHELLFLAGS := -c
 # environment
@@ -51,7 +51,7 @@ GOPROXY = https://proxy.golang.org,direct
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
-PATH = /home/soumitradev/.vscode-server/bin/899d46d82c4c95423fb7e10e68eba52050e30ba3/bin:/home/soumitradev/gems/bin:/usr/local/go/bin/:/home/soumitradev/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/ImageMagick-7.1.0-Q16-HDRI:/mnt/c/Python39/Scripts/:/mnt/c/Python39/:/mnt/c/ProgramData/Anaconda3:/mnt/c/ProgramData/Anaconda3/Scripts:/mnt/c/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64/compiler:/mnt/c/Python38/Scripts/:/mnt/c/Python38/:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Git/cmd:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files (x86)/Streamlink/bin:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/cygwin64/bin:/mnt/c/Program Files/Go/bin:/mnt/c/Users/Soumi/.windows-build-tools/python27/:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Soumi/spicetify-cli:/mnt/c/Program Files/NASM:/mnt/c/Program Files/Bochs-2.6.11:/mnt/c/Program Files/heroku/bin:/mnt/c/Program Files/qemu:/mnt/c/Program Files/vips-dev-8.10/bin:/mnt/c/Users/Soumi/bin:/mnt/c/Users/Soumi/AppData/Roaming/npm:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Hyper/app-3.0.2/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Programs/Hyper/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Keybase/:/mnt/c/msys64/usr/bin:/mnt/c/Users/Soumi/go/bin:/home/soumitradev/.npm-packages/bin
+PATH = /home/soumitradev/.vscode-server/bin/899d46d82c4c95423fb7e10e68eba52050e30ba3/bin:/home/soumitradev/gems/bin:/usr/local/go/bin/:/home/soumitradev/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/ImageMagick-7.1.0-Q16-HDRI:/mnt/c/Python39/Scripts/:/mnt/c/Python39/:/mnt/c/ProgramData/Anaconda3:/mnt/c/ProgramData/Anaconda3/Scripts:/mnt/c/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64/compiler:/mnt/c/Python38/Scripts/:/mnt/c/Python38/:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Git/cmd:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files (x86)/Streamlink/bin:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/cygwin64/bin:/mnt/c/Program Files/Go/bin:/mnt/c/Users/Soumi/.windows-build-tools/python27/:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/Soumi/spicetify-cli:/mnt/c/Program Files/NASM:/mnt/c/Program Files/Bochs-2.6.11:/mnt/c/Program Files/heroku/bin:/mnt/c/Program Files/qemu:/mnt/c/Program Files/vips-dev-8.10/bin:/mnt/c/Users/Soumi/bin:/mnt/c/Users/Soumi/AppData/Roaming/npm:/mnt/c/Users/Soumi/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Soumi/AppData/Local/Hyper/app-3.0.2/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Programs/Hyper/resources/bin:/mnt/c/Users/Soumi/AppData/Local/Keybase/:/mnt/c/msys64/usr/bin:/mnt/c/Users/Soumi/go/bin:/home/soumitradev/.npm-packages/bin:/home/soumitradev/.npm-packages/bin
 # environment
 XDG_RUNTIME_DIR = /mnt/wslg/runtime-dir
 # environment
@@ -59,7 +59,7 @@ GOPATH = /home/soumitradev/go
 # environment
 VSCODE_LOG_STACK = false
 # environment
-VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-c7c4ea89-c518-4247-95db-4ce45c9a37f7.sock
+VSCODE_IPC_HOOK_CLI = /mnt/wslg/runtime-dir/vscode-ipc-6e923be9-8900-47b9-96fb-faf3d3ff9412.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # automatic
@@ -75,7 +75,7 @@ PWD = /home/soumitradev/Code/Dwitter
 # environment
 GEM_HOME = /home/soumitradev/gems
 # environment
-WSL_INTEROP = /run/WSL/8_interop
+WSL_INTEROP = /run/WSL/188_interop
 # environment
 PULSE_SERVER = /mnt/wslg/PulseServer
 # environment
@@ -97,7 +97,7 @@ MAKE = $(MAKE_COMMAND)
 # default
 MAKECMDGOALS := all
 # environment
-SHLVL = 1
+SHLVL = 2
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -105,7 +105,7 @@ USER = soumitradev
 # makefile
 .DEFAULT_GOAL := run
 # environment
-NAME = Code
+NAME = soumitradev
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # environment
@@ -163,9 +163,9 @@ WSL_DISTRO_NAME = Ubuntu-20.04
 
 # Directories
 
-# . (device 2080, inode 257252): 14 files, no impossibilities.
+# . (device 2080, inode 257252): 15 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 15 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -252,12 +252,12 @@ serve:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 25 / storage = 202 B / avg = 8 B
-# current buf: size = 8162 B / used = 202 B / count = 25 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 26 / storage = 206 B / avg = 7 B
+# current buf: size = 8162 B / used = 206 B / count = 26 / avg = 7 B
 
-# strcache performance: lookups = 39 / hit rate = 35%
+# strcache performance: lookups = 40 / hit rate = 35%
 # hash-table stats:
-# Load=25/8192=0%, Rehash=0, Collisions=1/39=3%
-# Finished Make data base on Thu Dec 23 09:04:44 2021
+# Load=26/8192=0%, Rehash=0, Collisions=1/40=2%
+# Finished Make data base on Fri Dec 24 08:41:14 2021
 
  

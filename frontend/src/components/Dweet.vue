@@ -166,7 +166,7 @@
         <!-- <button class="p-4">...</button> -->
       </div>
       <div class="text-left my-4">
-        <span class="text-2xl lea text-neutral-10">{{ dweetBody }}</span>
+        <span class="text-2xl text-neutral-10">{{ dweetBody }}</span>
       </div>
 
       <ImageViewer class="m-4" :editEnabled="false" :mediaList="fileList" :thumbList="thumbList" />

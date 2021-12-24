@@ -167,7 +167,7 @@
       </div>
       <div class="text-left my-4">
         <textarea
-          class="bg-neutral-99 mx-4 mt-2 text-xl w-full border-0 resize-none appearance-none border-none outline-none"
+          class="bg-neutral-99 mx-4 mt-2 text-2xl text-neutral-10 w-full border-0 resize-none appearance-none border-none outline-none"
           name="text"
           oninput="this.style.height = '';this.style.height = (this.scrollHeight + 1) + 'px'"
           rows="1"

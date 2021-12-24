@@ -2,6 +2,7 @@
 package cdn
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -10,10 +11,8 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -128,6 +127,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 	// Check authentication
 	authHeader := r.Header.Get("authorization")
 	_, err := auth.Authenticate(authHeader)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
@@ -221,6 +221,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 				})
 				return
 			}
+
 			defer file.Close()
 
 			operationCtx, cancel := context.WithTimeout(common.BaseCtx, time.Second*50)
@@ -258,29 +259,37 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 			obj := common.Bucket.Object("media/" + randID + filepath.Ext(files[i].Filename))
 			writer := obj.NewWriter(operationCtx)
 			if _, err = io.Copy(writer, file); err != nil {
-				panic(fmt.Errorf("io.Copy: %v", err))
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
+				return
 			}
 			if err := writer.Close(); err != nil {
-				panic(fmt.Errorf("io.Copy: %v", err))
-			}
-
-			// Read it back
-			reader, err := obj.NewReader(operationCtx)
-			if err != nil {
-				panic(fmt.Errorf("reader: %v", err))
-			}
-			defer reader.Close()
-			data, err := ioutil.ReadAll(reader)
-			if err != nil {
-				panic(fmt.Errorf("ioutil.ReadAll: %v", err))
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
+				return
 			}
 
 			var thumb *image.NRGBA
+			_, err = file.Seek(0, 0)
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
+				return
+			}
 
 			// Make thumbnail based on image or video
 			if isImage[files[i].Header.Get("Content-Type")] {
 				// Make thumbnail
-				image, _, err := image.Decode(bytes.NewReader(data))
+				image, _, err := image.Decode(file)
 				if err != nil {
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusInternalServerError)
@@ -289,19 +298,24 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 					})
 					return
 				}
-				thumb = imaging.Thumbnail(image, 640, 360, imaging.Lanczos)
+
+				// If wider than tall, fit to height
+				xSize := image.Bounds().Dx()
+				ySize := image.Bounds().Dy()
+				if xSize > ySize {
+					newWidth := (xSize / ySize) * 640
+					thumb = imaging.Thumbnail(image, newWidth, 360, imaging.NearestNeighbor)
+				} else {
+					// Else, fit to width
+					newHeight := (ySize / xSize) * 360
+					thumb = imaging.Thumbnail(image, 640, newHeight, imaging.NearestNeighbor)
+				}
+
 			} else {
-				tempVidPath := "./tmp/" + util.GenID(40) + ".mp4"
-				tempVid, err := os.Create(tempVidPath)
-				if err != nil {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(w).Encode(common.HTTPError{
-						Error: err.Error(),
-					})
-					return
-				}
-				_, err = tempVid.Write(data)
+				videoBytes := make([]byte, files[i].Size)
+				file.Read(videoBytes)
+
+				thumbnailBytes, err := generateVideoThumbnail(videoBytes)
 				if err != nil {
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusInternalServerError)
@@ -311,27 +325,8 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				path, err := generateVideoThumbnail(tempVidPath)
-				if err != nil {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(w).Encode(common.HTTPError{
-						Error: err.Error(),
-					})
-					return
-				}
-				picDat, err := imaging.Open(path)
-				if err != nil {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(w).Encode(common.HTTPError{
-						Error: err.Error(),
-					})
-					return
-				}
-				thumb = imaging.Thumbnail(picDat, 640, 360, imaging.Lanczos)
-
-				err = os.Remove(path)
+				buf := bytes.NewBuffer(thumbnailBytes)
+				picDat, err := png.Decode(buf)
 				if err != nil {
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusInternalServerError)
@@ -341,14 +336,16 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				err = os.Remove(tempVidPath)
-				if err != nil {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					json.NewEncoder(w).Encode(common.HTTPError{
-						Error: err.Error(),
-					})
-					return
+				// If wider than tall, fit to height
+				xSize := picDat.Bounds().Dx()
+				ySize := picDat.Bounds().Dy()
+				if xSize > ySize {
+					newWidth := (xSize / ySize) * 640
+					thumb = imaging.Thumbnail(picDat, newWidth, 360, imaging.NearestNeighbor)
+				} else {
+					// Else, fit to width
+					newHeight := (ySize / xSize) * 360
+					thumb = imaging.Thumbnail(picDat, 640, newHeight, imaging.NearestNeighbor)
 				}
 			}
 
@@ -382,6 +379,7 @@ func UploadMediaHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(links)
+		return
 	}
 }
 
@@ -398,10 +396,8 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		supportedFormats := map[string]bool{
-			"image/bmp":  true, // BMP
 			"image/gif":  true, // GIF
 			"image/jpeg": true, // JPEG
-			"image/webp": true, // WEBP
 			"image/png":  true, // PNG
 		}
 
@@ -508,9 +504,22 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			decoded, _, err := image.Decode(file)
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(common.HTTPError{
+					Error: err.Error(),
+				})
+				return
+			}
+
+			// If wider than tall, fit to height
+			thumb := imaging.Thumbnail(decoded, 240, 240, imaging.NearestNeighbor)
+
 			obj := common.Bucket.Object("pfp/pfp_" + username + filepath.Ext(files[i].Filename))
 			writer := obj.NewWriter(operationCtx)
-			if _, err = io.Copy(writer, file); err != nil {
+			if err = png.Encode(writer, thumb); err != nil {
 				panic(fmt.Errorf("io.Copy: %v", err))
 			}
 			if err := writer.Close(); err != nil {
@@ -521,29 +530,47 @@ func UploadPFPHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(links)
+		return
 	}
 }
 
 // Generate a thumbnail from a video in the tmp directory
-func generateVideoThumbnail(filepath string) (string, error) {
+func generateVideoThumbnail(videoBytes []byte) ([]byte, error) {
 	// command line args, path, and command
 	command := "ffmpeg"
 	frameExtractionTime := "0:00:00.000"
 	vframes := "1"
-	qv := "2"
-	output := "./tmp/" + time.Now().Format(time.Kitchen) + util.GenID(40) + ".png"
+	cv := "png"
+	format := "image2pipe"
 
-	cmd := exec.Command(command,
+	cmd := exec.Command(
+		command,
+		"-i", "pipe:0", // read from stdin
 		"-ss", frameExtractionTime,
-		"-i", filepath, // to read from
 		"-vframes", vframes,
-		"-q:v", qv,
-		output)
+		"-c:v", cv,
+		"-f", format,
+		"pipe:1",
+	)
 
-	// run the command and don't wait for it to finish. waiting exec is run
-	// ignore errors for examples-sake
-	err := cmd.Run()
-	return output, err
+	pipeIn, _ := cmd.StdinPipe()
+	writer := bufio.NewWriter(pipeIn)
+	pipeOut, _ := cmd.StdoutPipe()
+	cmd.Start()
+
+	go func() {
+		defer writer.Flush()
+		defer pipeIn.Close()
+		writer.Write(videoBytes)
+	}()
+
+	defer pipeOut.Close()
+	imageBytes, err := io.ReadAll(pipeOut)
+	if err != nil {
+		return nil, err
+	}
+
+	return imageBytes, nil
 }
 
 // Destroy an object when it expires

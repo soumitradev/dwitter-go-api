@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <!-- Nested objects are a bit weird rn, but we'll see -->
-    <User
+    <!-- <User
       v-bind="{
         bio: 'OH MY GOD I LOVE COCK OH GOD OH FUCK AAAAAAAAAAA AAAAAAA',
         createdAt: '2021-12-04T10:46:11.265Z',
@@ -148,7 +148,7 @@
         username: 'OkayMan'
       }"
       viewUser="OkayManALT"
-    />
+    />-->
 
     <!-- <div class="h-5"></div>
 
@@ -622,6 +622,37 @@
       }"
       viewUser="OkayMan"
     />-->
+    <EditUser
+      v-bind="{
+        bio: 'OH MY GOD I LOVE COCK OH GOD OH FUCK AAAAAAAAAAA AAAAAAA',
+        createdAt: '2021-12-04T10:46:11.265Z',
+        dweets: [],
+        email: 'epicman@epic.com',
+        feedObjects: [],
+        followerCount: 1,
+        followers: [
+          {
+            bio: '',
+            createdAt: '2021-12-04T10:47:38.95Z',
+            email: 'okman@ok.com',
+            followerCount: 0,
+            followingCount: 1,
+            name: 'OOOOK',
+            pfpURL: 'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+            username: 'OkayManALT'
+          },
+        ],
+        following: [],
+        followingCount: 0,
+        likedDweets: [],
+        name: 'OOOOK',
+        pfpURL: 'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
+        redweetedDweets: [],
+        redweets: [],
+        username: 'OkayMan'
+      }"
+      viewUser="OkayManALT"
+    />
   </div>
 </template>
 
@@ -633,6 +664,7 @@ import FeedDweet from "../components/FeedDweet.vue";
 import FeedRedweet from "../components/FeedRedweet.vue";
 import UserListObject from "../components/UserListObject.vue";
 import EditDweet from "../components/EditDweet.vue";
+import EditUser from "../components/EditUser.vue";
 
 export default {
   name: "Home",
@@ -643,6 +675,7 @@ export default {
     FeedRedweet,
     UserListObject,
     EditDweet,
+    EditUser,
   },
 };
 </script>
