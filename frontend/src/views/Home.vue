@@ -624,31 +624,10 @@
     />-->
     <EditUser
       v-bind="{
-        bio: 'OH MY GOD I LOVE COCK OH GOD OH FUCK AAAAAAAAAAA AAAAAAA',
-        createdAt: '2021-12-04T10:46:11.265Z',
-        dweets: [],
+        bio: 'Placeholder bio text',
         email: 'epicman@epic.com',
-        feedObjects: [],
-        followerCount: 1,
-        followers: [
-          {
-            bio: '',
-            createdAt: '2021-12-04T10:47:38.95Z',
-            email: 'okman@ok.com',
-            followerCount: 0,
-            followingCount: 1,
-            name: 'OOOOK',
-            pfpURL: 'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
-            username: 'OkayManALT'
-          },
-        ],
-        following: [],
-        followingCount: 0,
-        likedDweets: [],
         name: 'OOOOK',
         pfpURL: 'https://storage.googleapis.com/download/storage/v1/b/dwitter-72e9d.appspot.com/o/pfp%2Fdefault.jpg?alt=media',
-        redweetedDweets: [],
-        redweets: [],
         username: 'OkayMan'
       }"
       viewUser="OkayManALT"
