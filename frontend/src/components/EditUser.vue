@@ -5,6 +5,7 @@
         <div class="w-32 h-32 rounded-full overflow-hidden">
           <div
             class="hover:bg-neutral-50 bg-opacity-0 hover:bg-opacity-30 rounded-full hover:block w-32 h-32 absolute group"
+            @click="toggleShow"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -26,15 +27,15 @@
               />
             </svg>
 
-            <input
+            <!-- <input
               type="file"
               class="opacity-0 absolute left-0 top-0 h-32 w-32 rounded-full cursor-pointer"
-              @change="updateFile"
+              @change="toggleShow"
               accept="image/png, image/jpeg, image/gif"
-            />
+            />-->
           </div>
 
-          <img :src="pfpFile ? getURL(pfpFile) : pfpURL" />
+          <img :src="imgURL ? imgURL : pfpURL" />
         </div>
         <div class="flex flex-col ml-4 text-xl self-center">
           <input
@@ -131,37 +132,55 @@
       </div>
     </Dialog>
   </TransitionRoot>
+
+  <my-upload
+    :field="'img' + viewUser"
+    @crop-success="cropSuccess"
+    v-model="show"
+    :width="240"
+    :height="240"
+    img-format="png"
+    langType="en"
+    :noSquare="true"
+    :noRotate="false"
+  ></my-upload>
+  <img :src="imgDataUrl" />
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref } from 'vue';
 import {
   TransitionRoot,
   TransitionChild,
   Dialog,
   DialogOverlay,
   DialogTitle,
-} from '@headlessui/vue'
+} from '@headlessui/vue';
+import myUpload from 'vue-image-crop-upload';
 
 export default {
   name: "EditUser",
   methods: {
-    updateFile: function (event) {
-      console.log(event.target.files[0]);
-      let valid = this.validateFile(event.target.files[0]);
-      if (valid) {
-        this.pfpFile = event.target.files[0];
-      } else {
-        this.openModal();
-      }
+    cropSuccess: function (imgURL, _) {
+      this.imgURL = imgURL;
+      console.log(imgURL);
     },
-    validateFile: function (file) {
-      return (file.size <= (8 << 20));
-    },
-    getURL: function (file) {
-      console.log(file);
-      return URL.createObjectURL(file);
-    },
+    // updateFile: function (event) {
+    //   console.log(event.target.files[0]);
+    //   let valid = this.validateFile(event.target.files[0]);
+    //   if (valid) {
+    //     this.pfpFile = event.target.files[0];
+    //   } else {
+    //     this.openModal();
+    //   }
+    // },
+    // validateFile: function (file) {
+    //   return (file.size <= (8 << 20));
+    // },
+    // getURL: function (file) {
+    //   console.log(file);
+    //   return URL.createObjectURL(file);
+    // },
   },
   props: {
     username: {
@@ -189,15 +208,21 @@ export default {
     Dialog,
     DialogOverlay,
     DialogTitle,
+    'my-upload': myUpload,
   },
 
   setup() {
     const isOpen = ref(false);
-    const pfpFile = ref();
+    const imgURL = ref("");
+    const show = ref(false);
 
     return {
       isOpen,
-      pfpFile,
+      imgURL,
+      show,
+      toggleShow() {
+        this.show = !this.show;
+      },
       closeModal() {
         isOpen.value = false;
       },
