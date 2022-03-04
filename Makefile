@@ -16,7 +16,7 @@ kill:
 	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}'
 	@ps axf | grep "test dev 127.0.0.1" | grep -v grep | awk '{print "sudo kill " $$1}' | bash
 
-frontend:
+frontend: $(wildcard frontend/src/**/*.vue) $(wildcard frontend/src/**/*.js) $(wildcard frontend/src/**/*.css)
 	cd frontend && npm run build
 
 serve:

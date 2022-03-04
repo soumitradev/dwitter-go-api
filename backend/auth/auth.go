@@ -132,6 +132,11 @@ func generateTokens(username string, password string) (tokenType, error) {
 
 // Verify an Access Token
 func VerifyAccessToken(tokenString string) (jwt.MapClaims, bool, error) {
+	// Handle empty token string
+	if tokenString == "" {
+		return jwt.MapClaims{}, false, nil
+	}
+
 	// Validate token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
@@ -162,7 +167,7 @@ func VerifyAccessToken(tokenString string) (jwt.MapClaims, bool, error) {
 		}
 		return claims, true, nil
 	} else {
-		return jwt.MapClaims{}, false, errors.New("unauthorized")
+		return jwt.MapClaims{}, false, nil
 	}
 }
 

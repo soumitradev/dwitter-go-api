@@ -57,6 +57,12 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -77,10 +83,17 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
+			fmt.Println("dweets")
 			dweets := user.Dweets()
 			for i := 0; i < len(dweets); i++ {
-				feedObjectList = append(feedObjectList, dweets)
+				feedObjectList = append(feedObjectList, dweets[i])
 			}
 		case "redweet":
 			user, err = common.Client.User.FindUnique(
@@ -101,10 +114,16 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweets := user.Redweets()
 			for i := 0; i < len(redweets); i++ {
-				feedObjectList = append(feedObjectList, redweets)
+				feedObjectList = append(feedObjectList, redweets[i])
 			}
 		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
@@ -122,10 +141,16 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
-				feedObjectList = append(feedObjectList, redweetedDweets)
+				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
 		default:
 			break
@@ -156,10 +181,18 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-			feedObjectList = append(feedObjectList, merged...)
+			for i := 0; i < feedObjectsToFetch; i++ {
+				feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
+			}
 		case "dweet":
 			user, err = common.Client.User.FindUnique(
 				db.User.Username.Equals(username),
@@ -176,10 +209,16 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			dweets := user.Dweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
-				feedObjectList = append(feedObjectList, dweets)
+			for i := 0; i < len(dweets); i++ {
+				feedObjectList = append(feedObjectList, dweets[i])
 			}
 		case "redweet":
 			user, err = common.Client.User.FindUnique(
@@ -200,10 +239,16 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweets := user.Redweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
-				feedObjectList = append(feedObjectList, redweets)
+			for i := 0; i < len(redweets); i++ {
+				feedObjectList = append(feedObjectList, redweets[i])
 			}
 		case "redweetedDweet":
 			user, err = common.Client.User.FindUnique(
@@ -221,21 +266,23 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweetedDweets := user.RedweetedDweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
-				feedObjectList = append(feedObjectList, redweetedDweets)
+			for i := 0; i < len(redweetedDweets); i++ {
+				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
 		default:
 			break
 		}
 	}
-	if err == db.ErrNotFound {
-		return schema.UserType{}, fmt.Errorf("user not found: %v", err)
-	}
-	if err != nil {
-		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
-	}
+
+	// TODO: Some kind of weird bug where you get nil objects in list when requesting dweets and redweets
 
 	// Send back the user requested, along with mutuals in the followers field
 	nuser, err := schema.FormatAsUserType(user, []db.UserModel{}, []db.UserModel{}, objectsToFetch, feedObjectList, false)
@@ -311,6 +358,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -331,6 +384,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			dweets := user.Dweets()
 			for i := 0; i < len(dweets); i++ {
@@ -355,6 +414,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweets := user.Redweets()
 			for i := 0; i < len(redweets); i++ {
@@ -376,6 +441,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < len(redweetedDweets); i++ {
@@ -398,6 +469,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 						db.User.FollowerCount.Order(db.DESC),
 					),
 				).Exec(common.BaseCtx)
+				if err == db.ErrNotFound {
+					return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+				}
+				if err != nil {
+					return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+				}
 
 				likes := user.LikedDweets()
 				for i := 0; i < len(likes); i++ {
@@ -435,6 +512,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -457,6 +540,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			dweets := user.Dweets()
 			for i := 0; i < feedObjectsToFetch; i++ {
@@ -481,6 +570,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweets := user.Redweets()
 			for i := 0; i < feedObjectsToFetch; i++ {
@@ -502,6 +597,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 					db.User.FollowerCount.Order(db.DESC),
 				),
 			).Exec(common.BaseCtx)
+			if err == db.ErrNotFound {
+				return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+			}
+			if err != nil {
+				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+			}
 
 			redweetedDweets := user.RedweetedDweets()
 			for i := 0; i < feedObjectsToFetch; i++ {
@@ -524,6 +625,12 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 						db.User.FollowerCount.Order(db.DESC),
 					),
 				).Exec(common.BaseCtx)
+				if err == db.ErrNotFound {
+					return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+				}
+				if err != nil {
+					return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+				}
 
 				likes := user.LikedDweets()
 				for i := 0; i < feedObjectsToFetch; i++ {
@@ -536,13 +643,6 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			break
 		}
 	}
-	if err == db.ErrNotFound {
-		return schema.UserType{}, fmt.Errorf("user not found: %v", err)
-	}
-	if err != nil {
-		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
-	}
-
 	var showEmail bool
 
 	if viewerUsername == username {

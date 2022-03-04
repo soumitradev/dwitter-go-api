@@ -112,7 +112,7 @@ func deleteDweet(postID string) (*db.DweetModel, error) {
 
 // Remove a Redweet
 func deleteRedweet(postID string, username string) (*db.RedweetModel, error) {
-	// Get all the replies to the redweet (these need to be deleted first since they depend on the root Redweet)
+	// Get the redweet
 	user, err := common.Client.User.FindUnique(
 		db.User.Username.Equals(username),
 	).With(
@@ -131,7 +131,7 @@ func deleteRedweet(postID string, username string) (*db.RedweetModel, error) {
 
 	// If no such redweet exists, return
 	if len(user.Redweets()) == 0 {
-		return nil, nil
+		return nil, db.ErrNotFound
 	}
 
 	// Remove the Redweet from the post

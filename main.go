@@ -91,6 +91,7 @@ func main() {
 	router.Use(middleware.RecoveryHandler)
 	router.Use(middleware.SizeHandler)
 	router.Use(secureMiddleware.Handler)
+	// router.Use(handlers.CORS())
 
 	// Create an HTTP server
 	srv := &http.Server{

@@ -124,26 +124,6 @@ func DeleteDweet(postID string, username string, repliesToFetch int, replyOffset
 }
 
 // Delete a redweet
-// TODO: Fix this shit:
-// {
-// 	"data": {
-// 	  "unredweet": null
-// 	},
-// 	"errors": [
-// 	  {
-// 		"message": "runtime error: invalid memory address or nil pointer dereference",
-// 		"locations": [
-// 		  {
-// 			"line": 42,
-// 			"column": 3
-// 		  }
-// 		],
-// 		"path": [
-// 		  "unredweet"
-// 		]
-// 	  }
-// 	]
-//   }
 func DeleteRedweet(postID string, username string) (schema.RedweetType, error) {
 	// Validate params
 	err := common.Validate.Var(postID, "required,alphanum,len=10")
