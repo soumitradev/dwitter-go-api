@@ -159,6 +159,7 @@ func MergeRedweetLists(redweetsA []db.RedweetModel, redweetsB []db.RedweetModel)
 	return result
 }
 
+// Minimum function for integers, because generics aren't a thing, and casting to float is slow
 func Min(a, b int) int {
 	if a < b {
 		return a
