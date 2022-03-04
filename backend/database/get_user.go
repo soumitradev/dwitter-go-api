@@ -190,7 +190,7 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 				feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 			}
 		case "dweet":
@@ -521,7 +521,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 				feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 			}
 		case "dweet":
@@ -548,7 +548,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			}
 
 			dweets := user.Dweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(dweets); i++ {
 				feedObjectList = append(feedObjectList, dweets[i])
 			}
 		case "redweet":
@@ -578,7 +578,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			}
 
 			redweets := user.Redweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweets); i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
 		case "redweetedDweet":
@@ -605,7 +605,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 			}
 
 			redweetedDweets := user.RedweetedDweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
 		case "liked":
@@ -633,7 +633,7 @@ func GetUser(username string, objectsToFetch string, feedObjectsToFetch int, fee
 				}
 
 				likes := user.LikedDweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(likes); i++ {
 					feedObjectList = append(feedObjectList, likes[i])
 				}
 			} else {

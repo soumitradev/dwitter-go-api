@@ -175,7 +175,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 
 				merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 					feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 				}
 			case "dweet":
@@ -196,7 +196,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).Exec(common.BaseCtx)
 
 				dweets := user.Dweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(dweets); i++ {
 					feedObjectList = append(feedObjectList, dweets[i])
 				}
 			case "redweet":
@@ -218,7 +218,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).Exec(common.BaseCtx)
 
 				redweets := user.Redweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(redweets); i++ {
 					feedObjectList = append(feedObjectList, redweets[i])
 				}
 			case "redweetedDweet":
@@ -239,7 +239,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 				).Exec(common.BaseCtx)
 
 				redweetedDweets := user.RedweetedDweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(redweetedDweets); i++ {
 					feedObjectList = append(feedObjectList, redweetedDweets[i])
 				}
 			default:
@@ -437,7 +437,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 				feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 			}
 		case "dweet":
@@ -463,7 +463,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).Exec(common.BaseCtx)
 
 			dweets := user.Dweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(dweets); i++ {
 				feedObjectList = append(feedObjectList, dweets[i])
 			}
 		case "redweet":
@@ -492,7 +492,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).Exec(common.BaseCtx)
 
 			redweets := user.Redweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweets); i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
 		case "redweetedDweet":
@@ -518,7 +518,7 @@ func Follow(followedID string, followerID string, objectsToFetch string, feedObj
 			).Exec(common.BaseCtx)
 
 			redweetedDweets := user.RedweetedDweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
 		default:
@@ -1171,7 +1171,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 
 				merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 					feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 				}
 			case "dweet":
@@ -1192,7 +1192,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).Exec(common.BaseCtx)
 
 				dweets := user.Dweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(dweets); i++ {
 					feedObjectList = append(feedObjectList, dweets[i])
 				}
 			case "redweet":
@@ -1214,7 +1214,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).Exec(common.BaseCtx)
 
 				redweets := user.Redweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(redweets); i++ {
 					feedObjectList = append(feedObjectList, redweets[i])
 				}
 			case "redweetedDweet":
@@ -1235,7 +1235,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 				).Exec(common.BaseCtx)
 
 				redweetedDweets := user.RedweetedDweets()
-				for i := 0; i < feedObjectsToFetch; i++ {
+				for i := 0; i < len(redweetedDweets); i++ {
 					feedObjectList = append(feedObjectList, redweetedDweets[i])
 				}
 			default:
@@ -1429,7 +1429,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 
 			merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 				feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 			}
 		case "dweet":
@@ -1455,7 +1455,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).Exec(common.BaseCtx)
 
 			dweets := user.Dweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(dweets); i++ {
 				feedObjectList = append(feedObjectList, dweets[i])
 			}
 		case "redweet":
@@ -1484,7 +1484,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).Exec(common.BaseCtx)
 
 			redweets := user.Redweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweets); i++ {
 				feedObjectList = append(feedObjectList, redweets[i])
 			}
 		case "redweetedDweet":
@@ -1510,7 +1510,7 @@ func Unfollow(followedID string, followerID string, objectsToFetch string, feedO
 			).Exec(common.BaseCtx)
 
 			redweetedDweets := user.RedweetedDweets()
-			for i := 0; i < feedObjectsToFetch; i++ {
+			for i := 0; i < len(redweetedDweets); i++ {
 				feedObjectList = append(feedObjectList, redweetedDweets[i])
 			}
 		default:

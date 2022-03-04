@@ -382,7 +382,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 						feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 					}
 				case "dweet":
@@ -408,7 +408,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					dweets := user.Dweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(dweets); i++ {
 						feedObjectList = append(feedObjectList, dweets[i])
 					}
 				case "redweet":
@@ -435,7 +435,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweets := user.Redweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweets); i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
 				case "redweetedDweet":
@@ -461,7 +461,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweetedDweets := user.RedweetedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
 				case "liked":
@@ -487,7 +487,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					likes := user.LikedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(likes); i++ {
 						feedObjectList = append(feedObjectList, likes[i])
 					}
 				default:
@@ -668,7 +668,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 						feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 					}
 				case "dweet":
@@ -694,7 +694,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					dweets := user.Dweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(dweets); i++ {
 						feedObjectList = append(feedObjectList, dweets[i])
 					}
 				case "redweet":
@@ -721,7 +721,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweets := user.Redweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweets); i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
 				case "redweetedDweet":
@@ -747,7 +747,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweetedDweets := user.RedweetedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
 				case "liked":
@@ -773,7 +773,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					likes := user.LikedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(likes); i++ {
 						feedObjectList = append(feedObjectList, likes[i])
 					}
 				default:
@@ -957,7 +957,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 						feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 					}
 				case "dweet":
@@ -983,7 +983,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					dweets := user.Dweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(dweets); i++ {
 						feedObjectList = append(feedObjectList, dweets[i])
 					}
 				case "redweet":
@@ -1010,7 +1010,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweets := user.Redweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweets); i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
 				case "redweetedDweet":
@@ -1036,7 +1036,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweetedDweets := user.RedweetedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
 				case "liked":
@@ -1062,7 +1062,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					likes := user.LikedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(likes); i++ {
 						feedObjectList = append(feedObjectList, likes[i])
 					}
 				default:
@@ -1243,7 +1243,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < util.Min(feedObjectsToFetch, len(merged)); i++ {
 						feedObjectList = append(feedObjectList, merged[i+feedObjectsOffset])
 					}
 				case "dweet":
@@ -1269,7 +1269,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					dweets := user.Dweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(dweets); i++ {
 						feedObjectList = append(feedObjectList, dweets[i])
 					}
 				case "redweet":
@@ -1296,7 +1296,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweets := user.Redweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweets); i++ {
 						feedObjectList = append(feedObjectList, redweets[i])
 					}
 				case "redweetedDweet":
@@ -1322,7 +1322,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					redweetedDweets := user.RedweetedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(redweetedDweets); i++ {
 						feedObjectList = append(feedObjectList, redweetedDweets[i])
 					}
 				case "liked":
@@ -1348,7 +1348,7 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 					).Exec(common.BaseCtx)
 
 					likes := user.LikedDweets()
-					for i := 0; i < feedObjectsToFetch; i++ {
+					for i := 0; i < len(likes); i++ {
 						feedObjectList = append(feedObjectList, likes[i])
 					}
 				default:

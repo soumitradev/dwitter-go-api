@@ -41,3 +41,11 @@ func ContentTypeHandler(next http.Handler) http.Handler {
 func RecoveryHandler(next http.Handler) http.Handler {
 	return handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(next)
 }
+
+func CORSHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		next.ServeHTTP(w, r)
+	})
+}

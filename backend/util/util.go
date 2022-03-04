@@ -158,3 +158,10 @@ func MergeRedweetLists(redweetsA []db.RedweetModel, redweetsB []db.RedweetModel)
 
 	return result
 }
+
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
