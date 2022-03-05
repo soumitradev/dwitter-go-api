@@ -3,7 +3,12 @@ import App from './App.vue'
 import './styles/app.css'
 import router from './router'
 import { DefaultApolloClient } from '@vue/apollo-composable'
-import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
+import { ApolloClient, ApolloLink, createHttpLink, InMemoryCache } from '@apollo/client/core'
+import { setContext } from '@apollo/client/link/context';
+import { TokenRefreshLink } from "apollo-link-token-refresh"
+import decodeJWT from "jwt-decode"
+
+
 
 
 // HTTP connection to the API
@@ -14,9 +19,60 @@ const httpLink = createHttpLink({
 // Cache implementation
 const cache = new InMemoryCache()
 
+// Use auth
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
+
+const refreshTokenLink = new TokenRefreshLink({
+  isTokenValidOrUndefined: () => {
+    const token = localStorage.getItem("token");
+    if (!token) return true;
+
+    const claims = decodeJWT(token)
+    const expirationTimeInSeconds = claims.exp * 1000
+    const now = new Date()
+    return (expirationTimeInSeconds >= now.getTime())
+  },
+  fetchAccessToken: async () => {
+    const refreshToken = localStorage.getItem("jid")
+    const request = await fetch("http://localhost:5000/api/refresh_token", {
+      method: "POST",
+      credentials: "omit",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jid: refreshToken,
+      }),
+    })
+    const result = await request.json()
+    return result
+  },
+  handleFetch: (accessToken) => {
+    localStorage.setItem("token", accessToken)
+  },
+  handleResponse: (operation, accessTokenField) => (response) => {
+    console.log(operation, accessTokenField, response)
+    return { access_token: response.accessToken }
+  },
+  handleError: (err) => {
+    console.warn("Error refreshing token.")
+    console.error(err)
+    localStorage.removeItem("jwt")
+    localStorage.removeItem("refreshToken")
+  },
+})
+
 // Create the apollo client
 const apolloClient = new ApolloClient({
-  link: httpLink,
+  link: ApolloLink.from([refreshTokenLink, authLink, httpLink]),
   cache,
 })
 

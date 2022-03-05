@@ -1,7 +1,7 @@
 <template>
   <div class="about">
     <p v-if="loading">Loading...</p>
-    <User v-else-if="result" v-bind="result.user" viewUser="randomGuy" />
+    <User v-else-if="result" v-bind="result.user" :viewUser="parseJwt().username" />
     <p v-if="error">{{ error }}</p>
   </div>
 </template>
@@ -43,6 +43,16 @@ export default {
     User,
   },
   methods: {
+    parseJwt: function () {
+      let token = localStorage.getItem('token')
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      console.log(JSON.parse(jsonPayload));
+      return JSON.parse(jsonPayload);
+    },
   }
 };
 </script>

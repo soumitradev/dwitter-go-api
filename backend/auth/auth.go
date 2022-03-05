@@ -27,6 +27,7 @@ type tokenType struct {
 // A loginResponse stores the response to authentication
 type loginResponse struct {
 	AccessToken string `json:"accessToken"`
+	JID         string `json:"jid"`
 }
 
 // A loginType stores login info
@@ -69,7 +70,7 @@ func generateAccessToken(username string) (string, error) {
 	tokenClaims := jwt.MapClaims{}
 	tokenClaims["authorized"] = true
 	tokenClaims["username"] = username
-	tokenClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	tokenClaims["exp"] = time.Now().Add(time.Second * 15).Unix()
 
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
 
@@ -347,6 +348,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Send the access token in JSON
 	json.NewEncoder(w).Encode(loginResponse{
 		AccessToken: tokenData.AccessToken,
+		JID:         tokenData.RefreshToken,
 	})
 
 }
@@ -371,7 +373,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a JSON decoder and decode the request JSON
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	var loginData loginType
+	var loginData loginResponse
 	err := decoder.Decode(&loginData)
 
 	// If any error occurred during the decoding, send an appropriate response
@@ -445,7 +447,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookieString, err := r.Cookie("jid")
-	if err != nil {
+	if err != nil && loginData.JID == "" {
 		msg := "Refresh Token not present"
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -454,7 +456,12 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	token := splitCookie(cookieString.String())
+	var token string
+	if cookieString.String() != "" {
+		token = splitCookie(cookieString.String())
+	} else {
+		token = loginData.JID
+	}
 
 	claims, verified, err := verifyRefreshToken(token)
 	if (err != nil) || (!verified) {
@@ -514,6 +521,7 @@ func RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// Send the access token in JSON
 	json.NewEncoder(w).Encode(loginResponse{
 		AccessToken: accessTok,
+		JID:         refTok,
 	})
 }
 

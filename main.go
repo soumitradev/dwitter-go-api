@@ -92,7 +92,7 @@ func main() {
 	router.Use(middleware.SizeHandler)
 	router.Use(secureMiddleware.Handler)
 	// CORS Handler. Make sure to turn on/off in production!
-	router.Use(middleware.CORSHandler)
+	router.Use(middleware.CORSTestingHandler)
 
 	// Create an HTTP server
 	srv := &http.Server{
