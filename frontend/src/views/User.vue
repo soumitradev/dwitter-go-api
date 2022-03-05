@@ -1,9 +1,8 @@
 <template>
   <div class="about">
-    <!-- <User /> -->
+    <p v-if="loading">Loading...</p>
+    <User v-else-if="result" v-bind="result.user" viewUser="randomGuy" />
     <p v-if="error">{{ error }}</p>
-    <p v-else-if="result">{{ result.user.username }}</p>
-    <p v-else>Loading...</p>
   </div>
 </template>
 
@@ -17,7 +16,7 @@ import { useRoute } from 'vue-router'
 import { userFrag } from "../fragments/userFrag";
 
 export default {
-  name: "User",
+  name: "ViewUser",
   setup() {
     const route = useRoute()
 
