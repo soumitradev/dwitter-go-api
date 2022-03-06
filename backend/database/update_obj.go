@@ -162,6 +162,22 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 	if err != nil {
 		return schema.UserType{}, err
 	}
+	basicUser, err := common.Client.User.FindUnique(
+		db.User.Username.Equals(username),
+	).Exec(common.BaseCtx)
+	if err != nil {
+		return schema.UserType{}, err
+	}
+
+	if name == "" {
+		name = basicUser.Name
+	}
+	if email == "" {
+		email = basicUser.Email
+	}
+	if PfpUrl == "" {
+		PfpUrl = basicUser.ProfilePicURL
+	}
 
 	err = common.Validate.Var(name, "lte=80")
 	if err != nil {
@@ -238,6 +254,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -263,6 +285,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -290,6 +318,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -316,6 +350,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -342,6 +382,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -379,6 +425,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -406,6 +458,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -433,6 +491,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -459,6 +523,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -485,6 +555,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -524,6 +600,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -549,6 +631,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -576,6 +664,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -602,6 +696,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -628,6 +728,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -665,6 +771,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -692,6 +804,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -719,6 +837,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -745,6 +869,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -771,6 +901,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -813,6 +949,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -838,6 +980,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -865,6 +1013,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -891,6 +1045,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -917,6 +1077,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -954,6 +1120,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -981,6 +1153,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -1008,6 +1186,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -1034,6 +1218,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -1060,6 +1250,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -1099,6 +1295,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -1124,6 +1326,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -1151,6 +1359,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -1177,6 +1391,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -1203,6 +1423,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -1240,6 +1466,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					merged := util.MergeDweetRedweetList(user.Dweets(), user.Redweets())
 
@@ -1267,6 +1499,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					dweets := user.Dweets()
 					for i := 0; i < len(dweets); i++ {
@@ -1294,6 +1532,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweets := user.Redweets()
 					for i := 0; i < len(redweets); i++ {
@@ -1320,6 +1564,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					redweetedDweets := user.RedweetedDweets()
 					for i := 0; i < len(redweetedDweets); i++ {
@@ -1346,6 +1596,12 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 						db.User.Bio.Set(bio),
 						db.User.ProfilePicURL.Set(PfpUrl),
 					).Exec(common.BaseCtx)
+					if err == db.ErrNotFound {
+						return schema.UserType{}, fmt.Errorf("user not found: %v", err)
+					}
+					if err != nil {
+						return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
+					}
 
 					likes := user.LikedDweets()
 					for i := 0; i < len(likes); i++ {
@@ -1356,13 +1612,6 @@ func UpdateUser(username string, name string, email string, bio string, PfpUrl s
 				}
 			}
 		}
-	}
-
-	if err == db.ErrNotFound {
-		return schema.UserType{}, fmt.Errorf("user not found: %v", err)
-	}
-	if err != nil {
-		return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 	}
 
 	nuser, err := schema.FormatAsUserType(user, user.Followers(), user.Following(), objectsToFetch, feedObjectList, true)

@@ -758,8 +758,7 @@ var mutationHandler = graphql.NewObject(
 						DefaultValue: "",
 					},
 					"bio": &graphql.ArgumentConfig{
-						Type:         graphql.String,
-						DefaultValue: "",
+						Type: graphql.String,
 					},
 					"pfpURL": &graphql.ArgumentConfig{
 						Type:         graphql.String,
@@ -806,7 +805,7 @@ var mutationHandler = graphql.NewObject(
 						// Edit user, and return formatted
 						name, namePresent := params.Args["name"].(string)
 						email, emailPresent := params.Args["email"].(string)
-						bio, bioPresent := params.Args["email"].(string)
+						bio, bioPresent := params.Args["bio"].(string)
 						PfpUrl, pfpPresent := params.Args["pfpURL"].(string)
 						objectsToFetch, objectsToFetchPresent := params.Args["objectsToFetch"].(string)
 						numFeedObjects, numFeedObjectsPresent := params.Args["feedObjectsToFetch"].(int)
