@@ -43,12 +43,28 @@
             name="text"
             oninput="this.style.height = '';this.style.height = (this.scrollHeight + 1) + 'px'"
             rows="1"
-            :value="name"
+            v-model="nameVar"
             autofocus
           />
           <span class="text-left text-neutralVariant-50">@{{ username }}</span>
         </div>
       </div>
+      <button
+        class="bg-primary-40 rounded-full m-4 h-fit px-2 flex flex-row text-primary-100"
+        @click="$emit('saveEditsToUser', consolidateData())"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 m-1 fill-current"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
     </div>
 
     <textarea
@@ -56,10 +72,10 @@
       name="text"
       oninput="this.style.height = '';this.style.height = (this.scrollHeight + 5) + 'px'"
       rows="1"
-      :value="bio"
+      v-model="bioVar"
     ></textarea>
 
-    <div class="flex flex-row mt-2 text-neutralVariant-50" v-if="email">
+    <div class="flex flex-row mt-2 text-neutralVariant-50">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="h-5 w-5 mx-1 my-1 fill-current"
@@ -75,63 +91,10 @@
         name="text"
         oninput="this.style.height = '';this.style.height = (this.scrollHeight + 1) + 'px'"
         rows="1"
-        :value="email"
+        v-model="emailVar"
       />
     </div>
   </div>
-
-  <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="min-h-screen px-4 text-center">
-          <TransitionChild
-            as="template"
-            enter="duration-200 ease-out"
-            enter-from="opacity-0"
-            enter-to="opacity-100"
-            leave="duration-100 ease-in"
-            leave-from="opacity-100"
-            leave-to="opacity-0"
-          >
-            <DialogOverlay class="fixed inset-0 bg-neutral-30/s5" />
-          </TransitionChild>
-
-          <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
-
-          <TransitionChild
-            as="template"
-            enter="duration-300 ease-out"
-            enter-from="opacity-0 scale-95"
-            enter-to="opacity-100 scale-100"
-            leave="duration-200 ease-in"
-            leave-from="opacity-100 scale-100"
-            leave-to="opacity-0 scale-95"
-          >
-            <div
-              class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-neutral-100 shadow-xl rounded-2xl"
-            >
-              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Error</DialogTitle>
-              <div class="mt-2">
-                <p class="text-sm text-gray-500">File too large (Limit is 8MB per file)</p>
-              </div>
-
-              <div class="mt-4">
-                <button
-                  type="button"
-                  class="inline-flex justify-center text-sm font-medium text-error-10 bg-error-90 border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-error-40"
-                  @click="closeModal"
-                >
-                  <div
-                    class="rounded-full py-2 px-4 group-hover:bg-error-10/s2 focus:bg-error-10/s2 transition duration-200 ease-in-out"
-                  >OK</div>
-                </button>
-              </div>
-            </div>
-          </TransitionChild>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
 
   <my-upload
     :field="'img' + viewUser"
@@ -144,18 +107,10 @@
     :noSquare="true"
     :noRotate="false"
   ></my-upload>
-  <img :src="imgDataUrl" />
 </template>
 
 <script>
 import { ref } from 'vue';
-import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogOverlay,
-  DialogTitle,
-} from '@headlessui/vue';
 import myUpload from 'vue-image-crop-upload';
 
 export default {
@@ -163,7 +118,16 @@ export default {
   methods: {
     cropSuccess: function (imgURL, _) {
       this.imgURL = imgURL;
-      console.log(imgURL);
+    },
+    consolidateData: function () {
+      return {
+        username: this.username,
+        name: this.nameVar,
+        email: this.emailVar,
+        bio: this.bioVar,
+        pfpURL: this.imgURL ? this.imgURL : this.pfpURL,
+        pfpUpdated: this.imgURL ? true : false,
+      }
     },
     // updateFile: function (event) {
     //   console.log(event.target.files[0]);
@@ -202,32 +166,28 @@ export default {
       type: String,
     }
   },
+  data() {
+    return {
+      nameVar: this.name,
+      emailVar: this.email,
+      bioVar: this.bio,
+    }
+  },
   components: {
-    TransitionRoot,
-    TransitionChild,
-    Dialog,
-    DialogOverlay,
-    DialogTitle,
     'my-upload': myUpload,
   },
-
+  emits: ['saveEditsToUser'],
   setup() {
     const isOpen = ref(false);
-    const imgURL = ref("");
     const show = ref(false);
+    const imgURL = ref("");
 
     return {
       isOpen,
-      imgURL,
       show,
+      imgURL,
       toggleShow() {
         this.show = !this.show;
-      },
-      closeModal() {
-        isOpen.value = false;
-      },
-      openModal() {
-        isOpen.value = true;
       },
     }
   },

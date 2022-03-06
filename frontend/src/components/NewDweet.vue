@@ -43,10 +43,10 @@
           <div class="relative overflow-hidden inline-block self-end ml-2">
             <button
               type="button"
-              class="text-primary-10 bg-primary-90 border-none rounded-full self-end mr-2 transition duration-200 ease-in-out"
+              class="text-primary-100 bg-primary-40 border-none rounded-full self-end mr-2 transition duration-200 ease-in-out"
             >
               <div
-                class="rounded-full py-2 px-4 hover:bg-primary-10/s2 focus:bg-primary-10/s2 transition duration-200 ease-in-out"
+                class="rounded-full py-2 px-4 hover:bg-primary-10/s1 focus:bg-primary-10/s1 transition duration-200 ease-in-out"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

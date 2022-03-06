@@ -3,13 +3,11 @@ import App from './App.vue'
 import './styles/app.css'
 import router from './router'
 import { DefaultApolloClient } from '@vue/apollo-composable'
+import { createApolloProvider } from '@vue/apollo-option'
 import { ApolloClient, ApolloLink, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { setContext } from '@apollo/client/link/context';
 import { TokenRefreshLink } from "apollo-link-token-refresh"
 import decodeJWT from "jwt-decode"
-
-
-
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
@@ -59,7 +57,6 @@ const refreshTokenLink = new TokenRefreshLink({
     localStorage.setItem("token", accessToken)
   },
   handleResponse: (operation, accessTokenField) => (response) => {
-    console.log(operation, accessTokenField, response)
     return { access_token: response.accessToken }
   },
   handleError: (err) => {
@@ -74,6 +71,10 @@ const refreshTokenLink = new TokenRefreshLink({
 const apolloClient = new ApolloClient({
   link: ApolloLink.from([refreshTokenLink, authLink, httpLink]),
   cache,
+})
+
+const apolloProvider = createApolloProvider({
+  defaultClient: apolloClient,
 })
 
 const app = createApp({
@@ -124,4 +125,4 @@ Only Authenticated
 - Edit dweet view EditDweet.vue
 */
 
-app.use(router).mount('#app')
+app.use(apolloProvider).use(router).mount('#app')

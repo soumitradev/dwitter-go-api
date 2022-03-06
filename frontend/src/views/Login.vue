@@ -42,7 +42,6 @@ export default {
           password: this.password
         })
       }).then(res => res.json()).then(data => {
-        console.log(data);
         localStorage.setItem('token', data.accessToken);
         localStorage.setItem('jid', data.jid);
       }).catch((error) => {
