@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/soumitradev/Dwitter/backend/auth"
 	"github.com/soumitradev/Dwitter/backend/common"
 	"github.com/soumitradev/Dwitter/backend/prisma/db"
 	"github.com/soumitradev/Dwitter/backend/schema"
@@ -76,6 +77,8 @@ func SignUpUser(username string, password string, name string, bio string, email
 		if err != nil {
 			return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
+
+		auth.SendVerificationEmail(createdUser.Email)
 
 		nuser, err := schema.FormatAsUserType(createdUser, []db.UserModel{}, []db.UserModel{}, "", []interface{}{}, true)
 		return nuser, err

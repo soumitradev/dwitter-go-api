@@ -30,7 +30,13 @@ func main() {
 	defer database.DisconnectDB()
 
 	// Load .env
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+	}
+
+	// Initialize sendgrid
+	common.InitSendgrid()
 
 	// Check for an error in schema at runtime
 	if gql.SchemaError != nil {

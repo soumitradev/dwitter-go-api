@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 
 	"github.com/soumitradev/Dwitter/backend/prisma/db"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/functionalfoundry/graphqlws"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/sendgrid/sendgrid-go"
 )
 
 const LetterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -24,6 +27,7 @@ var MediaCreatedButNotUsed map[string]bool
 var SubscriptionManager graphqlws.SubscriptionManager
 var GraphqlwsHandler http.Handler
 var Validate *validator.Validate
+var SendgridClient *sendgrid.Client
 
 type HTTPError struct {
 	Error string `json:"error"`
@@ -34,6 +38,10 @@ func init() {
 	MediaCreatedButNotUsed = make(map[string]bool)
 }
 
+func InitSendgrid() {
+	SendgridClient = sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+}
+
 // Check given credentials and return true if valid
 func CheckCreds(username string, password string) (bool, error) {
 	user, err := Client.User.FindUnique(
@@ -41,6 +49,10 @@ func CheckCreds(username string, password string) (bool, error) {
 	).Exec(BaseCtx)
 	if err != nil {
 		return false, errors.New("username/password error")
+	}
+
+	if !user.Verified {
+		return false, errors.New("account not verified: please check your email for a verification link")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
