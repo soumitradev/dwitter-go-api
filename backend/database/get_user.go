@@ -90,7 +90,6 @@ func GetUserUnauth(username string, objectsToFetch string, feedObjectsToFetch in
 				return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 			}
 
-			fmt.Println("dweets")
 			dweets := user.Dweets()
 			for i := 0; i < len(dweets); i++ {
 				feedObjectList = append(feedObjectList, dweets[i])

@@ -209,7 +209,6 @@ func verifyRefreshToken(tokenString string) (jwt.MapClaims, bool, error) {
 		if err == db.ErrNotFound {
 			return jwt.MapClaims{}, false, errors.New("user doesn't exist")
 		}
-		fmt.Printf("DB: %v, token: %v", userDB.TokenVersion, int(tokenV))
 		if userDB.TokenVersion != int(tokenV) {
 			return jwt.MapClaims{}, false, errors.New("invalid token version")
 		}

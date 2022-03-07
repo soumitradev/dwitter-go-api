@@ -55,6 +55,19 @@ func SignUpUser(username string, password string, name string, bio string, email
 		db.User.Email.Equals(email),
 	).Exec(common.BaseCtx)
 	if (err1 == db.ErrNotFound) && (err2 == db.ErrNotFound) {
+		// Send verification email
+		token := util.GenToken(5)
+
+		common.AccountCreatedButNotVerified[token] = username
+		link := "http://localhost:5000/api/verify/" + token
+		_, err := auth.SendVerificationEmail(email, link)
+
+		go auth.DeleteUserAfterExpire(60, token)
+
+		if err != nil {
+			return schema.UserType{}, errors.New("error verifying email, please try again later")
+		}
+
 		// Create user if no such user exists
 		createdUser, err := common.Client.User.CreateOne(
 			db.User.Username.Set(username),
@@ -66,6 +79,7 @@ func SignUpUser(username string, password string, name string, bio string, email
 			db.User.TokenVersion.Set(rand.Intn(10000)),
 			db.User.CreatedAt.Set(time.Now()),
 			db.User.OAuthProvider.Set("None"),
+			db.User.Verified.Set(false),
 		).With(
 			db.User.Dweets.Fetch().With(
 				db.Dweet.Author.Fetch(),
@@ -77,8 +91,6 @@ func SignUpUser(username string, password string, name string, bio string, email
 		if err != nil {
 			return schema.UserType{}, fmt.Errorf("internal server error: %v", err)
 		}
-
-		auth.SendVerificationEmail(createdUser.Email)
 
 		nuser, err := schema.FormatAsUserType(createdUser, []db.UserModel{}, []db.UserModel{}, "", []interface{}{}, true)
 		return nuser, err
@@ -151,6 +163,7 @@ func NewDweet(body, username string, mediaLinks []string) (schema.DweetType, err
 
 	// Mark media as used to prevent deletion on expiry
 	for _, link := range mediaLinks {
+		common.MediaCreatedButNotUsed[link] = false
 		delete(common.MediaCreatedButNotUsed, link)
 	}
 

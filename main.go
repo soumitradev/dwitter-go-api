@@ -77,6 +77,7 @@ func main() {
 	// Handle some API endpoints using a non-GraphQL solution
 	router.HandleFunc("/api/login", auth.LoginHandler).Methods("POST")
 	router.HandleFunc("/api/refresh_token", auth.RefreshHandler).Methods("POST")
+	router.HandleFunc("/api/verify/{token}", auth.VerifyHandler).Methods("GET")
 	router.HandleFunc("/api/media_upload", cdn.UploadMediaHandler).Methods("POST")
 	router.HandleFunc("/api/pfp_upload", cdn.UploadPFPHandler).Methods("POST")
 	router.HandleFunc("/api/callback", auth.OAuth2callbackHandler)

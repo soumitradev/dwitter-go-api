@@ -1006,7 +1006,7 @@ func Unlike(postID string, userID string, repliesToFetch int, replyOffset int) (
 	return formatted, err
 }
 
-// Create a follower relation
+// Delete a follower relation
 func Unfollow(followedID string, followerID string, objectsToFetch string, feedObjectsToFetch int, feedObjectsOffset int) (schema.UserType, error) {
 	// Validate params
 	err := common.Validate.Var(followedID, "required,alphanum,lte=20,gt=0")

@@ -8,9 +8,11 @@ import (
 	math_rand "math/rand"
 	"reflect"
 
-	"github.com/soumitradev/Dwitter/backend/common"
 	"github.com/soumitradev/Dwitter/backend/prisma/db"
 )
+
+const AlphanumBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const LoweralphaBytes = "abcdefghijklmnopqrstuvwxyz"
 
 // More secure random seeding than usual: https://stackoverflow.com/a/54491783
 func init() {
@@ -26,7 +28,21 @@ func init() {
 func GenID(n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = common.LetterBytes[math_rand.Intn(len(common.LetterBytes))]
+		b[i] = AlphanumBytes[math_rand.Intn(len(AlphanumBytes))]
+	}
+	return string(b)
+}
+
+// Make a random string of length 5n - 1 with hyphens every 4 letters
+// e.g. GenToken(5) will return a string of format aaaa-bbbb-cccc-dddd-eeee
+func GenToken(n int) string {
+	b := make([]byte, 5*n-1)
+	for i := range b {
+		if (i+1)%5 == 0 {
+			b[i] = '-'
+		} else {
+			b[i] = LoweralphaBytes[math_rand.Intn(len(LoweralphaBytes))]
+		}
 	}
 	return string(b)
 }
